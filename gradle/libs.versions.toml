@@ -1,0 +1,91 @@
+[versions]
+# The latest stable releases as of 2026-11-20. Apps that use the library need at least this Kotlin version.
+kotlin = "2.4.21"
+kotlinxCoroutines = "1.11.0"
+# The lock that makes the router safe to call from any thread.
+atomicfu = "0.33.0"
+agp = "9.5.1"
+mavenPublish = "0.37.0"
+# Writes the API documentation that is published with the library, from its KDoc. Build-time only.
+dokka = "2.3.0"
+# Build-time code quality tools: they never reach consumers of the library.
+detekt = "2.0.0-alpha.6"
+ktlint = "1.8.0"
+ktlintGradle = "14.2.0"
+# 0.9.7 and older crash on the Android KMP plugin's host tests.
+kover = "0.9.11"
+# The project's own ktlint rules (tooling/ktlint-rules) are tested with these. Build tooling only.
+junit = "4.13.2"
+slf4j = "2.0.20"
+# Test libraries only, in the library and the sample: they never reach consumers of the library.
+kotest = "6.2.7"
+turbine = "1.2.1"
+# Sample apps only, from here to the end of the versions: the library uses none of these.
+compose = "1.12.2"
+# Material 3 is versioned on its own; 1.9.0 is its latest stable release.
+composeMaterial3 = "1.9.0"
+lifecycle = "2.11.0"
+navigation3 = "1.2.0"
+koin = "4.2.2"
+kotlinxSerialization = "1.13.0"
+androidCompileSdk = "37"
+androidMinSdk = "23"
+# The sample apps need 24, which Compose Multiplatform's Android artifacts require. The library stays on 23.
+androidSampleMinSdk = "24"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
+
+# Tests.
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+# Assertions that read as sentences and say what was wrong when they fail. Used with kotlin.test's runner.
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+# Reads what a Flow emits, one item at a time.
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+# Lists the subclasses of a sealed type, for the sample's "every event has a handler" tests. JVM only.
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+# The project's own ktlint rules, built from tooling/ktlint-rules (an included build), not from a repository.
+eventus-ktlint-rules = { group = "io.github.mradzinski.eventus", name = "ktlint-rules" }
+ktlint-cli-ruleset-core = { module = "com.pinterest.ktlint:ktlint-cli-ruleset-core", version.ref = "ktlint" }
+ktlint-rule-engine = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
+ktlint-rule-engine-core = { module = "com.pinterest.ktlint:ktlint-rule-engine-core", version.ref = "ktlint" }
+junit = { module = "junit:junit", version.ref = "junit" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+
+# Sample apps only: UI, navigation, view models, dependency injection and what they need.
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3" }
+# The icon set stopped at 1.7.3: it is no longer released with new Compose versions.
+compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version = "1.7.3" }
+compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
+lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+# Gives desktop the main dispatcher that view models run on.
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

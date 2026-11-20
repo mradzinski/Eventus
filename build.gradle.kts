@@ -1,0 +1,114 @@
+import dev.detekt.gradle.Detekt
+import dev.detekt.gradle.extensions.DetektExtension
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+
+plugins {
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.compose.multiplatform) apply false
+    alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.maven.publish) apply false
+    alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.kover) apply false
+    // Applied here so the root build scripts are formatted too; modules get it from the block below.
+    alias(libs.plugins.ktlint)
+}
+
+ktlint {
+    version.set(libs.versions.ktlint)
+}
+
+dependencies {
+    // The project's own rules, applied next to ktlint's standard ones. See tooling/ktlint-rules.
+    ktlintRuleset(libs.eventus.ktlint.rules)
+}
+
+// Code quality for every module: ktlint checks formatting, detekt checks the code itself.
+// Both run as part of `./gradlew build` (through `check`). Fix formatting with `./gradlew ktlintFormat`.
+subprojects {
+    apply(plugin = "dev.detekt")
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    extensions.configure<DetektExtension> {
+        buildUponDefaultConfig = true
+        config.setFrom(rootProject.files("config/detekt/detekt.yml"))
+    }
+    // In a multiplatform module the plain `detekt` task has no sources of its own: detekt creates one
+    // task per source set instead. Make `detekt` run all of them, so one command covers every module.
+    // Generated code (for example Compose resource accessors) is not ours to fix.
+    tasks.withType<Detekt>().configureEach { exclude { it.file.path.contains("/build/") } }
+    // Task names are filtered lazily, so no unrelated task is created just to be inspected.
+    tasks.named("detekt") {
+        dependsOn(
+            provider {
+                tasks.names.filter {
+                    it.startsWith("detekt") && it.endsWith("SourceSet") &&
+                        !it.startsWith("detektBaseline")
+                }
+            },
+        )
+    }
+    extensions.configure<KtlintExtension> {
+        version.set(rootProject.libs.versions.ktlint)
+        // Generated code (for example Compose resource accessors) is not ours to format.
+        filter { exclude { it.file.path.contains("/build/") } }
+    }
+    dependencies {
+        add("ktlintRuleset", rootProject.libs.eventus.ktlint.rules)
+    }
+}
+
+// One command to upload the library to Maven Central: ./gradlew publishLibrary
+// It refuses to start, with a clear message, when the one-time setup (Central Portal token, signing key) is
+// incomplete. It uploads only after everything below has passed, so a failing test stops it.
+//
+// The upload is staged: Central checks it and keeps it out of public view until someone presses "Publish" for
+// that deployment on https://central.sonatype.com/publishing/deployments (or "Drop" to throw it away). A
+// version on Maven Central can never be replaced, so the last step is a person's.
+//
+// `uploadLibrary` is the same upload for a commit whose checks have already passed somewhere else. The publish
+// workflow uses it, after confirming that the build workflow passed for the commit, so the tests are not run a
+// second time. By hand, use `publishLibrary`.
+val publishTasks = setOf("publishLibrary", "uploadLibrary")
+val publishRequested = gradle.startParameter.taskNames.any { it.substringAfterLast(':') in publishTasks }
+// What must pass before the library is published: `check` of the library, which is its tests on every platform
+// (desktop, Android, iOS simulator, Wasm and JS in Chrome), lint, the coverage limit and the public API check.
+// The sample is not part of it: it is not what gets published.
+val checksBeforePublishing = listOf(":eventus:check")
+
+if (publishRequested) {
+    val problems = buildList {
+        listOf("mavenCentralUsername", "mavenCentralPassword", "signingInMemoryKey").forEach { name ->
+            if (!providers.gradleProperty(name).isPresent) add("Missing '$name' in ~/.gradle/gradle.properties.")
+        }
+    }
+
+    check(problems.isEmpty()) {
+        "Cannot publish yet:\n" + problems.joinToString("\n") { " - $it" }
+    }
+
+    // Depending on the checks is not enough: Gradle may run tasks that do not depend on each other in any
+    // order. Every publishing task of the library therefore waits for the checks.
+    project(":eventus") {
+        tasks
+            .matching { it.name.startsWith("publish") }
+            .configureEach { mustRunAfter(checksBeforePublishing) }
+    }
+}
+
+tasks.register("publishLibrary") {
+    group = "publishing"
+    description = "Runs every check, then uploads the library to Maven Central, where it waits to be published by hand."
+    dependsOn(checksBeforePublishing)
+    dependsOn(":eventus:publishToMavenCentral")
+}
+
+tasks.register("uploadLibrary") {
+    group = "publishing"
+    description = "Uploads the library to Maven Central without running the checks. For a commit already checked."
+    dependsOn(":eventus:publishToMavenCentral")
+}

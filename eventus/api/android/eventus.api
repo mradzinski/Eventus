@@ -1,0 +1,62 @@
+public final class io/github/mradzinski/eventus/DispatchStrategy : java/lang/Enum {
+	public static final field Concurrent Lio/github/mradzinski/eventus/DispatchStrategy;
+	public static final field DropIfBusy Lio/github/mradzinski/eventus/DispatchStrategy;
+	public static final field Latest Lio/github/mradzinski/eventus/DispatchStrategy;
+	public static final field Sequential Lio/github/mradzinski/eventus/DispatchStrategy;
+	public static final field WhileStarted Lio/github/mradzinski/eventus/DispatchStrategy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/mradzinski/eventus/DispatchStrategy;
+	public static fun values ()[Lio/github/mradzinski/eventus/DispatchStrategy;
+}
+
+public abstract interface class io/github/mradzinski/eventus/ErrorHandler {
+	public abstract fun handle (Lio/github/mradzinski/eventus/UiEvent;Ljava/lang/Throwable;Lio/github/mradzinski/eventus/ScreenStore;)V
+}
+
+public abstract interface class io/github/mradzinski/eventus/EventHandler {
+	public abstract fun getEventType ()Lkotlin/reflect/KClass;
+	public fun getStrategy ()Lio/github/mradzinski/eventus/DispatchStrategy;
+	public abstract fun handle (Lio/github/mradzinski/eventus/UiEvent;Lio/github/mradzinski/eventus/ScreenStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/mradzinski/eventus/EventHandler$DefaultImpls {
+	public static fun getStrategy (Lio/github/mradzinski/eventus/EventHandler;)Lio/github/mradzinski/eventus/DispatchStrategy;
+}
+
+public abstract interface class io/github/mradzinski/eventus/EventRouter {
+	public abstract fun getEffects ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun onEvent (Lio/github/mradzinski/eventus/UiEvent;)V
+}
+
+public final class io/github/mradzinski/eventus/EventRouterKt {
+	public static final fun EventRouter (Lkotlinx/coroutines/CoroutineScope;Lio/github/mradzinski/eventus/UiState;Ljava/util/Collection;Lio/github/mradzinski/eventus/ErrorHandler;)Lio/github/mradzinski/eventus/EventRouter;
+	public static synthetic fun EventRouter$default (Lkotlinx/coroutines/CoroutineScope;Lio/github/mradzinski/eventus/UiState;Ljava/util/Collection;Lio/github/mradzinski/eventus/ErrorHandler;ILjava/lang/Object;)Lio/github/mradzinski/eventus/EventRouter;
+}
+
+public final class io/github/mradzinski/eventus/RouterScopeKt {
+	public static final fun routerScope ()Lkotlinx/coroutines/CoroutineScope;
+}
+
+public abstract interface class io/github/mradzinski/eventus/ScreenStoppedEvent : io/github/mradzinski/eventus/UiEvent {
+}
+
+public final class io/github/mradzinski/eventus/ScreenStore {
+	public fun <init> (Lio/github/mradzinski/eventus/UiState;)V
+	public final fun emit (Lio/github/mradzinski/eventus/UiEffect;)V
+	public final fun getCurrent ()Lio/github/mradzinski/eventus/UiState;
+	public final fun getEffects ()Lkotlinx/coroutines/flow/Flow;
+	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun update (Lkotlin/jvm/functions/Function1;)V
+	public final fun updateOptimistically (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/mradzinski/eventus/UiEffect {
+}
+
+public abstract interface class io/github/mradzinski/eventus/UiEvent {
+}
+
+public abstract interface class io/github/mradzinski/eventus/UiState {
+}
+

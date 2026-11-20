@@ -1,0 +1,69 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <eventus-root:eventus>
+final enum class io.github.mradzinski.eventus/DispatchStrategy : kotlin/Enum<io.github.mradzinski.eventus/DispatchStrategy> { // io.github.mradzinski.eventus/DispatchStrategy|null[0]
+    enum entry Concurrent // io.github.mradzinski.eventus/DispatchStrategy.Concurrent|null[0]
+    enum entry DropIfBusy // io.github.mradzinski.eventus/DispatchStrategy.DropIfBusy|null[0]
+    enum entry Latest // io.github.mradzinski.eventus/DispatchStrategy.Latest|null[0]
+    enum entry Sequential // io.github.mradzinski.eventus/DispatchStrategy.Sequential|null[0]
+    enum entry WhileStarted // io.github.mradzinski.eventus/DispatchStrategy.WhileStarted|null[0]
+
+    final val entries // io.github.mradzinski.eventus/DispatchStrategy.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.mradzinski.eventus/DispatchStrategy> // io.github.mradzinski.eventus/DispatchStrategy.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.mradzinski.eventus/DispatchStrategy // io.github.mradzinski.eventus/DispatchStrategy.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.mradzinski.eventus/DispatchStrategy> // io.github.mradzinski.eventus/DispatchStrategy.values|values#static(){}[0]
+}
+
+abstract fun interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/ErrorHandler { // io.github.mradzinski.eventus/ErrorHandler|null[0]
+    abstract fun handle(#A, kotlin/Throwable, io.github.mradzinski.eventus/ScreenStore<#B, #C>) // io.github.mradzinski.eventus/ErrorHandler.handle|handle(1:0;kotlin.Throwable;io.github.mradzinski.eventus.ScreenStore<1:1,1:2>){}[0]
+}
+
+abstract interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/EventHandler { // io.github.mradzinski.eventus/EventHandler|null[0]
+    abstract val eventType // io.github.mradzinski.eventus/EventHandler.eventType|{}eventType[0]
+        abstract fun <get-eventType>(): kotlin.reflect/KClass<#A> // io.github.mradzinski.eventus/EventHandler.eventType.<get-eventType>|<get-eventType>(){}[0]
+    open val strategy // io.github.mradzinski.eventus/EventHandler.strategy|{}strategy[0]
+        open fun <get-strategy>(): io.github.mradzinski.eventus/DispatchStrategy // io.github.mradzinski.eventus/EventHandler.strategy.<get-strategy>|<get-strategy>(){}[0]
+
+    abstract suspend fun handle(#A, io.github.mradzinski.eventus/ScreenStore<#B, #C>) // io.github.mradzinski.eventus/EventHandler.handle|handle(1:0;io.github.mradzinski.eventus.ScreenStore<1:1,1:2>){}[0]
+}
+
+abstract interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/EventRouter { // io.github.mradzinski.eventus/EventRouter|null[0]
+    abstract val effects // io.github.mradzinski.eventus/EventRouter.effects|{}effects[0]
+        abstract fun <get-effects>(): kotlinx.coroutines.flow/Flow<#C> // io.github.mradzinski.eventus/EventRouter.effects.<get-effects>|<get-effects>(){}[0]
+    abstract val state // io.github.mradzinski.eventus/EventRouter.state|{}state[0]
+        abstract fun <get-state>(): kotlinx.coroutines.flow/StateFlow<#B> // io.github.mradzinski.eventus/EventRouter.state.<get-state>|<get-state>(){}[0]
+
+    abstract fun onEvent(#A) // io.github.mradzinski.eventus/EventRouter.onEvent|onEvent(1:0){}[0]
+}
+
+abstract interface io.github.mradzinski.eventus/ScreenStoppedEvent : io.github.mradzinski.eventus/UiEvent // io.github.mradzinski.eventus/ScreenStoppedEvent|null[0]
+
+abstract interface io.github.mradzinski.eventus/UiEffect // io.github.mradzinski.eventus/UiEffect|null[0]
+
+abstract interface io.github.mradzinski.eventus/UiEvent // io.github.mradzinski.eventus/UiEvent|null[0]
+
+abstract interface io.github.mradzinski.eventus/UiState // io.github.mradzinski.eventus/UiState|null[0]
+
+final class <#A: io.github.mradzinski.eventus/UiState, #B: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/ScreenStore { // io.github.mradzinski.eventus/ScreenStore|null[0]
+    constructor <init>(#A) // io.github.mradzinski.eventus/ScreenStore.<init>|<init>(1:0){}[0]
+
+    final val current // io.github.mradzinski.eventus/ScreenStore.current|{}current[0]
+        final fun <get-current>(): #A // io.github.mradzinski.eventus/ScreenStore.current.<get-current>|<get-current>(){}[0]
+    final val effects // io.github.mradzinski.eventus/ScreenStore.effects|{}effects[0]
+        final fun <get-effects>(): kotlinx.coroutines.flow/Flow<#B> // io.github.mradzinski.eventus/ScreenStore.effects.<get-effects>|<get-effects>(){}[0]
+    final val state // io.github.mradzinski.eventus/ScreenStore.state|{}state[0]
+        final fun <get-state>(): kotlinx.coroutines.flow/StateFlow<#A> // io.github.mradzinski.eventus/ScreenStore.state.<get-state>|<get-state>(){}[0]
+
+    final fun emit(#B) // io.github.mradzinski.eventus/ScreenStore.emit|emit(1:1){}[0]
+    final fun update(kotlin/Function1<#A, #A>) // io.github.mradzinski.eventus/ScreenStore.update|update(kotlin.Function1<1:0,1:0>){}[0]
+    final suspend fun <#A1: kotlin/Any?> updateOptimistically(kotlin/Function1<#A, #A>, kotlin/Function1<#A, #A>, kotlin.coroutines/SuspendFunction0<#A1>): #A1 // io.github.mradzinski.eventus/ScreenStore.updateOptimistically|updateOptimistically(kotlin.Function1<1:0,1:0>;kotlin.Function1<1:0,1:0>;kotlin.coroutines.SuspendFunction0<0:0>){0§<kotlin.Any?>}[0]
+}
+
+final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/EventRouter(kotlinx.coroutines/CoroutineScope, #B, kotlin.collections/Collection<io.github.mradzinski.eventus/EventHandler<*, #B, #C>>, io.github.mradzinski.eventus/ErrorHandler<#A, #B, #C>? = ...): io.github.mradzinski.eventus/EventRouter<#A, #B, #C> // io.github.mradzinski.eventus/EventRouter|EventRouter(kotlinx.coroutines.CoroutineScope;0:1;kotlin.collections.Collection<io.github.mradzinski.eventus.EventHandler<*,0:1,0:2>>;io.github.mradzinski.eventus.ErrorHandler<0:0,0:1,0:2>?){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]
+final fun io.github.mradzinski.eventus/routerScope(): kotlinx.coroutines/CoroutineScope // io.github.mradzinski.eventus/routerScope|routerScope(){}[0]

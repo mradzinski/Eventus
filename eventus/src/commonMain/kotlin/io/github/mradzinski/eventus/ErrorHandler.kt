@@ -1,0 +1,46 @@
+package io.github.mradzinski.eventus
+
+/**
+ * Decides what a screen does when one of its event handlers fails.
+ *
+ * Event handlers do not catch their own failures: they throw, and the [EventRouter] passes each
+ * failure here. A screen therefore has one place that turns an exception into something its UI can
+ * show, and one place to log it.
+ *
+ * ```
+ * class TaskListErrorHandler(
+ *     private val logger: Logger,
+ * ) : ErrorHandler<TaskListEvent, TaskListUiState, TaskListEffect> {
+ *
+ *     override fun handle(
+ *         event: TaskListEvent,
+ *         error: Throwable,
+ *         store: ScreenStore<TaskListUiState, TaskListEffect>,
+ *     ) {
+ *         logger.warn("$event failed", error)
+ *
+ *         store.emit(TaskListEffect.ShowFailure(error.toFailureReason()))
+ *     }
+ * }
+ * ```
+ *
+ * Like an event handler, it holds nothing about the screen: the state and the effects come in with
+ * each call. Give it to the screen's router through the `errorHandler` parameter of the [EventRouter]
+ * function.
+ */
+public fun interface ErrorHandler<E : UiEvent, S : UiState, F : UiEffect> {
+
+    /**
+     * Called when the handler of [event] has thrown [error]. Cancellation is never passed here.
+     *
+     * Emit an effect to tell the user once, or update the state when the failure must stay on screen.
+     * It runs on the thread the failed handler ran on, and must not throw.
+     *
+     * @param store The state and effects of the screen the event came from.
+     */
+    public fun handle(
+        event: E,
+        error: Throwable,
+        store: ScreenStore<S, F>,
+    )
+}

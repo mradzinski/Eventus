@@ -1,0 +1,175 @@
+# Checks the library on every platform and sends its coverage to Codecov.
+# The "build" and "coverage" badges at the top of the README read the results of this workflow.
+#
+# The work is split into four jobs that run at the same time, so a run takes as long as the slowest job and
+# not as long as all of them together. Only the iOS job needs a Mac; the others run on Linux, whose free
+# runner is the larger one. The sample app is left out, to keep a run short: it is linted, but not compiled
+# or tested here. Run its tests locally with `./gradlew :sample:shared:check`.
+name: build
+
+on:
+  push:
+    branches: [main]
+    # A change to the documentation alone cannot break the build.
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE', 'NOTICE']
+  pull_request:
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE', 'NOTICE']
+  # By hand, from the Actions tab. The publish workflow only uploads a commit this workflow passed for, and a
+  # commit that changed nothing but documentation never started it.
+  workflow_dispatch:
+
+# A newer push to the same branch makes the run of the older one pointless.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      # The same Java release the project is built with locally.
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Run ktlint and detekt
+        run: ./gradlew ktlintCheck detekt
+
+      # The project's own ktlint rules are a build of their own, so they are checked and tested by name.
+      - name: Check and test the project's own ktlint rules
+        run: ./gradlew -p tooling/ktlint-rules ktlintCheck detekt test
+
+  desktop-and-android:
+    name: Desktop and Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The library's tests on desktop and on Android, and its coverage limit.
+      - name: Test on desktop and Android
+        run: ./gradlew :eventus:jvmTest :eventus:testAndroidHostTest :eventus:koverVerify :eventus:koverXmlReport
+
+      - name: Send the coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          files: eventus/build/reports/kover/report.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      # When a test fails, its report says which one and why.
+      - name: Keep the test reports of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-desktop-and-android
+          path: '**/build/reports/tests/'
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The library's tests in headless Chrome, on Wasm and on JavaScript.
+      - name: Test in the browser
+        run: ./gradlew :eventus:wasmJsBrowserTest :eventus:jsBrowserTest
+
+      - name: Keep the test reports of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-web
+          path: '**/build/reports/tests/'
+
+  ios:
+    name: iOS
+    # The only job that needs a Mac: the iOS tests run in a simulator, which comes with Xcode.
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The project's own settings ask for 4 GB for Gradle and 3 GB for the Kotlin compiler, which is all the
+      # memory this runner has (7 GB), with nothing left for the simulator. Settings in the user's Gradle
+      # folder win over the project's. This job compiles mostly for iOS, which Gradle does itself, so Gradle
+      # keeps its 4 GB and the Kotlin compiler gets less; the library is small enough for the API check's
+      # desktop and web compilations to fit in that.
+      - name: Fit Gradle's memory to the runner
+        run: |
+          mkdir -p ~/.gradle
+          cat >> ~/.gradle/gradle.properties <<'PROPERTIES'
+          org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
+          kotlin.daemon.jvmargs=-Xmx1536m
+          PROPERTIES
+
+      # Kotlin/Native downloads its compiler and the iOS platform libraries here on first use, and
+      # precompiles every dependency for iOS, which takes a quarter of an hour. Keeping the folder between
+      # runs saves that. When the versions file changed there is no exact match, so the job falls back to
+      # the latest folder saved before: Kotlin/Native reuses what still applies and redoes only the rest.
+      - name: Keep the Kotlin/Native toolchain between runs
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+
+      # The library's tests on the iOS simulator, and the library compiled for the two other iOS targets, a
+      # device and an Intel simulator. The public API is compared with the one recorded in `eventus/api/`
+      # here, because only a Mac can build every target the record covers.
+      - name: Test on the iOS simulator and check the public API
+        run: ./gradlew :eventus:iosSimulatorArm64Test :eventus:compileKotlinIosArm64 :eventus:compileKotlinIosX64 :eventus:checkKotlinAbi
+
+      - name: Keep the test reports of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-ios
+          path: '**/build/reports/tests/'

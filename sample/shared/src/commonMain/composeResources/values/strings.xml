@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Eventus Sample</string>
+    <string name="app_offline">Work offline</string>
+    <string name="app_bar_back">Back</string>
+
+    <string name="task_list_title">Tasks</string>
+    <string name="task_list_search">Search tasks</string>
+    <string name="task_list_refresh">Refresh</string>
+    <string name="task_list_add">Add a task</string>
+    <string name="task_list_empty">No tasks yet. Add your first one.</string>
+    <string name="task_list_no_matches">No task matches "%1$s".</string>
+    <string name="task_list_mark_done">Mark "%1$s" as done</string>
+
+    <string name="task_editor_new_title">New task</string>
+    <string name="task_editor_edit_title">Edit task</string>
+    <string name="task_editor_field_title">Title</string>
+    <string name="task_editor_field_notes">Notes</string>
+    <string name="task_editor_field_done">Done</string>
+    <string name="task_editor_title_missing">A task needs a title.</string>
+    <string name="task_editor_save">Save</string>
+    <string name="task_editor_retry">Try again</string>
+
+    <string name="failure_offline">You are offline. Go back online and try again.</string>
+    <string name="failure_not_found">That task no longer exists.</string>
+    <string name="failure_unknown">Something went wrong. Please try again.</string>
+</resources>
