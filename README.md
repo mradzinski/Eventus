@@ -203,5 +203,26 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-Eventus is released under the [Apache License 2.0](LICENSE). If you ship it in an app, please keep the
-[NOTICE](NOTICE) file with it, as the license asks.
+Eventus is free to use, including in commercial apps, under the Apache License 2.0. The full text is
+in [LICENSE](LICENSE).
+
+**If you ship Eventus in an app, credit it.** Include the contents of [NOTICE](NOTICE), which names
+the library and links to this repository, wherever your app lists its third-party software: an
+"open source licenses" screen, an about page or the documentation. The license requires this of
+anything that redistributes the library (section 4).
+
+```
+Copyright 2026 Matias Radzinski
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
