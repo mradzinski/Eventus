@@ -76,6 +76,7 @@ class ThreadSafetyTest {
     private fun sendFromEveryThread(router: EventRouter<TestEvent, TestState, TestEffect>) {
         val ready = CountDownLatch(THREADS)
         val go = CountDownLatch(1)
+
         val threads = List(THREADS) { thread ->
             thread {
                 ready.countDown()

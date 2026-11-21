@@ -17,6 +17,7 @@ class BlankLineBeforeReturnRuleTest {
                 return 1
             }
             """
+
         val expected =
             """
             fun f(): Int {
@@ -40,6 +41,7 @@ class BlankLineBeforeReturnRuleTest {
                 }
             }
             """
+
         val expected =
             """
             fun f() {
@@ -64,6 +66,7 @@ class BlankLineBeforeReturnRuleTest {
                 return 1
             }
             """
+
         val expected =
             """
             fun f(): Int {

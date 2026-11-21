@@ -119,6 +119,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
 
     private fun runUnlessBusy(event: E, handler: EventHandler<E, S, F>) {
         val type = event::class
+
         val run = synchronized(lock) {
             // A run that was created but has not started yet counts as busy too.
             if (runs[type]?.isCompleted == false) return
@@ -146,6 +147,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
      */
     private fun newQueue(handler: EventHandler<E, S, F>): SequentialQueue<E> {
         val events = Channel<E>(Channel.UNLIMITED)
+
         val worker = scope.launch(start = CoroutineStart.LAZY) {
             for (event in events) {
                 val run = newRun(event, handler)

@@ -20,6 +20,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun App() {
     val viewModel = koinViewModel<AppViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     val colorScheme = if (isSystemInDarkTheme()) {
         darkColorScheme()
     } else {

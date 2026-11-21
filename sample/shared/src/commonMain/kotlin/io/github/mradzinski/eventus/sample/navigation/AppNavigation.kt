@@ -24,6 +24,7 @@ import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListRoute
 @Composable
 internal fun AppNavigation(offlineSwitch: @Composable () -> Unit, modifier: Modifier = Modifier) {
     val backStack = remember { mutableStateListOf<NavKey>(TaskListKey) }
+
     val goBack = {
         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
     }

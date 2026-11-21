@@ -48,6 +48,7 @@ class KoinModuleTest {
             "(val limit: Int)",
             "(val limit: Int, val name: String, val on: Boolean)",
         )
+
         val compiled = compile(listScreen, handlers, koinModuleRequest)
 
         compiled.definitions() shouldContain
@@ -76,6 +77,7 @@ class KoinModuleTest {
                 override suspend fun handle(event: EditorEvent.OnStart, store: ListStore) = Unit
             }
         """.trimIndent()
+
         val compiled = compile(editorScreen, listScreen, allListHandlers, koinModuleRequest)
 
         compiled.problems.shouldBeEmpty()
@@ -103,6 +105,7 @@ class KoinModuleTest {
 
             class RowClickHandler : ListHandler<ListEvent.Row.Click> ${handlerBody("ListEvent.Row.Click")}
         """.trimIndent()
+
         val compiled = compile(listScreen, handlers, koinModuleRequest)
 
         compiled.definitions() shouldContain
@@ -118,6 +121,7 @@ class KoinModuleTest {
                 override fun handle(event: ListEvent, error: Throwable, store: ListStore) = Unit
             }
         """.trimIndent()
+
         val compiled = compile(listScreen, allListHandlers, errorHandler, koinModuleRequest)
 
         compiled.problems.shouldBeEmpty()
@@ -143,6 +147,7 @@ class KoinModuleTest {
                 override fun handle(event: ListEvent, error: Throwable, store: ListStore) = Unit
             }
         """.trimIndent()
+
         val compiled = compileWithGeneratedKoinModule(listScreen, handlers)
 
         compiled.problems.shouldBeEmpty()
@@ -163,6 +168,7 @@ class KoinModuleTest {
             @io.github.mradzinski.eventus.koin.EventusKoinModule
             internal val handlersModule: org.koin.core.module.Module = org.koin.dsl.module { }
         """.trimIndent()
+
         val compiled = compile(listScreen, allListHandlers, request)
 
         compiled.koinModule.shouldBeNull()
@@ -193,6 +199,7 @@ class KoinModuleTest {
     @Test
     fun `a private handler fails the build when a module is requested`() {
         val handlers = allListHandlers.replace("class OnStartHandler", "private class OnStartHandler")
+
         val requested = compile(listScreen, handlers, koinModuleRequest)
         val notRequested = compile(listScreen, handlers)
 
@@ -207,6 +214,7 @@ class KoinModuleTest {
             "class OnStartHandler : ListHandler<ListEvent.OnStart>",
             "class OnStartHandler : $EVENT_HANDLER<ListEvent.OnStart, ListState, ListEffect>",
         )
+
         val requested = compile(listScreen, handlers, koinModuleRequest)
         val notRequested = compile(listScreen, handlers)
 

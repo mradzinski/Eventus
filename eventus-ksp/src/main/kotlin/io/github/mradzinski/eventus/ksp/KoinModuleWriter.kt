@@ -16,12 +16,17 @@ internal fun writeKoinModule(
     val handlers = scan.handlers
         .filter { it.isRoutable() }
         .sortedBy { it.declaration.displayName }
+
     val errorHandlers = scan.errorHandlers.sortedBy { it.displayName }
+
     val sources = (handlers.map { it.declaration } + errorHandlers + property).mapNotNull { it.containingFile }
+
     // Sorted, so every target generates the same file. Aggregating: a handler added or deleted anywhere in
     // the module changes this file.
     val lines = handlers.map { it.definition() } + errorHandlers.map { it.creation() }
+
     val name = property.simpleName.asString()
+
     val file = codeGenerator.createNewFile(
         dependencies = Dependencies(aggregating = true, sources = sources.distinct().toTypedArray()),
         packageName = property.packageName.asString(),

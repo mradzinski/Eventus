@@ -13,10 +13,13 @@ internal fun Resolver.koinModuleRequest(): KoinModuleRequest {
         .filterIsInstance<KSPropertyDeclaration>()
         .filterNot { Modifier.ACTUAL in it.modifiers }
         .toList()
+
     val property = annotated.firstOrNull() ?: return KoinModuleRequest(property = null, problems = emptyList())
+
     val extra = annotated
         .drop(1)
         .map { it.extraRequestProblem(first = property) }
+
     val problems = listOfNotNull(property.notExpectProblem(), property.wrongTypeProblem()) + extra
 
     return KoinModuleRequest(

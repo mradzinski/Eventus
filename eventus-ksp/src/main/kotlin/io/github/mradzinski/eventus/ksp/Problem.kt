@@ -15,11 +15,13 @@ internal fun Scan.routingProblems(): List<Problem> {
     val routable = handlers.filter { it.isRoutable() }
     val handlersByEvent = routable.groupBy { it.event?.displayName }
     val unroutable = handlers.mapNotNull { it.unroutableProblem() }
+
     val duplicates = handlersByEvent.values.flatMap { sameEvent ->
         sameEvent
             .drop(1)
             .map { it.duplicateProblem(first = sameEvent.first()) }
     }
+
     val missing = eventRoots
         .flatMap { it.leaves() }
         .filterNot { it.displayName in handlersByEvent }
@@ -31,9 +33,11 @@ internal fun Scan.routingProblems(): List<Problem> {
 /** What stops the generated Koin module from registering a handler in a way its view model can ask for. */
 internal fun Scan.koinProblems(): List<Problem> {
     val registered = handlers.map { it.declaration } + errorHandlers
+
     val private = registered
         .filter { Modifier.PRIVATE in it.modifiers }
         .map { it.privateProblem() }
+
     val unbound = handlers
         .filter { it.screenInterfaces.isEmpty() }
         .map { it.unboundProblem() }

@@ -24,6 +24,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 fun z() = y
             }
             """.trimIndent()
+
         val expected =
             """
             class A(val x: Int) {
@@ -50,6 +51,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 val w = y
             }
             """.trimIndent()
+
         val expected =
             """
             class A(
@@ -76,6 +78,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 }
             }
             """.trimIndent()
+
         val expected =
             """
             class A {
@@ -114,6 +117,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 }
             }
             """.trimIndent()
+
         val expected =
             """
             interface I {
@@ -153,6 +157,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 B,
             }
             """.trimIndent()
+
         val expected =
             """
             enum class E {
@@ -175,6 +180,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 override val b = 2
             }
             """.trimIndent()
+
         val expected =
             """
             val o = object : I {
@@ -197,6 +203,7 @@ class BlankFirstLineInClassBodyRuleTest {
                 val a = 1
             }
             """.trimIndent()
+
         val expected =
             """
             class A {

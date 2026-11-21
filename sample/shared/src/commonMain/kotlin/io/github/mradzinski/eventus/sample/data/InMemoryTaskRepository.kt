@@ -47,6 +47,7 @@ internal class InMemoryTaskRepository(
         reachServer()
 
         val existing = server.firstOrNull { it.id == id }
+
         val saved = Task(
             id = id ?: nextId(),
             title = title,

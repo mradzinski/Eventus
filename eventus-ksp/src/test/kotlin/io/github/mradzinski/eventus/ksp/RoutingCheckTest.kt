@@ -24,6 +24,7 @@ class RoutingCheckTest {
             listHandler(name = "OnStartHandler", event = "ListEvent.OnStart"),
             listHandler(name = "RowClickHandler", event = "ListEvent.Row.Click"),
         )
+
         val compiled = compile(listScreen, *handlers.toTypedArray())
 
         compiled.succeeded shouldBe false
@@ -38,6 +39,7 @@ class RoutingCheckTest {
             listHandler(name = "OnStartHandler", event = "ListEvent.OnStart"),
             listHandler(name = "OnSearchHandler", event = "ListEvent.OnSearch"),
         )
+
         val compiled = compile(listScreen, *handlers.toTypedArray())
 
         compiled.problems shouldHaveSize 1
@@ -78,6 +80,7 @@ class RoutingCheckTest {
                 override suspend fun handle(event: E, store: ListStore) = Unit
             }
         """.trimIndent()
+
         val compiled = compile(listScreen, allListHandlers, handler)
 
         compiled.problems shouldHaveSize 1
@@ -95,6 +98,7 @@ class RoutingCheckTest {
 
             class RowClickHandler : BaseHandler<ListEvent.Row.Click>() ${handlerBody("ListEvent.Row.Click")}
         """.trimIndent()
+
         val compiled = compile(listScreen, handlers)
 
         compiled.problems.shouldBeEmpty()
@@ -113,6 +117,7 @@ class RoutingCheckTest {
 
             class RowClickHandler : Handles<ListEvent.Row.Click> ${handlerBody("ListEvent.Row.Click")}
         """.trimIndent()
+
         val compiled = compile(listScreen, handlers)
 
         compiled.problems.shouldBeEmpty()
@@ -130,6 +135,7 @@ class RoutingCheckTest {
                 ${listHandler(name = "RowClickHandler", event = "ListEvent.Row.Click")}
             }
         """.trimIndent()
+
         val compiled = compile(listScreen, handlers)
 
         compiled.problems.shouldBeEmpty()
@@ -143,6 +149,7 @@ class RoutingCheckTest {
                 data object Square : Shape
             }
         """.trimIndent()
+
         val compiled = compile(listScreen, allListHandlers, other)
 
         compiled.problems.shouldBeEmpty()
@@ -163,6 +170,7 @@ class RoutingCheckTest {
                 override suspend fun handle(event: Ping, store: ListStore) = Unit
             }
         """.trimIndent()
+
         val compiled = compile(listScreen, allListHandlers, loose)
 
         compiled.problems.shouldBeEmpty()

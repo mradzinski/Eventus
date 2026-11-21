@@ -114,6 +114,7 @@ class DefaultEventRouterTest {
     @Test
     fun `a run that never returns lasts until the scope is cancelled`() = runTest {
         val scope = CoroutineScope(backgroundScope.coroutineContext + Job())
+
         val router =
             TestRouter(
                 scope = scope,
@@ -170,6 +171,7 @@ class DefaultEventRouterTest {
         runTest {
             val reported = mutableListOf<TestEvent>()
             val runHandler = RunHandler(DispatchStrategy.Concurrent)
+
             val router = router(
                 BoomHandler(),
                 runHandler,
@@ -198,6 +200,7 @@ class DefaultEventRouterTest {
     fun `without an error handler a handler's error goes to the exception handler of the scope`() = runTest {
         val uncaught = mutableListOf<Throwable>()
         val runHandler = RunHandler(DispatchStrategy.Concurrent)
+
         val router = router(
             BoomHandler(),
             runHandler,
@@ -264,6 +267,7 @@ class DefaultEventRouterTest {
         DispatchStrategy.entries.forEach { strategy ->
             val scope = CoroutineScope(backgroundScope.coroutineContext + Job())
             val handler = RunHandler(strategy)
+
             val router =
                 TestRouter(scope = scope, initialState = TestState(), handlers = listOf(handler), errorHandler = null)
 

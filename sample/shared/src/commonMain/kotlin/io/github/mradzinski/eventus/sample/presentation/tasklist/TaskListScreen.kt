@@ -210,6 +210,7 @@ private fun NoTasks(appliedQuery: String) {
 @Composable
 private fun TaskRow(task: Task, onEvent: (TaskListEvent) -> Unit) {
     val markDoneLabel = stringResource(Res.string.task_list_mark_done, task.title)
+
     val titleDecoration = if (task.done) {
         TextDecoration.LineThrough
     } else {

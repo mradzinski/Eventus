@@ -52,6 +52,7 @@ internal fun TaskEditorScreen(
     modifier: Modifier = Modifier,
 ) {
     val isNewTask = state is TaskEditorUiState.Editing && state.taskId == null
+
     val title = if (isNewTask) {
         stringResource(Res.string.task_editor_new_title)
     } else {

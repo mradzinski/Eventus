@@ -85,6 +85,7 @@ internal val koinModuleRequest: String = """
  */
 internal fun compileWithGeneratedKoinModule(vararg sources: String): Compiled {
     val generated = compile(*sources, koinModuleRequest).koinModule ?: error("No Koin module was generated.")
+
     val plainModule = generated
         .replace("@$KOIN_MODULE_ANNOTATION\n", "")
         .replace(" actual val ", " val ")
@@ -104,6 +105,7 @@ internal fun compile(vararg sources: String): Compiled {
 
         SourceFile.kotlin(name = "Source$index.kt", contents = text)
     }
+
     val compilation = KotlinCompilation().apply {
         this.sources = files
         inheritClassPath = true
@@ -111,7 +113,9 @@ internal fun compile(vararg sources: String): Compiled {
         multiplatform = true
         configureKsp { symbolProcessorProviders += EventusProcessorProvider() }
     }
+
     val result = compilation.compile()
+
     val generated = compilation.kspSourcesDir
         .walkTopDown()
         .firstOrNull { it.isFile && it.name.startsWith("Eventus") }

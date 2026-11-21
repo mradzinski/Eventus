@@ -64,6 +64,7 @@ class ScreenStoreTest {
     fun `an optimistic update shows at once and stays when the work finishes`() = runTest {
         val store = TestStore(TestState())
         val gate = CompletableDeferred<Unit>()
+
         val work = async {
             store.updateOptimistically(
                 stateUpdate = { it.copy(log = it.log + "shown") },
@@ -88,6 +89,7 @@ class ScreenStoreTest {
     @Test
     fun `an optimistic update is put back when the work fails and the failure goes on`() = runTest {
         val store = TestStore(TestState())
+
         val failure = shouldThrow<IllegalStateException> {
             store.updateOptimistically(
                 stateUpdate = { it.copy(log = it.log + "shown") },
@@ -104,6 +106,7 @@ class ScreenStoreTest {
     @Test
     fun `an optimistic update is put back when the work is cancelled`() = runTest {
         val store = TestStore(TestState())
+
         val work = launch {
             store.updateOptimistically(
                 stateUpdate = { it.copy(log = it.log + "shown") },
@@ -127,6 +130,7 @@ class ScreenStoreTest {
     fun `putting an optimistic update back keeps other changes made in the meantime`() = runTest {
         val store = TestStore(TestState())
         val gate = CompletableDeferred<Unit>()
+
         val work = launch {
             // The failure is expected here: left alone it would also fail the test's own scope.
             shouldThrow<IllegalStateException> {

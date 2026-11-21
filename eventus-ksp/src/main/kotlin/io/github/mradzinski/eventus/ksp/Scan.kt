@@ -28,6 +28,7 @@ internal fun Resolver.scan(): Scan {
         .flatMap { it.declarations }
         .flatMap { it.withNestedClasses() }
         .toList()
+
     val creatable = classes.filter { it.isCreatable() }
 
     return Scan(
@@ -58,6 +59,7 @@ private fun KSClassDeclaration.isCreatable(): Boolean {
 
 private fun KSClassDeclaration.toHandler(): Handler? {
     val path = pathTo(EVENT_HANDLER) ?: return null
+
     val event = path.supertype.arguments
         .firstOrNull()
         ?.toClassType()
