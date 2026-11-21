@@ -1,7 +1,7 @@
-# Work that keeps running
+# Keeping work running
 
-Eventus knows nothing about a user interface. An event is something that happened and must be handled.
-Not every handler changes the state. For example: the handler of an analytics event might only report
+Eventus knows nothing about a UI. An event is something that happened and must be handled. Not every
+event handler changes the state. For example: the handler of an analytics event might only report
 the event. So nothing in the router starts or stops because a screen is shown or hidden.
 
 A handler that does not return by itself, such as one that collects a flow, runs until the router's
@@ -41,12 +41,12 @@ If such a handler fails, it has ended, and nothing starts it again by itself. Th
 screen's `ErrorHandler` like any other. To start over, send the event again, for example from a retry
 button.
 
-## Work that must stop while the UI is hidden
+## Stopping work while the UI is hidden
 
-Nothing is needed to clean up: every handler is cancelled with the view model. This part is only for
-work that must pause sooner, while the view model is still alive but its screen is hidden. A view model
-outlives a hidden screen, for example when the app is in the background, and some sources are too
-costly to leave open that long: location, a socket, polling.
+You need nothing to clean up: every handler is cancelled with the view model. This part is only for
+work that must pause sooner, while the view model is still alive but its screen is hidden. A view
+model outlives a hidden screen, for example when the app is in the background, and some sources are
+too costly to leave open that long: location, a socket, polling.
 
 The router cannot know that the screen is hidden, so the UI notifies it, with an ordinary event of
 your own. One event that carries the new visibility, handled with `Latest`, is enough: each new event
@@ -80,7 +80,7 @@ LifecycleStartEffect(viewModel) {
 }
 ```
 
-With the optional [Compose helpers](compose-helpers.md), that block is one call:
+With the optional [Compose helpers](using-the-compose-helpers.md), that block is one call:
 
 ```kotlin
 viewModel.notifyVisibility { visible -> ChatEvent.OnVisibilityChange(visible) }

@@ -2,7 +2,8 @@
 
 Eventus belongs to the presentation layer and nowhere else.
 
-- **Screens and their handlers depend on Eventus.** In a modular app, that is your feature modules.
+- **Screens and their event handlers depend on Eventus.** In a modular app, that is your feature
+  modules.
 - **Handlers depend inward**, on repository interfaces or use cases. They never reach a data source.
 - **Domain and data code never import Eventus.** A repository that takes a `ScreenStore` is a sign
   that presentation logic has leaked downward.

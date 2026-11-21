@@ -15,7 +15,8 @@
 Three rules follow from how these fit together:
 
 - **Declare a screen's events as one sealed type.** The router matches each event by its exact
-  class, so a handler registered for a parent type does not receive the events of its subtypes.
+  class, so an event handler registered for a parent type does not receive the events of its
+  subtypes.
 - **Keep the state immutable.** `store.update { it.copy(...) }` builds a new value. A value that was
   changed in place (an item added to a list the state already holds) is equal to the old one, so it
   is never emitted and the UI never sees the change.

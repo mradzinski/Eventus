@@ -37,7 +37,7 @@ public interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
      * Sends [event] to the handler registered for its exact class, which runs it as its
      * [DispatchStrategy] says. It returns at once and is safe to call from any thread.
      *
-     * @throws IllegalStateException when no handler is registered for the event.
+     * @throws IllegalStateException when the event has no registered handler.
      */
     public fun onEvent(event: E)
 }

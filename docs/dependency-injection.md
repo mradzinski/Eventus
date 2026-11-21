@@ -2,11 +2,12 @@
 
 Eventus needs no dependency-injection library, and works with any. Two facts make the wiring simple:
 
-- **Handlers hold nothing about the screen.** State and effects arrive through `handle`, so a handler
-  can be created fresh for each view model (`factory`) with no scope of its own.
+- **Event handlers hold nothing about the screen.** State and effects arrive through `handle`, so
+  your container can create a handler fresh for each view model (`factory`) with no scope of its
+  own.
 - **The view model takes a `Collection` of handlers.** Adding an event never changes the view model.
 
-## Give each screen a handler interface
+## Giving each screen an event handler interface
 
 One line per screen pays for itself:
 
@@ -26,7 +27,7 @@ class OnRefreshHandler(private val tasks: TaskRepository) : TaskListHandler<OnRe
 
 Handlers get shorter, and your container gets a type that means "the handlers of this screen".
 
-## Koin
+## Using Koin
 
 ```kotlin
 val taskListModule = module {
@@ -45,15 +46,15 @@ in the app. The per-screen interface is what keeps them apart. Register the view
 `viewModel { }`, never `single { }`: a singleton view model is never cleared, and its router would
 never stop.
 
-The handler lines need not be written by hand: `eventus-ksp` generates them. See
-[handlers checked and wired by the build](handlers-checked-and-wired-by-the-build.md).
+You do not have to write the handler lines by hand: `eventus-ksp` generates them. See [checking and
+wiring event handlers at build time](checking-and-wiring-event-handlers-at-build-time.md).
 
-## Containers that resolve at compile time
+## Using a container that resolves at compile time
 
 Containers such as Metro and Dagger keep type arguments, so there you can multibind each handler into
 `Set<EventHandler<*, TaskListUiState, TaskListEffect>>` and inject that set into the view model.
 
-## By hand
+## Wiring by hand
 
 ```kotlin
 TaskListViewModel(

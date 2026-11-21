@@ -1,7 +1,7 @@
 # Debouncing
 
 To wait until the user has stopped typing, sliding or resizing before doing the expensive part, use
-`DispatchStrategy.Latest` and put a `delay` where the handler should pause:
+`DispatchStrategy.Latest` and put a `delay` where the event handler should pause:
 
 ```kotlin
 class OnSearchChangeHandler(
@@ -30,9 +30,9 @@ newer one. The router keeps no reference to a cancelled run, so the run and ever
 be collected as soon as it has stopped.
 
 Cancellation takes effect where the handler is suspended, so this relies on `tasks.search` being
-cancellable, as suspending functions from coroutine-based libraries are. If it wraps something that
-cannot be cancelled (a callback API, a blocking call), the call runs to its end, the old run goes on
-after it, and it would store its stale result. Check before storing in that case:
+cancellable, as suspending functions from coroutine-based libraries are. If `tasks.search` wraps
+something that cannot be cancelled (a callback API, a blocking call), the call runs to its end, and
+the old run then goes on and stores its stale result. Check before storing in that case:
 
 ```kotlin
 val results = tasks.search(event.query)

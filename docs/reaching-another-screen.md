@@ -5,13 +5,13 @@ whose change the home screen must show, or a button in a shared app bar that act
 it. A router belongs to one screen, and Eventus has no channel that carries an event from one screen
 to another. There are two ways to do it, and both leave each screen's router private.
 
-**Go down by default.** It is the one that keeps working as an app grows. Go up only for a control
-that belongs to one screen and is merely drawn somewhere shared.
+**Go down by default.** Going down is the way that keeps working as an app grows. Go up only for a
+control that belongs to one screen and is merely drawn somewhere shared.
 
-## Down, through what the screens share (the default)
+## Going down, through what the screens share (the default)
 
-Give the part that acts its own event and handler, and let the handler change something the other
-screen already observes:
+Give the part that acts its own event and event handler, and let that handler change something the
+other screen already observes:
 
 ```kotlin
 // The settings screen's own handler. It never mentions the home screen.
@@ -42,7 +42,7 @@ Not everything shared is data. "The list is in selection mode" is not something 
 know. Put that kind of state in a small holder owned by the app, which the screens observe the same
 way. The rule is "owned below the screens", not "owned by a repository".
 
-## Up, through the UI (the exception)
+## Going up, through the UI (the exception)
 
 Sending an event needs only the screen's `onEvent`, which is a plain function. So a screen can hand a
 control that calls it to whoever draws the shared part:
@@ -64,18 +64,19 @@ Scaffold(
 
 This is right when all of these hold:
 
-- the action belongs to one screen: its state, its progress and its failure message are that screen's;
-- that screen is on display whenever the control is;
+- the action belongs to one screen: its state, its progress and its failure message are that
+  screen's;
+- that screen is visible whenever the control is;
 - no other screen has to reflect the result.
 
-The sample uses both routes. Saving a task in the editor has to show in the list underneath, which is
-not on display at that moment, so it goes down: the editor writes to the repository and the list
-observes it. Refresh goes up: it is the list's own action, its button is shown only while the list
+The sample uses both routes. Saving a task in the editor has to show in the list underneath, which
+is not visible at that moment, so it goes down: the editor writes to the repository and the list
+observes it. Refresh goes up: it is the list's own action, its button is visible only while the list
 is, and nothing else depends on it, so the list passes its own button into the shared bar.
 
-It stops being right as soon as one of them fails, and the signs are easy to spot: the control is
-needed while its screen is not showing, two screens want to fill the same place, or the same control
-is being passed down through layer after layer. Move the action down then.
+Going up stops being right as soon as one of those conditions fails, and the signs are easy to spot:
+the control is needed while its screen is not visible, two screens want to fill the same place, or
+the same control is being passed down through layer after layer. Move the action down then.
 
 ## Why there is no bus
 

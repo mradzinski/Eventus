@@ -1,7 +1,7 @@
-# Navigation
+# Navigating
 
-Navigation is an effect. A handler says where to go and passes only an id; the UI layer that owns the
-back stack does the navigating.
+Navigation is an effect. An event handler says where to go and passes only an id; the UI layer that
+owns the back stack does the navigating.
 
 ```kotlin
 class OnTaskClickHandler : EventHandler<OnTaskClick, TaskListUiState, TaskListEffect> {

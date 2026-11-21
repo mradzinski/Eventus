@@ -1,16 +1,17 @@
-# Handlers checked and wired by the build
+# Checking and wiring event handlers at build time
 
-`eventus-ksp` is an optional, recommended [KSP](https://kotlinlang.org/docs/ksp-overview.html)
-processor. It runs while your app is built, and is never part of the app. It does two things in the Gradle module you add
-it to:
+`eventus-ksp` is an optional, recommended [Kotlin Symbol Processing
+(KSP)](https://kotlinlang.org/docs/ksp-overview.html) processor. It runs while your app is built,
+and is never part of the app. It does two things in the Gradle module you add it to:
 
-- **It checks the handlers.** An event without a handler class fails the build, not the app.
-- **It writes the Koin module of the handlers**, when you ask for it with one annotated property.
+- **It checks the event handlers.** An event without a handler class fails the build, not the app.
+- **It writes the Koin module of the event handlers**, when you ask for it with one annotated
+  property.
 
-## Set up
+## Setting up
 
 Add the KSP plugin and the processor as shown in
-[the build-time check](../README.md#recommended-the-build-time-check) under Install.
+[the build-time check](../README.md#recommended-adding-the-build-time-check) under Installing.
 
 Building one target runs the processor for that target only, so a day of running the Android app runs
 it once per build, not once per target.
@@ -31,11 +32,11 @@ implements EventHandler for it.
 ```
 
 The processor looks at one Gradle module at a time, so **a screen's events and their handlers live in
-the same Gradle module**. See [a project with several modules](#a-project-with-several-modules).
+the same Gradle module**. See [working with several modules](#working-with-several-modules).
 
-## The Koin module
+## Generating the Koin module
 
-Add the annotation to the module's common dependencies:
+Add the annotation to the Gradle module's common dependencies:
 
 ```kotlin
 commonMain.dependencies {
@@ -43,7 +44,7 @@ commonMain.dependencies {
 }
 ```
 
-Then declare the module once, in common code, and leave its content to the processor:
+Then declare the Koin module once, in common code, and leave its content to the processor:
 
 ```kotlin
 // The Eventus processor generates the `actual` property on each target.
@@ -55,9 +56,10 @@ internal expect val handlersModule: Module
 Android Studio cannot see the generated `actual` property and may warn that the `expect` property has
 none. The `@Suppress` line silences that warning; the build does not need it.
 
-On each target the processor writes the `actual` property. It holds one factory for every handler
-class, bound to the [handler interface of its screen](dependency-injection.md#give-each-screen-a-handler-interface), and one
-for every class that implements `ErrorHandler`:
+On each target the processor writes the `actual` property. The property holds one factory for every
+event handler class, bound to the [handler interface of its
+screen](dependency-injection.md#giving-each-screen-an-event-handler-interface), and one for every
+class that implements `ErrorHandler`:
 
 ```kotlin
 // generated
@@ -85,7 +87,7 @@ val taskListModule = module {
 
 A new event then takes a new event class and a new handler class, and nothing else.
 
-Four rules, each reported as a build error when broken:
+The processor reports a build error when one of these four rules is broken:
 
 - **The property is an `expect` property of Koin's type `Module`**, and a Gradle module has one. It
   holds the handlers of every screen in that Gradle module.
@@ -95,10 +97,11 @@ Four rules, each reported as a build error when broken:
 - **Every target has its `ksp` line.** A target without one does not compile: the compiler reports
   that the `expect` property has no `actual` declaration there.
 
-Each constructor parameter of a handler is resolved with Koin's `get()`. `expect` exists only in a
-multiplatform module, so a module with a single platform gets the check but not the generated module.
+The generated module resolves each constructor parameter of a handler with Koin's `get()`. `expect`
+exists only in a multiplatform module, so a module with a single platform gets the check but not the
+generated module.
 
-## A project with several modules
+## Working with several modules
 
 Keep a screen's events and its handlers in the same Gradle module. That is how Eventus is meant to be
 used, and it is what the processor relies on: it reads the sources of the module it runs in, and

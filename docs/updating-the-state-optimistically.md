@@ -1,11 +1,12 @@
-# Optimistic updates
+# Updating the state optimistically
 
-When the user ticks a box or taps a heart, show it at once and do the saving afterwards. If the saving
-fails, put it back and say why. Where the "at once" happens depends on who owns the data.
+When the user ticks a box or taps a heart, show the change at once and do the saving afterwards. If
+the saving fails, put the old value back and say why. Where the "at once" happens depends on who
+owns the data.
 
 ## State that only the screen holds
 
-If the screen loaded a value once and keeps its own copy, the handler changes that copy with
+If the screen loaded a value once and keeps its own copy, the event handler changes that copy with
 `updateOptimistically`:
 
 ```kotlin
@@ -30,14 +31,15 @@ class OnFavoriteChangeHandler(
 }
 ```
 
-- **`stateUpdate` and `stateIfFailed` only change what the screen shows.** Neither does any work, and
-  neither can: they are not suspending, so a repository call inside them does not compile. The work
-  goes in the block at the end and nowhere else.
+- **`stateUpdate` and `stateIfFailed` only change what the screen shows.** Neither does any work,
+  and neither can: they are not suspending, so a repository call inside them does not compile. The
+  work goes in the block at the end and nowhere else.
 - **If the work finishes, the change stays.** Nothing else happens.
-- **If the work throws, the state is put back and the exception goes on**, so the screen's `ErrorHandler`
-  still tells the user why. If the work is cancelled, the state is put back as well.
+- **If the work throws, `updateOptimistically` puts the state back and the exception goes on**, so
+  the screen's `ErrorHandler` still tells the user why. If the work is cancelled,
+  `updateOptimistically` puts the state back as well.
 - **`stateIfFailed` receives the state as it is then, not a copy from before.** Undo only your own
-  change, as above, and everything else that changed meanwhile (text the user typed, say) is kept.
+  change, as above, and everything else that changed meanwhile (text the user typed, say) stays.
 - **Choose the strategy for repeated taps.** `Sequential` applies them one after the other, each
   starting from what the previous one left. `DropIfBusy` ignores taps until the save is done. With
   the default, two saves for one value can overlap and undo each other in the wrong order.

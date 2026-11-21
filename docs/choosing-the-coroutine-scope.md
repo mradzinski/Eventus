@@ -1,6 +1,6 @@
-# The coroutine scope
+# Choosing the coroutine scope
 
-The router runs every handler in a child of the scope you pass, and stops when that scope is
+The router runs every event handler in a child of the scope you pass, and stops when that scope is
 cancelled. Whoever creates the scope must cancel it.
 
 - **In a view model**, pass the same scope to both: `ViewModel(scope)` cancels it when the view model

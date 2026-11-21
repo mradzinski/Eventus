@@ -5,7 +5,7 @@
 | `eventus/` | The library. All code is in `commonMain`. |
 | `eventus/api/` | The recorded public API. `checkKotlinAbi` fails when the code no longer matches it. |
 | `eventus-koin/` | The `@EventusKoinModule` annotation, and nothing else. |
-| `eventus-ksp/` | The symbol processor: the handler check and the generated Koin module. JVM only, as a build tool. |
+| `eventus-ksp/` | The symbol processor: the event handler check and the generated Koin module. JVM only, as a build tool. |
 | `eventus-compose/` | The Compose helpers: `collectEffects` and `notifyVisibility`. |
 | `sample/shared/` | The sample app: a task list and a task editor, with navigation, Koin and tests. One module, layered by package, to keep it short. |
 | `sample/androidApp/`, `sample/desktopApp/` | Launchers. |

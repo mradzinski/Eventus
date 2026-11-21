@@ -17,8 +17,8 @@ class LoggingRouter<E : UiEvent, S : UiState, F : UiEffect>(
 }
 ```
 
-Use it where the router is created, by wrapping the router the view model delegates to. Nothing else in
-the screen changes:
+Use `LoggingRouter` where the router is created, by wrapping the router the view model delegates to.
+Nothing else in the screen changes:
 
 ```kotlin
 class TaskListViewModel(
@@ -35,8 +35,9 @@ class TaskListViewModel(
     )
 ```
 
-It logs each event as it is sent and then passes it on, so an event that `DropIfBusy` ignores is logged
-too. Failures do not pass through it: log those in the screen's `ErrorHandler`.
+`LoggingRouter` logs each event when the event is sent and then passes the event on, so it also logs
+an event that `DropIfBusy` ignores. Failures do not pass through `LoggingRouter`: log those in the
+screen's `ErrorHandler`.
 
 ---
 
