@@ -56,7 +56,7 @@ That is all the library needs. One more step is optional, and recommended.
 ### Recommended: the build-time check
 
 `eventus-ksp` is a [KSP](https://kotlinlang.org/docs/ksp-overview.html) processor. With it, an event
-that has no handler fails the build; without it, that event throws when it is sent. It runs while your
+that has no handler fails the build; without it, that event throws at runtime if sent. It runs while your
 app is built and is never part of the app.
 
 Add the KSP plugin, 2.3.12 or newer, and the processor once for every target of the module:

@@ -54,7 +54,7 @@ cancelled, and `runTest` waits for its own scope to finish.
 
 ## Every event has a handler
 
-An event that no handler is registered for throws `IllegalStateException` when it is sent, which may
+An event that no handler is registered for throws `IllegalStateException` at runtime if sent, which may
 be three taps into a screen. With [`eventus-ksp`](handlers-checked-and-wired-by-the-build.md) the build
 finds a handler that was never written, and its generated Koin module registers every handler there is,
 so this test is not needed.
