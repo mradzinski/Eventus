@@ -76,15 +76,19 @@ jobs:
       - name: Test on desktop and Android
         run: ./gradlew :eventus:jvmTest :eventus:testAndroidHostTest :eventus:koverVerify :eventus:koverXmlReport
 
-      # The processor's own tests, then the sample's desktop tests, which run on the Koin module it generates.
+      # The processor's own tests and its coverage limit, then the sample's desktop tests, which run on the
+      # Koin module it generates.
       - name: Test the symbol processor
-        run: ./gradlew :eventus-ksp:test :sample:shared:jvmTest
+        run: ./gradlew :eventus-ksp:koverVerify :eventus-ksp:koverXmlReport :sample:shared:jvmTest
 
+      # Both reports, so the coverage Codecov shows is that of the library and the processor together.
+      # eventus-koin holds one annotation and no code to cover.
       - name: Send the coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
-          files: eventus/build/reports/kover/report.xml
+          files: eventus/build/reports/kover/report.xml,eventus-ksp/build/reports/kover/report.xml
           token: ${{ secrets.CODECOV_TOKEN }}
+
 
       # When a test fails, its report says which one and why.
       - name: Keep the test reports of a failed run

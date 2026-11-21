@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.kover)
 }
 
 kotlin {
@@ -40,6 +41,21 @@ dependencies {
     testImplementation(projects.eventus)
     testImplementation(projects.eventusKoin)
     testImplementation(libs.koin.core)
+}
+
+/** The lowest share of covered lines the build accepts, in percent. The same limit as `:eventus`. */
+val minimumLineCoveragePercent = 95
+
+// The tests run the processor inside their own JVM, so Kover measures it like any other code.
+// `koverVerify` is part of `check`.
+kover {
+    reports {
+        verify {
+            rule {
+                minBound(minimumLineCoveragePercent)
+            }
+        }
+    }
 }
 
 /** The license and the attribution notice, which every published file carries. See `:eventus`. */
