@@ -3,14 +3,15 @@
 config:
   validation: true
 
-# detekt's defaults skip test code in these rules by folder, but don't know AGP's `androidHostTest`. Each
-# rule below repeats its default list plus that folder (the anchor keeps one copy).
+# detekt's defaults skip test code in these rules by folder, but don't know AGP's `androidHostTest`, the
+# Compose helpers' own `uiTest` (the tests that compose something) or `wasmJsTest`. Each rule below repeats
+# its default list plus those folders (the anchor keeps one copy).
 complexity:
   LongMethod:
     # A composable may reach ~80 lines before it must be split.
     allowedLines: 80
   TooManyFunctions:
-    excludes: &tests ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes: &tests ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/uiTest/**', '**/wasmJsTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
 
 exceptions:
   InstanceOfCheckForException:

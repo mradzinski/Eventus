@@ -18,6 +18,10 @@ ktlint = "1.8.0"
 ktlintGradle = "14.2.0"
 # 0.9.7 and older crash on the Android KMP plugin's host tests.
 kover = "0.9.11"
+# Runs Android's own code on the computer, so the Compose helpers' tests can run for Android without an emulator.
+robolectric = "4.18.1"
+# The Android release that Compose Multiplatform 1.12.2 resolves to on Android.
+androidxCompose = "1.12.1"
 # The project's own ktlint rules (tooling/ktlint-rules) are tested with these. Build tooling only.
 junit = "4.13.2"
 slf4j = "2.0.20"
@@ -33,9 +37,9 @@ navigation3 = "1.2.0"
 koin = "4.2.2"
 kotlinxSerialization = "1.13.0"
 androidCompileSdk = "37"
-androidMinSdk = "23"
-# The sample apps need 24, which Compose Multiplatform's Android artifacts require. The library stays on 23.
-androidSampleMinSdk = "24"
+# 24 for every module, the library included: Compose Multiplatform's Android artifacts require it, and all of
+# Eventus's artifacts ask for the same Android release.
+androidMinSdk = "24"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
@@ -68,8 +72,18 @@ ktlint-rule-engine-core = { module = "com.pinterest.ktlint:ktlint-rule-engine-co
 junit = { module = "junit:junit", version.ref = "junit" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 
-# Sample apps only: UI, navigation, view models, dependency injection and what they need.
+# eventus-compose: the Compose runtime and the lifecycle's Compose APIs it is written against, and what its
+# tests draw with. The sample uses them too.
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+# Declares the empty activity that a Compose UI test draws in on Android.
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidxCompose" }
+# Compose's Android test code brings Espresso 3.5.0, which calls an Android method that newer Android releases no
+# longer have (InputManager.getInstance). 3.7.0 is the stable release that works there.
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version = "3.7.0" }
+
+# Sample apps only: UI, navigation, view models, dependency injection and what they need.
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }

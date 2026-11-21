@@ -1,0 +1,10 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <eventus-root:eventus-compose>
+final fun <#A: io.github.mradzinski.eventus/UiEffect> (io.github.mradzinski.eventus/EventRouter<*, *, #A>).io.github.mradzinski.eventus.compose/collectEffects(kotlin.coroutines/SuspendFunction1<#A, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // io.github.mradzinski.eventus.compose/collectEffects|collectEffects@io.github.mradzinski.eventus.EventRouter<*,*,0:0>(kotlin.coroutines.SuspendFunction1<0:0,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){0§<io.github.mradzinski.eventus.UiEffect>}[0]
+final fun <#A: io.github.mradzinski.eventus/UiEvent> (io.github.mradzinski.eventus/EventRouter<#A, *, *>).io.github.mradzinski.eventus.compose/notifyVisibility(kotlin/Function1<kotlin/Boolean, #A>, androidx.compose.runtime/Composer?, kotlin/Int) // io.github.mradzinski.eventus.compose/notifyVisibility|notifyVisibility@io.github.mradzinski.eventus.EventRouter<0:0,*,*>(kotlin.Function1<kotlin.Boolean,0:0>;androidx.compose.runtime.Composer?;kotlin.Int){0§<io.github.mradzinski.eventus.UiEvent>}[0]

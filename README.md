@@ -34,7 +34,7 @@ runs on **Android, iOS, Desktop and Web** from common code.
 
 - **Kotlin 2.4.21 or newer.** The library is built with it; older compilers are not supported.
 - **`kotlinx-coroutines` 1.11.0 or newer**, which the library brings in by itself.
-- Targets: `android` (minSdk 23), `jvm`, `iosArm64`, `iosSimulatorArm64`, `iosX64`, `js`, `wasmJs`.
+- Targets: `android` (minSdk 24), `jvm`, `iosArm64`, `iosSimulatorArm64`, `iosX64`, `js`, `wasmJs`.
 - The examples use the multiplatform `androidx.lifecycle` `ViewModel` and Compose, because that is how
   most apps will use the library. Neither is required.
 
@@ -81,6 +81,17 @@ a module with a single platform, the one line is `ksp("io.github.mradzinski:even
 If you use Koin, the processor can also write the Koin module of your handlers. That takes one more
 artifact, `eventus-koin`, and one annotated property. See
 [handlers checked and wired by the build](docs/handlers-checked-and-wired-by-the-build.md) for both.
+
+### Optional: Compose helpers
+
+`eventus-compose` adds two helpers for a Compose UI: one that performs a router's effects, and one that
+tells the router when the screen is visible. See [Compose helpers](docs/compose-helpers.md).
+
+```kotlin
+commonMain.dependencies {
+    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc01")
+}
+```
 
 ## Quick start
 
@@ -173,6 +184,18 @@ fun CounterRoute(viewModel: CounterViewModel) {
 }
 ```
 
+With [`eventus-compose`](#optional-compose-helpers), the block that collects the effects becomes one
+call, which also waits for the screen to be started before performing an effect:
+
+```kotlin
+viewModel.collectEffects { effect ->
+    when (effect) {
+        is CounterEffect.Saved -> { /* show a confirmation */ }
+        is CounterEffect.ShowFailure -> { /* show why */ }
+    }
+}
+```
+
 ## Documentation
 
 Each topic has a page of its own in [`docs/`](docs). They are listed with what most apps need first.
@@ -183,6 +206,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | [Dispatch strategies](docs/dispatch-strategies.md) | What happens when an event arrives again while its handler is still running, and what the router keeps for each strategy. |
 | [Dependency injection](docs/dependency-injection.md) | Wiring handlers with Koin, with a compile-time container, or by hand. |
 | [Handlers checked and wired by the build](docs/handlers-checked-and-wired-by-the-build.md) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, and projects with several modules. |
+| [Compose helpers](docs/compose-helpers.md) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |
 | [Failures](docs/failures.md) | Where a handler's exception goes, and how to turn it into something the UI can show. |
 | [Work that keeps running](docs/work-that-keeps-running.md) | Handlers that never return, such as one that collects a flow, and how long they last. |
 | [Testing](docs/testing.md) | Testing a handler, a view model, and that every event has a handler. |

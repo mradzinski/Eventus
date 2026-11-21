@@ -64,8 +64,9 @@ subprojects {
 }
 
 // What is published, each as its own artifact with the same version: the library, the annotation that asks
-// for a generated Koin module, and the symbol processor.
-val publishedModules = listOf(":eventus", ":eventus-koin", ":eventus-ksp")
+// for a generated Koin module, the symbol processor, and the Compose helpers.
+val publishedModules = listOf(":eventus", ":eventus-koin", ":eventus-ksp", ":eventus-compose")
+
 // One command to upload the library to Maven Central: ./gradlew publishLibrary
 // It refuses to start, with a clear message, when the one-time setup (Central Portal token, signing key) is
 // incomplete. It uploads only after everything below has passed, so a failing test stops it.
@@ -78,7 +79,9 @@ val publishedModules = listOf(":eventus", ":eventus-koin", ":eventus-ksp")
 // workflow uses it, after confirming that the build workflow passed for the commit, so the tests are not run a
 // second time. By hand, use `publishLibrary`.
 val publishTasks = setOf("publishLibrary", "uploadLibrary")
+
 val publishRequested = gradle.startParameter.taskNames.any { it.substringAfterLast(':') in publishTasks }
+
 // What must pass before the library is published: `check` of every published module. For the library that is
 // its tests on every platform (desktop, Android, iOS simulator, Wasm and JS in Chrome), lint, the coverage
 // limit and the public API check; for the processor, its tests, lint and the public API check.

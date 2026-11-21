@@ -2,15 +2,13 @@ package io.github.mradzinski.eventus.sample.presentation.taskeditor
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.mradzinski.eventus.compose.collectEffects
 import io.github.mradzinski.eventus.sample.navigation.TaskEditorKey
 import io.github.mradzinski.eventus.sample.presentation.common.textResource
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -32,17 +30,11 @@ internal fun TaskEditorRoute(
     val viewModel = koinViewModel<TaskEditorViewModel> { parametersOf(key) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val currentOnClose by rememberUpdatedState(onClose)
 
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                is TaskEditorEffect.Close -> currentOnClose()
-
-                is TaskEditorEffect.ShowFailure -> launch {
-                    snackbarHostState.showSnackbar(getString(effect.reason.textResource()))
-                }
-            }
+    viewModel.collectEffects { effect ->
+        when (effect) {
+            is TaskEditorEffect.Close -> onClose()
+            is TaskEditorEffect.ShowFailure -> snackbarHostState.showSnackbar(getString(effect.reason.textResource()))
         }
     }
 

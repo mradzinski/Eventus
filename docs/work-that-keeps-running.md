@@ -53,19 +53,19 @@ your own. One event that carries the new visibility, handled with `Latest`, is e
 cancels the run before it.
 
 ```kotlin
-data class OnVisibilityChange(val visible: Boolean) : MapEvent
+data class OnVisibilityChange(val visible: Boolean) : ChatEvent
 
 class OnVisibilityChangeHandler(
-    private val location: LocationSource,
-) : EventHandler<OnVisibilityChange, MapUiState, MapEffect> {
+    private val socket: ChatSocket,
+) : EventHandler<OnVisibilityChange, ChatUiState, ChatEffect> {
 
     override val eventType = OnVisibilityChange::class
     override val strategy = DispatchStrategy.Latest
 
-    override suspend fun handle(event: OnVisibilityChange, store: ScreenStore<MapUiState, MapEffect>) {
-        if (!event.visible) return   // the run that was following the location is already cancelled
+    override suspend fun handle(event: OnVisibilityChange, store: ScreenStore<ChatUiState, ChatEffect>) {
+        if (!event.visible) return   // the run that was reading the socket is already cancelled
 
-        location.updates().collect { position -> store.update { it.copy(position = position) } }
+        socket.messages().collect { message -> store.update { it.copy(messages = it.messages + message) } }
     }
 }
 ```
@@ -74,10 +74,16 @@ The UI sends that event when it becomes visible and when it stops being visible.
 
 ```kotlin
 LifecycleStartEffect(viewModel) {
-    viewModel.onEvent(MapEvent.OnVisibilityChange(visible = true))
+    viewModel.onEvent(ChatEvent.OnVisibilityChange(visible = true))
 
-    onStopOrDispose { viewModel.onEvent(MapEvent.OnVisibilityChange(visible = false)) }
+    onStopOrDispose { viewModel.onEvent(ChatEvent.OnVisibilityChange(visible = false)) }
 }
+```
+
+With the optional [Compose helpers](compose-helpers.md), that block is one call:
+
+```kotlin
+viewModel.notifyVisibility { visible -> ChatEvent.OnVisibilityChange(visible) }
 ```
 
 ---

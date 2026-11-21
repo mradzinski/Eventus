@@ -15,7 +15,7 @@ kotlin {
     android {
         namespace = "io.github.mradzinski.eventus.sample.shared"
         compileSdk = libs.versions.androidCompileSdk.get().toInt()
-        minSdk = libs.versions.androidSampleMinSdk.get().toInt()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
         // Needed so the strings (Compose resources) are packaged for Android.
         androidResources { enable = true }
@@ -37,6 +37,8 @@ kotlin {
             implementation(projects.eventus)
             // The annotation that asks for the generated Koin module of the handlers. See the `ksp` lines below.
             implementation(projects.eventusKoin)
+            // `collectEffects`, which each route performs its effects with.
+            implementation(projects.eventusCompose)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)

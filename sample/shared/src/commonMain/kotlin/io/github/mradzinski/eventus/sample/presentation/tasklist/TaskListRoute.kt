@@ -2,14 +2,12 @@ package io.github.mradzinski.eventus.sample.presentation.tasklist
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.mradzinski.eventus.compose.collectEffects
 import io.github.mradzinski.eventus.sample.presentation.common.textResource
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -28,19 +26,11 @@ internal fun TaskListRoute(
     val viewModel = koinViewModel<TaskListViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val currentOnOpenEditor by rememberUpdatedState(onOpenEditor)
 
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                is TaskListEffect.OpenEditor -> currentOnOpenEditor(effect.taskId)
-
-                // In a coroutine of its own: a snackbar suspends until it is gone, and the next effect must
-                // not wait for it.
-                is TaskListEffect.ShowFailure -> launch {
-                    snackbarHostState.showSnackbar(getString(effect.reason.textResource()))
-                }
-            }
+    viewModel.collectEffects { effect ->
+        when (effect) {
+            is TaskListEffect.OpenEditor -> onOpenEditor(effect.taskId)
+            is TaskListEffect.ShowFailure -> snackbarHostState.showSnackbar(getString(effect.reason.textResource()))
         }
     }
 

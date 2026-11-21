@@ -81,12 +81,17 @@ jobs:
       - name: Test the symbol processor
         run: ./gradlew :eventus-ksp:koverVerify :eventus-ksp:koverXmlReport :sample:shared:jvmTest
 
-      # Both reports, so the coverage Codecov shows is that of the library and the processor together.
-      # eventus-koin holds one annotation and no code to cover.
+      # The Compose helpers' tests on desktop, drawn off screen, and on Android with Robolectric, and their
+      # coverage limit.
+      - name: Test the Compose helpers
+        run: ./gradlew :eventus-compose:koverVerify :eventus-compose:koverXmlReport
+
+      # All three reports, so the coverage Codecov shows is that of the library, the processor and the
+      # Compose helpers together. eventus-koin holds one annotation and no code to cover.
       - name: Send the coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
-          files: eventus/build/reports/kover/report.xml,eventus-ksp/build/reports/kover/report.xml
+          files: eventus/build/reports/kover/report.xml,eventus-ksp/build/reports/kover/report.xml,eventus-compose/build/reports/kover/report.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
 
@@ -123,6 +128,11 @@ jobs:
       # eventus-koin holds one annotation and has no tests: compiling it for the web is its check here.
       - name: Compile the Koin annotation for the web
         run: ./gradlew :eventus-koin:compileKotlinWasmJs :eventus-koin:compileKotlinJs
+
+      # The Compose helpers' tests in headless Chrome on Wasm. On JavaScript they are only compiled: the
+      # drawing engine Compose needs is not loaded in that target's test page.
+      - name: Test the Compose helpers in the browser
+        run: ./gradlew :eventus-compose:wasmJsBrowserTest :eventus-compose:compileKotlinJs
 
       - name: Keep the test reports of a failed run
         if: failure()
@@ -184,6 +194,10 @@ jobs:
       # it for every target.
       - name: Check the public API of the Koin annotation and the symbol processor
         run: ./gradlew :eventus-koin:checkKotlinAbi :eventus-ksp:checkKotlinAbi
+
+      # The Compose helpers' tests on the iOS simulator, and their public API against the record.
+      - name: Test the Compose helpers on the iOS simulator and check their public API
+        run: ./gradlew :eventus-compose:iosSimulatorArm64Test :eventus-compose:checkKotlinAbi
 
       - name: Keep the test reports of a failed run
         if: failure()

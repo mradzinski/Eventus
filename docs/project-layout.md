@@ -6,6 +6,7 @@
 | `eventus/api/` | The recorded public API. `checkKotlinAbi` fails when the code no longer matches it. |
 | `eventus-koin/` | The `@EventusKoinModule` annotation, and nothing else. |
 | `eventus-ksp/` | The symbol processor: the handler check and the generated Koin module. JVM only, as a build tool. |
+| `eventus-compose/` | The Compose helpers: `collectEffects` and `notifyVisibility`. |
 | `sample/shared/` | The sample app: a task list and a task editor, with navigation, Koin and tests. One module, layered by package, to keep it short. |
 | `sample/androidApp/`, `sample/desktopApp/` | Launchers. |
 | `sample/iosApp/` | The Xcode project of the iOS launcher. |
@@ -30,10 +31,10 @@ tests need Chrome, and the iOS tests need a Mac with an iOS simulator:
 ./gradlew :eventus:check
 ```
 
-Run the checks of the two optional artifacts:
+Run the checks of the optional artifacts:
 
 ```bash
-./gradlew :eventus-koin:check :eventus-ksp:check
+./gradlew :eventus-koin:check :eventus-ksp:check :eventus-compose:check
 ```
 
 Format your changes before you send them. This applies the project's style, including its own rules

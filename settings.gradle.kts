@@ -28,6 +28,8 @@ include(":eventus")
 // generated Koin module, and the symbol processor that checks every event has a handler and writes that module.
 include(":eventus-koin")
 include(":eventus-ksp")
+// Optional helpers for a Compose UI: collecting effects, and telling the router the screen is visible.
+include(":eventus-compose")
 
 // Sample apps: one shared module with the two demo screens, and one entry-point module per platform.
 // The iOS entry point is the Xcode project in sample/iosApp, which is not a Gradle module.

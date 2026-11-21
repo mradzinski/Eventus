@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.mradzinski.eventus.sample"
-        minSdk = libs.versions.androidSampleMinSdk.get().toInt()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
         targetSdk = libs.versions.androidCompileSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
