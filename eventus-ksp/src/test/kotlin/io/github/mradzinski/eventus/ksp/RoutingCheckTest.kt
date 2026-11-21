@@ -52,15 +52,6 @@ class RoutingCheckTest {
     }
 
     @Test
-    fun `a screen stopped event needs no handler but may have one`() {
-        val onStopHandler = listHandler(name = "OnStopHandler", event = "ListEvent.OnStop")
-        val compiled = compile(listScreen, allListHandlers, onStopHandler)
-
-        compiled.problems.shouldBeEmpty()
-        compiled.succeeded shouldBe true
-    }
-
-    @Test
     fun `two handlers of one event fail the build`() {
         val second = listHandler(name = "AnotherOnStartHandler", event = "ListEvent.OnStart")
         val compiled = compile(listScreen, allListHandlers, second)

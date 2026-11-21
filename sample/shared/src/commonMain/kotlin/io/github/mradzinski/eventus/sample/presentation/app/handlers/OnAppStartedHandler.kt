@@ -6,11 +6,14 @@ import io.github.mradzinski.eventus.sample.presentation.app.AppEvent.OnAppStarte
 import io.github.mradzinski.eventus.sample.presentation.app.AppHandler
 import io.github.mradzinski.eventus.sample.presentation.app.AppStore
 
-/** Keeps the switch showing whether the app is offline, for as long as the app is visible. */
+/**
+ * Keeps the switch showing whether the app is offline. It never returns by itself, so it runs until the
+ * view model is cleared. `Latest` means that sending the event again would start over, not observe twice.
+ */
 internal class OnAppStartedHandler(private val connectivity: Connectivity) : AppHandler<OnAppStarted> {
 
     override val eventType = OnAppStarted::class
-    override val strategy = DispatchStrategy.WhileStarted
+    override val strategy = DispatchStrategy.Latest
 
     override suspend fun handle(event: OnAppStarted, store: AppStore) {
         connectivity.online.collect { online ->

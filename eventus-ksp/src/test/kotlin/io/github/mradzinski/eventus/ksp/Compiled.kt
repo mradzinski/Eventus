@@ -27,7 +27,6 @@ internal val listScreen: String = """
     package app
 
     import io.github.mradzinski.eventus.EventHandler
-    import io.github.mradzinski.eventus.ScreenStoppedEvent
     import io.github.mradzinski.eventus.ScreenStore
     import io.github.mradzinski.eventus.UiEffect
     import io.github.mradzinski.eventus.UiEvent
@@ -39,7 +38,6 @@ internal val listScreen: String = """
 
     sealed interface ListEvent : UiEvent {
         data object OnStart : ListEvent
-        data object OnStop : ListEvent, ScreenStoppedEvent
         data class OnSearch(val query: String) : ListEvent
 
         sealed interface Row : ListEvent {

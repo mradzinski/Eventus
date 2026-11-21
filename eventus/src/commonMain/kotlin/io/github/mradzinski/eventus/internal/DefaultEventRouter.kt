@@ -4,7 +4,6 @@ import io.github.mradzinski.eventus.DispatchStrategy
 import io.github.mradzinski.eventus.ErrorHandler
 import io.github.mradzinski.eventus.EventHandler
 import io.github.mradzinski.eventus.EventRouter
-import io.github.mradzinski.eventus.ScreenStoppedEvent
 import io.github.mradzinski.eventus.ScreenStore
 import io.github.mradzinski.eventus.UiEffect
 import io.github.mradzinski.eventus.UiEvent
@@ -57,7 +56,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     private val scope = CoroutineScope(scope.coroutineContext + SupervisorJob(parent = scope.coroutineContext[Job]))
 
     /**
-     * Guards the three maps below. It is only ever held for a map operation: no handler, no error handler
+     * Guards the two maps below. It is only ever held for a map operation: no handler, no error handler
      * and no completion callback runs while it is held.
      */
     private val lock = SynchronizedObject()
@@ -65,41 +64,30 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     /** The active run of each event type handled with `Latest` or `DropIfBusy`. */
     private val runs = mutableMapOf<KClass<*>, Job>()
 
-    /** The active run of each event type handled with `WhileStarted`. */
-    private val startedRuns = mutableMapOf<KClass<*>, Job>()
-
     /** The queue of each event type handled with `Sequential`. An entry is never removed. */
     private val queues = mutableMapOf<KClass<*>, SequentialQueue<E>>()
 
     /** How many runs the router is keeping track of. Only for the test that checks nothing is retained. */
     internal val trackedRunCount: Int
-        get() = synchronized(lock) { runs.size + startedRuns.size }
+        get() = synchronized(lock) { runs.size }
 
     override fun onEvent(event: E) {
         val handler = handlerFor(event)
 
-        if (event is ScreenStoppedEvent) cancelStartedRuns()
-
-        if (handler == null) return
-
         when (handler.strategy) {
             DispatchStrategy.Concurrent -> newRun(event, handler).start()
-            DispatchStrategy.Latest -> replaceRun(runs, event, handler)
+            DispatchStrategy.Latest -> replaceRun(event, handler)
             DispatchStrategy.Sequential -> enqueue(event, handler)
             DispatchStrategy.DropIfBusy -> runUnlessBusy(event, handler)
-            DispatchStrategy.WhileStarted -> replaceRun(startedRuns, event, handler)
         }
     }
 
-    /** The handler of [event], or null for a [ScreenStoppedEvent] that has none. */
-    private fun handlerFor(event: E): EventHandler<E, S, F>? {
+    private fun handlerFor(event: E): EventHandler<E, S, F> {
         // The handler was registered under the event's own class, so it accepts the event.
         @Suppress("UNCHECKED_CAST")
         val handler = handlers[event::class] as EventHandler<E, S, F>?
 
-        check(handler != null || event is ScreenStoppedEvent) { "No handler registered for ${event::class.simpleName}" }
-
-        return handler
+        return checkNotNull(handler) { "No handler registered for ${event::class.simpleName}" }
     }
 
     /**
@@ -118,17 +106,13 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         return CoroutineExceptionHandler { _, error -> errorHandler.handle(event, error, store) }
     }
 
-    /** Starts a run for [event] in place of the one [tracked] holds for its type, which is cancelled. */
-    private fun replaceRun(
-        tracked: MutableMap<KClass<*>, Job>,
-        event: E,
-        handler: EventHandler<E, S, F>,
-    ) {
+    /** Starts a run for [event] in place of the active one of its type, which is cancelled. */
+    private fun replaceRun(event: E, handler: EventHandler<E, S, F>) {
         val type = event::class
         val run = newRun(event, handler)
-        val previous = synchronized(lock) { tracked.put(type, run) }
+        val previous = synchronized(lock) { runs.put(type, run) }
 
-        run.forgetWhenDone(tracked, type)
+        run.forgetWhenDone(type)
         previous?.cancel()
         run.start()
     }
@@ -142,7 +126,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
             newRun(event, handler).also { runs[type] = it }
         }
 
-        run.forgetWhenDone(runs, type)
+        run.forgetWhenDone(type)
         run.start()
     }
 
@@ -177,21 +161,11 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         return SequentialQueue(events, worker)
     }
 
-    private fun cancelStartedRuns() {
-        val started = synchronized(lock) {
-            startedRuns.values
-                .toList()
-                .also { startedRuns.clear() }
-        }
-
-        started.forEach { it.cancel() }
-    }
-
-    /** Removes this run from [tracked] when it ends, unless a newer run has taken its place. */
-    private fun Job.forgetWhenDone(tracked: MutableMap<KClass<*>, Job>, type: KClass<*>) {
+    /** Stops tracking this run when it ends, unless a newer run has taken its place. */
+    private fun Job.forgetWhenDone(type: KClass<*>) {
         invokeOnCompletion {
             synchronized(lock) {
-                if (tracked[type] === this) tracked.remove(type)
+                if (runs[type] === this) runs.remove(type)
             }
         }
     }

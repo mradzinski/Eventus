@@ -8,6 +8,9 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * Holds no logic: it gives the task list's router to the UI and ends it with the view model. What each
  * event does is in its handler, and what a failure does is in [TaskListErrorHandler].
+ *
+ * It sends [TaskListEvent.OnScreenOpened] as soon as it is created, which starts following the tasks. That
+ * lasts as long as the view model does, so the list is up to date when the user comes back to it.
  */
 internal class TaskListViewModel(
     handlers: Collection<TaskListHandler<*>>,
@@ -19,4 +22,9 @@ internal class TaskListViewModel(
         initialState = TaskListUiState(),
         handlers = handlers,
         errorHandler = errorHandler,
-    )
+    ) {
+
+    init {
+        onEvent(TaskListEvent.OnScreenOpened)
+    }
+}

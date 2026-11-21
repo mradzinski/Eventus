@@ -37,8 +37,7 @@ public interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
      * Sends [event] to the handler registered for its exact class, which runs it as its
      * [DispatchStrategy] says. It returns at once and is safe to call from any thread.
      *
-     * @throws IllegalStateException when no handler is registered for the event, unless the event is a
-     * [ScreenStoppedEvent], which needs none.
+     * @throws IllegalStateException when no handler is registered for the event.
      */
     public fun onEvent(event: E)
 }
@@ -52,7 +51,7 @@ public interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
  *
  * What the router remembers while it runs depends on the strategy of each handler and is stated on
  * each [DispatchStrategy] entry. In short: nothing for `Concurrent`; the active run, until it ends,
- * for `Latest`, `DropIfBusy` and `WhileStarted`; one queue and one worker per event type, until [scope]
+ * for `Latest` and `DropIfBusy`; one queue and one worker per event type, until [scope]
  * ends, for `Sequential`.
  *
  * @param scope Where the handlers run. A view model passes the scope it is closed with, for example

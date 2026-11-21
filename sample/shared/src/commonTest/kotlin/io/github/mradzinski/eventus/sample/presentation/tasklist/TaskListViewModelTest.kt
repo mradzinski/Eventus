@@ -7,7 +7,7 @@ import io.github.mradzinski.eventus.sample.fake.task
 import io.github.mradzinski.eventus.sample.presentation.common.FailureReason
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListUiState.Content
 import io.github.mradzinski.eventus.sample.presentation.tasklist.handlers.OnRefreshHandler
-import io.github.mradzinski.eventus.sample.presentation.tasklist.handlers.OnScreenStartedHandler
+import io.github.mradzinski.eventus.sample.presentation.tasklist.handlers.OnScreenOpenedHandler
 import io.github.mradzinski.eventus.sample.presentation.tasklist.handlers.OnTaskClickHandler
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -20,30 +20,25 @@ class TaskListViewModelTest {
     private val tasks = FakeTaskRepository(initial = listOf(task(id = 1L)))
 
     @Test
-    fun `it starts loading and shows the tasks once the screen has started`() = runTest {
+    fun `it starts loading and shows the tasks without being asked`() = runTest {
         val viewModel = viewModel()
 
         viewModel.state.value.content shouldBe Content.Loading
 
-        viewModel.onEvent(TaskListEvent.OnScreenStarted)
         testScheduler.runCurrent()
 
         viewModel.state.value.content shouldBe Content.Loaded(listOf(task(id = 1L)))
     }
 
     @Test
-    fun `it stops following the tasks once the screen has stopped`() = runTest {
+    fun `it keeps following the tasks for as long as it lives`() = runTest {
         val viewModel = viewModel()
 
-        viewModel.onEvent(TaskListEvent.OnScreenStarted)
         testScheduler.runCurrent()
-        viewModel.onEvent(TaskListEvent.OnScreenStopped)
-        testScheduler.runCurrent()
-
         tasks.tasks.value = emptyList()
         testScheduler.runCurrent()
 
-        viewModel.state.value.content shouldBe Content.Loaded(listOf(task(id = 1L)))
+        viewModel.state.value.content shouldBe Content.Loaded(emptyList())
     }
 
     @Test
@@ -73,7 +68,7 @@ class TaskListViewModelTest {
 
     private fun TestScope.viewModel(): TaskListViewModel = TaskListViewModel(
         handlers = listOf(
-            OnScreenStartedHandler(tasks),
+            OnScreenOpenedHandler(tasks),
             OnRefreshHandler(tasks),
             OnTaskClickHandler(),
         ),

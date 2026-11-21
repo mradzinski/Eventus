@@ -2,18 +2,21 @@ package io.github.mradzinski.eventus.sample.presentation.tasklist.handlers
 
 import io.github.mradzinski.eventus.DispatchStrategy
 import io.github.mradzinski.eventus.sample.data.TaskRepository
-import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEvent.OnScreenStarted
+import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEvent.OnScreenOpened
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListHandler
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListStore
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListUiState.Content
 
-/** Keeps the list up to date for as long as the screen is visible. */
-internal class OnScreenStartedHandler(private val tasks: TaskRepository) : TaskListHandler<OnScreenStarted> {
+/**
+ * Keeps the list up to date. It never returns by itself, so it runs until the view model is cleared.
+ * `Latest` means that sending the event again would start over, not observe twice.
+ */
+internal class OnScreenOpenedHandler(private val tasks: TaskRepository) : TaskListHandler<OnScreenOpened> {
 
-    override val eventType = OnScreenStarted::class
-    override val strategy = DispatchStrategy.WhileStarted
+    override val eventType = OnScreenOpened::class
+    override val strategy = DispatchStrategy.Latest
 
-    override suspend fun handle(event: OnScreenStarted, store: TaskListStore) {
+    override suspend fun handle(event: OnScreenOpened, store: TaskListStore) {
         tasks
             .observeTasks()
             .collect { loaded ->

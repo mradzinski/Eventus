@@ -22,7 +22,6 @@ internal fun Scan.routingProblems(): List<Problem> {
     }
     val missing = eventRoots
         .flatMap { it.leaves() }
-        .filterNot { it.needsNoHandler() }
         .filterNot { it.displayName in handlersByEvent }
         .map { it.missingHandlerProblem() }
 
@@ -44,12 +43,6 @@ internal fun Scan.koinProblems(): List<Problem> {
 
 /** The router matches an event by its exact class, so only a handler of one concrete class is ever called. */
 internal fun Handler.isRoutable(): Boolean = event != null && !event.isAbstract
-
-/**
- * The one kind of event that may go unhandled. The router ignores a `ScreenStoppedEvent` without a handler
- * and throws for any other event, and this check must agree with the router.
- */
-private fun KSClassDeclaration.needsNoHandler(): Boolean = isSubtypeOf(SCREEN_STOPPED_EVENT)
 
 /** The concrete event classes of a sealed type, including those of the sealed types nested in it. */
 private fun KSClassDeclaration.leaves(): List<KSClassDeclaration> = getSealedSubclasses()

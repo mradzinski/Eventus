@@ -1,15 +1,12 @@
 package io.github.mradzinski.eventus.sample.presentation.tasklist
 
-import io.github.mradzinski.eventus.ScreenStoppedEvent
 import io.github.mradzinski.eventus.UiEvent
 
 /** Everything the task list can tell its view model. Each event has one handler in `handlers`. */
 internal sealed interface TaskListEvent : UiEvent {
 
-    data object OnScreenStarted : TaskListEvent
-
-    /** Has no handler: being a [ScreenStoppedEvent] is what stops the observation `OnScreenStarted` began. */
-    data object OnScreenStopped : TaskListEvent, ScreenStoppedEvent
+    /** Sent once, by the view model, when it is created. */
+    data object OnScreenOpened : TaskListEvent
 
     data class OnSearchChange(val query: String) : TaskListEvent
 

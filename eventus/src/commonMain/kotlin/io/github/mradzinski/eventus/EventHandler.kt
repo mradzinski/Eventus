@@ -53,6 +53,11 @@ public interface EventHandler<E : UiEvent, S : UiState, F : UiEffect> {
  *
  * Each strategy applies per event type: two different events never wait for, cancel or drop each
  * other. What the router remembers for each strategy, and for how long, is stated on each entry.
+ *
+ * A strategy says nothing about how long a run lasts. A handler that does not return by itself, such as
+ * one that collects a flow, runs until the router's scope is cancelled, unless its strategy replaces it
+ * first. The router knows nothing about a user interface: nothing starts or stops a run because a screen
+ * is shown or hidden.
  */
 public enum class DispatchStrategy {
 
@@ -91,14 +96,4 @@ public enum class DispatchStrategy {
      * moment that run ends.
      */
     DropIfBusy,
-
-    /**
-     * The run lasts for as long as the screen is visible: it is cancelled when an event that implements
-     * [ScreenStoppedEvent] is sent. For observing data while the screen is on. Sending the event again
-     * replaces the run that is active.
-     *
-     * The router keeps the active run of the event type until it ends, is replaced or is cancelled by
-     * a [ScreenStoppedEvent].
-     */
-    WhileStarted,
 }

@@ -14,7 +14,7 @@ data class Observe(val id: String) : TestEvent
 
 data object Boom : TestEvent
 
-data object Stopped : TestEvent, ScreenStoppedEvent
+data class VisibilityChanged(val visible: Boolean) : TestEvent
 
 sealed interface TestEffect : UiEffect
 
@@ -46,7 +46,7 @@ class RunHandler(override val strategy: DispatchStrategy) : EventHandler<Run, Te
 class ObserveHandler : EventHandler<Observe, TestState, TestEffect> {
 
     override val eventType = Observe::class
-    override val strategy = DispatchStrategy.WhileStarted
+    override val strategy = DispatchStrategy.Latest
 
     override suspend fun handle(event: Observe, store: TestStore) {
         store.log("start ${event.id}")
@@ -59,17 +59,32 @@ class ObserveHandler : EventHandler<Observe, TestState, TestEffect> {
     }
 }
 
+/**
+ * Follows something for as long as the UI says it is visible: the recipe the README gives for work that
+ * must stop while the UI is hidden. A new event cancels the run before it, and a hidden one returns at once.
+ */
+class VisibilityHandler : EventHandler<VisibilityChanged, TestState, TestEffect> {
+
+    override val eventType = VisibilityChanged::class
+    override val strategy = DispatchStrategy.Latest
+
+    override suspend fun handle(event: VisibilityChanged, store: TestStore) {
+        if (!event.visible) return
+
+        store.log("following")
+
+        try {
+            awaitCancellation()
+        } finally {
+            store.log("stopped following")
+        }
+    }
+}
+
 class BoomHandler(override val strategy: DispatchStrategy = DispatchStrategy.Concurrent) :
     EventHandler<Boom, TestState, TestEffect> {
 
     override val eventType = Boom::class
 
     override suspend fun handle(event: Boom, store: TestStore): Unit = throw IllegalStateException("boom")
-}
-
-class StoppedHandler : EventHandler<Stopped, TestState, TestEffect> {
-
-    override val eventType = Stopped::class
-
-    override suspend fun handle(event: Stopped, store: TestStore) = store.log("stopped")
 }

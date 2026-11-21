@@ -11,13 +11,13 @@ import io.github.mradzinski.eventus.Observe
 import io.github.mradzinski.eventus.ObserveHandler
 import io.github.mradzinski.eventus.Run
 import io.github.mradzinski.eventus.RunHandler
-import io.github.mradzinski.eventus.Stopped
-import io.github.mradzinski.eventus.StoppedHandler
 import io.github.mradzinski.eventus.TestEffect
 import io.github.mradzinski.eventus.TestEvent
 import io.github.mradzinski.eventus.TestHandler
 import io.github.mradzinski.eventus.TestState
 import io.github.mradzinski.eventus.TestStore
+import io.github.mradzinski.eventus.VisibilityChanged
+import io.github.mradzinski.eventus.VisibilityHandler
 import io.github.mradzinski.eventus.log
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -112,68 +112,43 @@ class DefaultEventRouterTest {
     }
 
     @Test
-    fun `a while started run stops on a screen stopped event that has no handler`() = runTest {
-        val router = router(ObserveHandler())
+    fun `a run that never returns lasts until the scope is cancelled`() = runTest {
+        val scope = CoroutineScope(backgroundScope.coroutineContext + Job())
+        val router =
+            TestRouter(
+                scope = scope,
+                initialState = TestState(),
+                handlers = listOf(ObserveHandler()),
+                errorHandler = null,
+            )
 
         router.onEvent(Observe("a"))
         testScheduler.runCurrent()
-        router.onEvent(Stopped)
+
+        router.state.value.log shouldContainExactly listOf("start a")
+
+        scope.cancel()
         testScheduler.runCurrent()
 
         router.state.value.log shouldContainExactly listOf("start a", "stop a")
-
-        router.onEvent(Observe("b"))
-        testScheduler.runCurrent()
-
-        router.state.value.log shouldContainExactly listOf("start a", "stop a", "start b")
     }
 
     @Test
-    fun `a screen stopped event with a handler stops the started runs and runs its handler`() = runTest {
-        val router = router(ObserveHandler(), StoppedHandler())
+    fun `a latest event that returns at once stops the run before it and a later one starts again`() = runTest {
+        val router = router(VisibilityHandler())
 
-        router.onEvent(Observe("a"))
+        router.onEvent(VisibilityChanged(visible = true))
         testScheduler.runCurrent()
-        router.onEvent(Stopped)
-        testScheduler.runCurrent()
-
-        router.state.value.log shouldContainExactly listOf("start a", "stop a", "stopped")
-    }
-
-    @Test
-    fun `a screen stopped event with no handler and nothing started does nothing`() = runTest {
-        val router = router()
-
-        router.onEvent(Stopped)
+        router.onEvent(VisibilityChanged(visible = false))
         testScheduler.runCurrent()
 
-        router.state.value.log.shouldBeEmpty()
-    }
+        router.state.value.log shouldContainExactly listOf("following", "stopped following")
+        router.trackedRunCount shouldBe 0
 
-    @Test
-    fun `a screen stopped event leaves the runs of other strategies alone`() = runTest {
-        val handler = RunHandler(DispatchStrategy.Latest)
-        val router = router(handler)
-
-        router.onEvent(Run("a"))
-        testScheduler.runCurrent()
-        router.onEvent(Stopped)
-        handler.gate.complete(Unit)
+        router.onEvent(VisibilityChanged(visible = true))
         testScheduler.runCurrent()
 
-        router.state.value.log shouldContainExactly listOf("start a", "end a")
-    }
-
-    @Test
-    fun `sending a while started event again replaces the run that is active`() = runTest {
-        val router = router(ObserveHandler())
-
-        router.onEvent(Observe("a"))
-        testScheduler.runCurrent()
-        router.onEvent(Observe("b"))
-        testScheduler.runCurrent()
-
-        router.state.value.log shouldContainExactly listOf("start a", "stop a", "start b")
+        router.state.value.log shouldContainExactly listOf("following", "stopped following", "following")
     }
 
     @Test
@@ -245,13 +220,11 @@ class DefaultEventRouterTest {
     fun `a cancelled run is not reported as an error`() = runTest {
         val errors = mutableListOf<Throwable>()
         val handler = RunHandler(DispatchStrategy.Latest)
-        val router = router(handler, ObserveHandler(), errorHandler = { _, error, _ -> errors += error })
+        val router = router(handler, errorHandler = { _, error, _ -> errors += error })
 
         router.onEvent(Run("a"))
-        router.onEvent(Observe("a"))
         testScheduler.runCurrent()
         router.onEvent(Run("b"))
-        router.onEvent(Stopped)
         handler.gate.complete(Unit)
         testScheduler.runCurrent()
 
@@ -320,10 +293,10 @@ class DefaultEventRouterTest {
             router.trackedRunCount shouldBe 2
 
             busy.gate.complete(Unit)
-            router.onEvent(Stopped)
             testScheduler.runCurrent()
 
-            router.trackedRunCount shouldBe 0
+            // The observation never returns, so it is still tracked; the run that ended is not.
+            router.trackedRunCount shouldBe 1
         }
     }
 

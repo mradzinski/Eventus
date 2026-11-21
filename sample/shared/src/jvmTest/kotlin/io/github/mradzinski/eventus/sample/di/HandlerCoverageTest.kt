@@ -1,6 +1,5 @@
 package io.github.mradzinski.eventus.sample.di
 
-import io.github.mradzinski.eventus.ScreenStoppedEvent
 import io.github.mradzinski.eventus.sample.presentation.app.AppEvent
 import io.github.mradzinski.eventus.sample.presentation.app.AppHandler
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorEvent
@@ -9,7 +8,6 @@ import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEvent
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListHandler
 import io.kotest.matchers.shouldBe
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
 import kotlin.test.Test
 import org.koin.dsl.koinApplication
 
@@ -50,8 +48,7 @@ class HandlerCoverageTest {
         handled.sortedBy { it.simpleName } shouldBe eventsThatNeedAHandler(TaskEditorEvent::class)
     }
 
-    /** The events of a screen, sorted by name, without the screen-stopped event, which may go unhandled. */
-    private fun eventsThatNeedAHandler(events: KClass<*>): List<KClass<*>> = events.sealedSubclasses
-        .filterNot { it.isSubclassOf(ScreenStoppedEvent::class) }
-        .sortedBy { it.simpleName }
+    /** The events of a screen, sorted by name. Every one of them needs a handler. */
+    private fun eventsThatNeedAHandler(events: KClass<*>): List<KClass<*>> =
+        events.sealedSubclasses.sortedBy { it.simpleName }
 }

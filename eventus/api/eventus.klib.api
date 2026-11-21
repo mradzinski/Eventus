@@ -11,7 +11,6 @@ final enum class io.github.mradzinski.eventus/DispatchStrategy : kotlin/Enum<io.
     enum entry DropIfBusy // io.github.mradzinski.eventus/DispatchStrategy.DropIfBusy|null[0]
     enum entry Latest // io.github.mradzinski.eventus/DispatchStrategy.Latest|null[0]
     enum entry Sequential // io.github.mradzinski.eventus/DispatchStrategy.Sequential|null[0]
-    enum entry WhileStarted // io.github.mradzinski.eventus/DispatchStrategy.WhileStarted|null[0]
 
     final val entries // io.github.mradzinski.eventus/DispatchStrategy.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.mradzinski.eventus/DispatchStrategy> // io.github.mradzinski.eventus/DispatchStrategy.entries.<get-entries>|<get-entries>#static(){}[0]
@@ -41,8 +40,6 @@ abstract interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mrad
 
     abstract fun onEvent(#A) // io.github.mradzinski.eventus/EventRouter.onEvent|onEvent(1:0){}[0]
 }
-
-abstract interface io.github.mradzinski.eventus/ScreenStoppedEvent : io.github.mradzinski.eventus/UiEvent // io.github.mradzinski.eventus/ScreenStoppedEvent|null[0]
 
 abstract interface io.github.mradzinski.eventus/UiEffect // io.github.mradzinski.eventus/UiEffect|null[0]
 

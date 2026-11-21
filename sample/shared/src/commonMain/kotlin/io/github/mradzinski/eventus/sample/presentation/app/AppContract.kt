@@ -1,7 +1,6 @@
 package io.github.mradzinski.eventus.sample.presentation.app
 
 import io.github.mradzinski.eventus.EventHandler
-import io.github.mradzinski.eventus.ScreenStoppedEvent
 import io.github.mradzinski.eventus.ScreenStore
 import io.github.mradzinski.eventus.UiEffect
 import io.github.mradzinski.eventus.UiEvent
@@ -13,9 +12,8 @@ import io.github.mradzinski.eventus.UiState
  */
 internal sealed interface AppEvent : UiEvent {
 
+    /** Sent once, by the view model, when it is created. */
     data object OnAppStarted : AppEvent
-
-    data object OnAppStopped : AppEvent, ScreenStoppedEvent
 
     data class OnOfflineChange(val offline: Boolean) : AppEvent
 }

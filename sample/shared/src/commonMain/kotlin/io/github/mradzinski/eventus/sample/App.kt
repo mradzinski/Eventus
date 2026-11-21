@@ -9,10 +9,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mradzinski.eventus.sample.navigation.AppNavigation
-import io.github.mradzinski.eventus.sample.presentation.app.AppEvent
 import io.github.mradzinski.eventus.sample.presentation.app.AppViewModel
 import io.github.mradzinski.eventus.sample.presentation.app.OfflineSwitch
 import org.koin.compose.viewmodel.koinViewModel
@@ -26,12 +24,6 @@ fun App() {
         darkColorScheme()
     } else {
         lightColorScheme()
-    }
-
-    LifecycleStartEffect(viewModel) {
-        viewModel.onEvent(AppEvent.OnAppStarted)
-
-        onStopOrDispose { viewModel.onEvent(AppEvent.OnAppStopped) }
     }
 
     MaterialTheme(colorScheme = colorScheme) {

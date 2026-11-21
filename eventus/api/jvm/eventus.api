@@ -3,7 +3,6 @@ public final class io/github/mradzinski/eventus/DispatchStrategy : java/lang/Enu
 	public static final field DropIfBusy Lio/github/mradzinski/eventus/DispatchStrategy;
 	public static final field Latest Lio/github/mradzinski/eventus/DispatchStrategy;
 	public static final field Sequential Lio/github/mradzinski/eventus/DispatchStrategy;
-	public static final field WhileStarted Lio/github/mradzinski/eventus/DispatchStrategy;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/mradzinski/eventus/DispatchStrategy;
 	public static fun values ()[Lio/github/mradzinski/eventus/DispatchStrategy;
@@ -36,9 +35,6 @@ public final class io/github/mradzinski/eventus/EventRouterKt {
 
 public final class io/github/mradzinski/eventus/RouterScopeKt {
 	public static final fun routerScope ()Lkotlinx/coroutines/CoroutineScope;
-}
-
-public abstract interface class io/github/mradzinski/eventus/ScreenStoppedEvent : io/github/mradzinski/eventus/UiEvent {
 }
 
 public final class io/github/mradzinski/eventus/ScreenStore {

@@ -9,10 +9,11 @@ package io.github.mradzinski.eventus
 public interface UiState
 
 /**
- * Something the UI tells its screen: a tap, a text change, the screen becoming visible.
+ * Something that happened and must be handled: a tap, a text change, something to report to analytics.
  *
  * Declare a screen's events as one sealed type that extends this interface. Each concrete event is
- * handled by exactly one [EventHandler].
+ * handled by exactly one [EventHandler]. Not every handler changes the state: Eventus routes events and
+ * knows nothing about a user interface.
  */
 public interface UiEvent
 
@@ -23,12 +24,3 @@ public interface UiEvent
  * belongs in the [UiState] instead.
  */
 public interface UiEffect
-
-/**
- * An event that tells the router the screen is no longer visible.
- *
- * Sending an event that implements this interface cancels every handler of the screen that runs with
- * [DispatchStrategy.WhileStarted]. The event may have a handler of its own, which then runs as usual,
- * but it does not need one.
- */
-public interface ScreenStoppedEvent : UiEvent
