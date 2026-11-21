@@ -32,7 +32,7 @@ runs on **Android, iOS, Desktop and Web** from common code.
 - [Optimistic updates](#optimistic-updates)
 - [Effect or state?](#effect-or-state)
 - [Failures](#failures)
-- [The screen's lifecycle](#the-screens-lifecycle)
+- [Work that keeps running](#work-that-keeps-running)
 - [Navigation](#navigation)
 - [Reaching another screen](#reaching-another-screen)
 - [Dependency injection](#dependency-injection)
@@ -195,14 +195,13 @@ fun CounterRoute(viewModel: CounterViewModel) {
 | Type | What it is |
 |---|---|
 | `UiState` | The state of one screen: everything the UI needs to draw it, as one immutable value. |
-| `UiEvent` | Something the UI tells the screen: a tap, a text change, the screen becoming visible. |
+| `UiEvent` | Something that happened and must be handled: a tap, a text change, something to report to analytics. |
 | `UiEffect` | Something the UI must do once and then forget: show a message, navigate. |
 | `EventHandler<E, S, F>` | The logic for one event type `E` of a screen whose state is `S` and whose effects are `F`. |
 | `ErrorHandler<E, S, F>` | What the screen does when one of its event handlers fails. One per screen. |
 | `ScreenStore<S, F>` | The state and effects of one screen. The router creates it and hands it to every handler, which read it (`current`), change it (`update`, `updateOptimistically`) and send effects through it (`emit`). |
 | `EventRouter<E, S, F>` | What the UI sees: `state`, `effects` and `onEvent`. Created by the `EventRouter(...)` function. |
 | `DispatchStrategy` | How a handler runs when its event arrives again while it is still running. |
-| `ScreenStoppedEvent` | A `UiEvent` that also tells the router the screen is no longer visible. |
 | `routerScope()` | Creates the coroutine scope a view model and its router share. |
 
 Three rules follow from how these fit together:
@@ -229,7 +228,6 @@ different events never wait for, cancel or drop each other.
 | `Latest` | The active run is cancelled and a new one starts. | Search boxes, sliders: input that makes the previous work pointless. See [debouncing](#debouncing). |
 | `Sequential` | The event waits its turn. Events run in the order they were sent. | Toggles and counters, where order matters. |
 | `DropIfBusy` | The event is ignored. | Submit, refresh, confirm: actions that must not run twice. |
-| `WhileStarted` | The active run is replaced. | Observing data while the screen is visible. See [the screen's lifecycle](#the-screens-lifecycle). |
 
 ### What the router keeps, and for how long
 
@@ -240,7 +238,6 @@ While it lives, this is everything it holds on to:
 |---|---|---|
 | `Concurrent` | Nothing. A run is forgotten as soon as it starts. | — |
 | `Latest`, `DropIfBusy` | The one active run of each event type. | That run ends. |
-| `WhileStarted` | The one active run of each event type. | That run ends, is replaced, or a `ScreenStoppedEvent` cancels it. |
 | `Sequential` | One queue and one idle worker coroutine per event type, created when that event is first sent. | The scope ends. They are **not** released when the queue empties. |
 
 So a screen that uses `Sequential` for three event types holds three suspended coroutines until its
@@ -458,52 +455,95 @@ in its place, as in the quick start.
 - **A failure that must stay on screen is state.** Either update the state from the error handler, or catch
   the specific exception in the handler and set a "failed, retry" state there, as the sample's
   editor does when a task cannot be loaded.
-- **Cancellation is never a failure.** A run cancelled by `Latest`, by a `ScreenStoppedEvent` or by
-  the scope ending is not reported.
+- **Cancellation is never a failure.** A run cancelled by `Latest` or by the scope ending is not
+  reported.
 - **Without an error handler, nothing is swallowed.** The exception reaches the `CoroutineExceptionHandler`
   of your scope or, if it has none, the platform's handler for uncaught exceptions. On Android that
   ends the app, which is the right default for an error nobody decided how to handle.
 
 Whatever happens to one handler, the others keep running and the router keeps taking events.
 
-## The screen's lifecycle
+## Work that keeps running
 
-Work that should last while the screen is visible, such as observing a repository, belongs in a
-handler with `DispatchStrategy.WhileStarted`. It starts when you send its event and is cancelled when
-you send any event that implements `ScreenStoppedEvent`:
+Eventus knows nothing about a user interface. An event is something that happened and must be handled.
+Not every handler changes the state. For example: the handler of an analytics event might only report
+the event. So nothing in the router starts or stops because a screen is shown or hidden.
+
+A handler that does not return by itself, such as one that collects a flow, runs until the router's
+scope is cancelled. In a view model, that is when the view model is cleared. Send its event once, from
+the view model, when it is created:
 
 ```kotlin
 sealed interface TaskListEvent : UiEvent {
 
-    data object OnScreenStarted : TaskListEvent
-    data object OnScreenStopped : TaskListEvent, ScreenStoppedEvent
+    data object OnScreenOpened : TaskListEvent
 }
 
-class OnScreenStartedHandler(
+class OnScreenOpenedHandler(
     private val tasks: TaskRepository,
-) : EventHandler<OnScreenStarted, TaskListUiState, TaskListEffect> {
+) : EventHandler<OnScreenOpened, TaskListUiState, TaskListEffect> {
 
-    override val eventType = OnScreenStarted::class
-    override val strategy = DispatchStrategy.WhileStarted
+    override val eventType = OnScreenOpened::class
+    override val strategy = DispatchStrategy.Latest   // sent again, it starts over; it never runs twice
 
-    override suspend fun handle(event: OnScreenStarted, store: ScreenStore<TaskListUiState, TaskListEffect>) {
+    override suspend fun handle(event: OnScreenOpened, store: ScreenStore<TaskListUiState, TaskListEffect>) {
         tasks.observeTasks().collect { loaded -> store.update { it.copy(tasks = loaded) } }
+    }
+}
+
+class TaskListViewModel(/* … */) : ViewModel(scope), EventRouter</* … */> by EventRouter(/* … */) {
+
+    init {
+        onEvent(TaskListEvent.OnScreenOpened)
     }
 }
 ```
 
-In Compose, the two events come from the lifecycle:
+The handler then has the lifecycle of the view model: it starts when the view model is created and is
+cancelled when the view model is cleared.
+
+If such a handler fails, it has ended, and nothing starts it again by itself. The failure reaches the
+screen's `ErrorHandler` like any other. To start over, send the event again, for example from a retry
+button.
+
+### Work that must stop while the UI is hidden
+
+Nothing is needed to clean up: every handler is cancelled with the view model. This part is only for
+work that must pause sooner, while the view model is still alive but its screen is hidden. A view model
+outlives a hidden screen, for example when the app is in the background, and some sources are too
+costly to leave open that long: location, a socket, polling.
+
+The router cannot know that the screen is hidden, so the UI notifies it, with an ordinary event of
+your own. One event that carries the new visibility, handled with `Latest`, is enough: each new event
+cancels the run before it.
 
 ```kotlin
-LifecycleStartEffect(viewModel) {
-    viewModel.onEvent(TaskListEvent.OnScreenStarted)
+data class OnVisibilityChange(val visible: Boolean) : MapEvent
 
-    onStopOrDispose { viewModel.onEvent(TaskListEvent.OnScreenStopped) }
+class OnVisibilityChangeHandler(
+    private val location: LocationSource,
+) : EventHandler<OnVisibilityChange, MapUiState, MapEffect> {
+
+    override val eventType = OnVisibilityChange::class
+    override val strategy = DispatchStrategy.Latest
+
+    override suspend fun handle(event: OnVisibilityChange, store: ScreenStore<MapUiState, MapEffect>) {
+        if (!event.visible) return   // the run that was following the location is already cancelled
+
+        location.updates().collect { position -> store.update { it.copy(position = position) } }
+    }
 }
 ```
 
-A `ScreenStoppedEvent` is the one event that needs no handler. Give it one only if stopping should
-also do something of its own, such as saving a draft.
+The UI sends that event when it becomes visible and when it stops being visible. In Compose:
+
+```kotlin
+LifecycleStartEffect(viewModel) {
+    viewModel.onEvent(MapEvent.OnVisibilityChange(visible = true))
+
+    onStopOrDispose { viewModel.onEvent(MapEvent.OnVisibilityChange(visible = false)) }
+}
+```
 
 ## Navigation
 
@@ -650,7 +690,7 @@ Handlers get shorter, and your container gets a type that means "the handlers of
 
 ```kotlin
 val taskListModule = module {
-    factoryOf(::OnScreenStartedHandler) bind TaskListHandler::class
+    factoryOf(::OnScreenOpenedHandler) bind TaskListHandler::class
     factoryOf(::OnRefreshHandler) bind TaskListHandler::class
     factoryOf(::OnTaskClickHandler) bind TaskListHandler::class
     // …one line per handler
@@ -678,7 +718,7 @@ Containers such as Metro and Dagger keep type arguments, so there you can multib
 ```kotlin
 TaskListViewModel(
     handlers = listOf(
-        OnScreenStartedHandler(tasks),
+        OnScreenOpenedHandler(tasks),
         OnRefreshHandler(tasks),
         OnTaskClickHandler(),
     ),
@@ -708,7 +748,6 @@ For every sealed event type declared in the module, each of these fails the buil
 line:
 
 - **An event with no handler class**, in the sealed type or in a sealed type nested in it.
-  A `ScreenStoppedEvent` is the one event that may go without, as it may at run time.
 - **An event with two handler classes.**
 - **A handler the router can never call**: one whose event type is a sealed or abstract type, or a type
   parameter. The router sends an event to the handler of its exact class.
@@ -718,8 +757,8 @@ e: [ksp] TaskListEvent.kt:14: No handler for com.example.TaskListEvent.OnRefresh
 implements EventHandler for it.
 ```
 
-The processor sees one Gradle module. Keep the handlers of a screen in the module that declares its
-events.
+The processor looks at one Gradle module at a time, so **a screen's events and their handlers live in
+the same Gradle module**. See [a project with several modules](#a-project-with-several-modules).
 
 ### The Koin module
 
@@ -786,6 +825,48 @@ Four rules, each reported as a build error when broken:
 Each constructor parameter of a handler is resolved with Koin's `get()`. `expect` exists only in a
 multiplatform module, so a module with a single platform gets the check but not the generated module.
 
+### A project with several modules
+
+Keep a screen's events and its handlers in the same Gradle module. That is how Eventus is meant to be
+used, and it is what the processor relies on: it reads the sources of the module it runs in, and
+nothing else. If a handler is in a different module from its event, the processor cannot check it.
+
+Each module that has handlers then repeats the same setup: its own `ksp` lines, and its own annotated
+property, which can stay `internal`. Another module cannot name an internal property, so the feature
+exposes one public Koin module that includes it:
+
+```kotlin
+// :feature:tasklist
+@EventusKoinModule
+@Suppress("KotlinNoActualForExpect")
+internal expect val handlersModule: Module
+
+val taskListFeatureModule: Module = module {
+    includes(handlersModule)
+
+    viewModel {
+        TaskListViewModel(
+            handlers = getAll<TaskListHandler<*>>(),
+            errorHandler = get(),
+        )
+    }
+}
+```
+
+The app lists one module per feature and never names a handler:
+
+```kotlin
+// :app
+startKoin {
+    modules(taskListFeatureModule, taskEditorFeatureModule)
+}
+```
+
+Every feature can call its property `handlersModule` and have a handler called `OnScreenOpenedHandler`:
+the properties are internal to their modules, and each screen asks for its own handler interface, so
+one feature never receives another's handlers. A missing handler fails the build of its own feature
+module only.
+
 ## Testing
 
 ### A handler
@@ -814,7 +895,7 @@ class OnSaveClickHandlerTest {
 ```
 
 To see the states a handler passes through, collect `store.state` around the call. For a handler that
-never returns by itself (`WhileStarted`), launch it in `backgroundScope` and let `runTest` cancel it.
+never returns by itself, launch it in `backgroundScope` and let `runTest` cancel it.
 
 ### A view model
 
@@ -858,9 +939,7 @@ fun `every task list event has a registered handler`() {
     val koin = koinApplication { modules(appModules) }.koin
     val handled = koin.getAll<TaskListHandler<*>>().map { it.eventType }.toSet()
 
-    val events = TaskListEvent::class.sealedSubclasses
-        .filterNot { it.isSubclassOf(ScreenStoppedEvent::class) }   // may go without a handler
-        .toSet()
+    val events = TaskListEvent::class.sealedSubclasses.toSet()
 
     assertEquals(events, handled)
 }
@@ -881,8 +960,8 @@ cancelled. Whoever creates the scope must cancel it.
   without a main dispatcher, handlers run on the thread that sends the event. Desktop apps need
   `kotlinx-coroutines-swing` for the main dispatcher.
 - **Outside a view model** (a SwiftUI screen holding a shared presenter, a desktop window), you
-  own the scope: cancel it when the screen goes away, or its `Sequential` workers and `WhileStarted`
-  runs live on.
+  own the scope: cancel it when the screen goes away, or its `Sequential` workers and every handler that
+  never returns live on.
 - **Do the slow work elsewhere.** Repositories should be safe to call from the main thread and move
   their own work to another dispatcher. Handlers then stay simple.
 
@@ -956,6 +1035,8 @@ fine.
   if you save one.
 - **The library alone does not check at compile time that every event has a handler.** The optional
   processor does; see [handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build).
+- **It does not follow the UI's lifecycle.** Nothing starts or stops because a screen is shown or
+  hidden; see [work that keeps running](#work-that-keeps-running).
 - **It does not navigate**, inject dependencies or collect flows for the UI. It gives you the pieces
   those are built from.
 - **It is not an event bus.** A router belongs to one screen. Events do not travel between screens;
