@@ -1,3 +1,5 @@
+![Eventus: routes each UI event of a screen to its own event handler, on Android, iOS, Desktop and Web](docs/banner.png)
+
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mradzinski/eventus?style=flat-square)](https://central.sonatype.com/artifact/io.github.mradzinski/eventus)
 [![Build](https://img.shields.io/github/actions/workflow/status/mradzinski/eventus/build.yml?branch=main&style=flat-square&label=build)](https://github.com/mradzinski/eventus/actions/workflows/build.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/mradzinski/eventus?style=flat-square&label=coverage)](https://codecov.io/gh/mradzinski/eventus)
