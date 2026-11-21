@@ -36,6 +36,7 @@ runs on **Android, iOS, Desktop and Web** from common code.
 - [Navigation](#navigation)
 - [Reaching another screen](#reaching-another-screen)
 - [Dependency injection](#dependency-injection)
+- [Handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build)
 - [Testing](#testing)
 - [The coroutine scope](#the-coroutine-scope)
 - [Logging events](#logging-events)
@@ -66,6 +67,10 @@ kotlin {
     }
 }
 ```
+
+Two more artifacts are optional: `eventus-ksp`, which finds a missing handler when the app is built, and
+`eventus-koin`, which lets it write your Koin module of handlers. See
+[handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build).
 
 ## Quick start
 
@@ -629,6 +634,9 @@ in the app. The per-screen interface is what keeps them apart. Register the view
 `viewModel { }`, never `single { }`: a singleton view model is never cleared, and its router would
 never stop.
 
+The handler lines need not be written by hand: `eventus-ksp` generates them. See
+[handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build).
+
 ### Containers that resolve at compile time
 
 Containers such as Metro and Dagger keep type arguments, so there you can multibind each handler into
@@ -645,6 +653,123 @@ TaskListViewModel(
     ),
 )
 ```
+
+## Handlers checked and wired by the build
+
+`eventus-ksp` is an optional [KSP](https://kotlinlang.org/docs/ksp-overview.html) processor. It runs
+while your app is built, and is never part of the app. It does two things in the Gradle module you add
+it to:
+
+- **It checks the handlers.** An event without a handler class fails the build, not the app.
+- **It writes the Koin module of the handlers**, when you ask for it with one annotated property.
+
+### Set up
+
+Add the KSP plugin, 2.3.12 or newer, and the processor once for every target of the module:
+
+```kotlin
+// build.gradle.kts of the module that holds your screens
+plugins {
+    id("com.google.devtools.ksp") version "2.3.14"
+}
+
+dependencies {
+    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+}
+```
+
+A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
+a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc01")`.
+
+Building one target runs the processor for that target only, so a day of running the Android app runs
+it once per build, not once per target.
+
+### What the check finds
+
+For every sealed event type declared in the module, each of these fails the build, with the file and
+line:
+
+- **An event with no handler class**, in the sealed type or in a sealed type nested in it.
+  A `ScreenStoppedEvent` is the one event that may go without, as it may at run time.
+- **An event with two handler classes.**
+- **A handler the router can never call**: one whose event type is a sealed or abstract type, or a type
+  parameter. The router sends an event to the handler of its exact class.
+
+```text
+e: [ksp] TaskListEvent.kt:14: No handler for com.example.TaskListEvent.OnRefresh. Add a class that
+implements EventHandler for it.
+```
+
+The processor sees one Gradle module. Keep the handlers of a screen in the module that declares its
+events.
+
+### The Koin module
+
+Add the annotation to the module's common dependencies:
+
+```kotlin
+commonMain.dependencies {
+    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc01")
+}
+```
+
+Then declare the module once, in common code, and leave its content to the processor:
+
+```kotlin
+// The Eventus processor generates the `actual` property on each target.
+@EventusKoinModule
+@Suppress("KotlinNoActualForExpect")
+internal expect val handlersModule: Module
+```
+
+Android Studio cannot see the generated `actual` property and may warn that the `expect` property has
+none. The `@Suppress` line silences that warning; the build does not need it.
+
+On each target the processor writes the `actual` property. It holds one factory for every handler
+class, bound to the [handler interface of its screen](#give-each-screen-a-handler-interface), and one
+for every class that implements `ErrorHandler`:
+
+```kotlin
+// generated
+internal actual val handlersModule: Module = module {
+    factory { com.example.tasklist.OnRefreshHandler(get()) } bind com.example.tasklist.TaskListHandler::class
+    factory { com.example.tasklist.OnTaskClickHandler() } bind com.example.tasklist.TaskListHandler::class
+    // …every handler of every screen in this Gradle module
+    factory { com.example.tasklist.TaskListErrorHandler(get()) }
+}
+```
+
+What is left for you is the view model of each screen, and giving `handlersModule` to Koin with your
+other modules:
+
+```kotlin
+val taskListModule = module {
+    viewModel {
+        TaskListViewModel(
+            handlers = getAll<TaskListHandler<*>>(),
+            errorHandler = get(),
+        )
+    }
+}
+```
+
+A new event then takes a new event class and a new handler class, and nothing else.
+
+Four rules, each reported as a build error when broken:
+
+- **The property is an `expect` property of Koin's type `Module`**, and a Gradle module has one. It
+  holds the handlers of every screen in that Gradle module.
+- **Every handler implements the handler interface of its screen**, not `EventHandler` directly. That
+  interface is what the view model asks Koin for.
+- **No handler is `private`.** The generated code is in another file. `internal` is fine.
+- **Every target has its `ksp` line.** A target without one does not compile: the compiler reports
+  that the `expect` property has no `actual` declaration there.
+
+Each constructor parameter of a handler is resolved with Koin's `get()`. `expect` exists only in a
+multiplatform module, so a module with a single platform gets the check but not the generated module.
 
 ## Testing
 
@@ -703,7 +828,11 @@ cancelled, and `runTest` waits for its own scope to finish.
 ### Every event has a handler
 
 An event that no handler is registered for throws `IllegalStateException` when it is sent, which may
-be three taps into a screen. Find it earlier with one test per screen. It compares the events of the
+be three taps into a screen. With [`eventus-ksp`](#handlers-checked-and-wired-by-the-build) the build
+finds a handler that was never written, and its generated Koin module registers every handler there is,
+so this test is not needed.
+
+Without it, find the missing handler with one test per screen. It compares the events of the
 sealed type with the handlers your container really provides, so it catches a handler that was never
 written as well as one that was never registered:
 
@@ -810,8 +939,8 @@ fine.
 
 - **It does not restore state after the process is stopped.** Pass a restored value as `initialState`
   if you save one.
-- **It does not check at compile time that every event has a handler.** See
-  [every event has a handler](#every-event-has-a-handler).
+- **The library alone does not check at compile time that every event has a handler.** The optional
+  processor does; see [handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build).
 - **It does not navigate**, inject dependencies or collect flows for the UI. It gives you the pieces
   those are built from.
 - **It is not an event bus.** A router belongs to one screen. Events do not travel between screens;
@@ -823,6 +952,8 @@ fine.
 |---|---|
 | `eventus/` | The library. All code is in `commonMain`. |
 | `eventus/api/` | The recorded public API. `checkKotlinAbi` fails when the code no longer matches it. |
+| `eventus-koin/` | The `@EventusKoinModule` annotation, and nothing else. |
+| `eventus-ksp/` | The symbol processor: the handler check and the generated Koin module. JVM only, as a build tool. |
 | `sample/shared/` | The sample app: a task list and a task editor, with navigation, Koin and tests. One module, layered by package, to keep it short. |
 | `sample/androidApp/`, `sample/desktopApp/` | Launchers. |
 | `sample/iosApp/` | The Xcode project of the iOS launcher. |
@@ -845,6 +976,12 @@ tests need Chrome, and the iOS tests need a Mac with an iOS simulator:
 
 ```bash
 ./gradlew :eventus:check
+```
+
+Run the checks of the two optional artifacts:
+
+```bash
+./gradlew :eventus-koin:check :eventus-ksp:check
 ```
 
 Format your changes before you send them. This applies the project's style, including its own rules

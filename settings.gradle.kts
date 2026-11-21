@@ -24,6 +24,11 @@ includeBuild("tooling/ktlint-rules")
 // The library.
 include(":eventus")
 
+// Optional additions to the library, each published as its own artifact: the annotation that asks for a
+// generated Koin module, and the symbol processor that checks every event has a handler and writes that module.
+include(":eventus-koin")
+include(":eventus-ksp")
+
 // Sample apps: one shared module with the two demo screens, and one entry-point module per platform.
 // The iOS entry point is the Xcode project in sample/iosApp, which is not a Gradle module.
 include(":sample:shared")

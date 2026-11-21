@@ -1,0 +1,3 @@
+public abstract interface annotation class io/github/mradzinski/eventus/koin/EventusKoinModule : java/lang/annotation/Annotation {
+}
+

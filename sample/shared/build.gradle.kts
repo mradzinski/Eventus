@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -34,6 +35,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.eventus)
+            // The annotation that asks for the generated Koin module of the handlers. See the `ksp` lines below.
+            implementation(projects.eventusKoin)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
@@ -63,6 +66,15 @@ kotlin {
             implementation(libs.kotlin.reflect)
         }
     }
+}
+
+// The Eventus processor, once per target: it checks that every event has a handler and generates the Koin
+// module of the handlers (`handlersModule`). A target left out here does not compile.
+dependencies {
+    add("kspAndroid", projects.eventusKsp)
+    add("kspJvm", projects.eventusKsp)
+    add("kspIosArm64", projects.eventusKsp)
+    add("kspIosSimulatorArm64", projects.eventusKsp)
 }
 
 compose.resources {

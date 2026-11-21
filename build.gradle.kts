@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.dokka) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kover) apply false
+    alias(libs.plugins.ksp) apply false
     // Applied here so the root build scripts are formatted too; modules get it from the block below.
     alias(libs.plugins.ktlint)
 }
@@ -62,6 +63,9 @@ subprojects {
     }
 }
 
+// What is published, each as its own artifact with the same version: the library, the annotation that asks
+// for a generated Koin module, and the symbol processor.
+val publishedModules = listOf(":eventus", ":eventus-koin", ":eventus-ksp")
 // One command to upload the library to Maven Central: ./gradlew publishLibrary
 // It refuses to start, with a clear message, when the one-time setup (Central Portal token, signing key) is
 // incomplete. It uploads only after everything below has passed, so a failing test stops it.
@@ -75,10 +79,11 @@ subprojects {
 // second time. By hand, use `publishLibrary`.
 val publishTasks = setOf("publishLibrary", "uploadLibrary")
 val publishRequested = gradle.startParameter.taskNames.any { it.substringAfterLast(':') in publishTasks }
-// What must pass before the library is published: `check` of the library, which is its tests on every platform
-// (desktop, Android, iOS simulator, Wasm and JS in Chrome), lint, the coverage limit and the public API check.
+// What must pass before the library is published: `check` of every published module. For the library that is
+// its tests on every platform (desktop, Android, iOS simulator, Wasm and JS in Chrome), lint, the coverage
+// limit and the public API check; for the processor, its tests, lint and the public API check.
 // The sample is not part of it: it is not what gets published.
-val checksBeforePublishing = listOf(":eventus:check")
+val checksBeforePublishing = publishedModules.map { "$it:check" }
 
 if (publishRequested) {
     val problems = buildList {
@@ -92,11 +97,13 @@ if (publishRequested) {
     }
 
     // Depending on the checks is not enough: Gradle may run tasks that do not depend on each other in any
-    // order. Every publishing task of the library therefore waits for the checks.
-    project(":eventus") {
-        tasks
-            .matching { it.name.startsWith("publish") }
-            .configureEach { mustRunAfter(checksBeforePublishing) }
+    // order. Every publishing task of every published module therefore waits for the checks.
+    publishedModules.forEach { module ->
+        project(module) {
+            tasks
+                .matching { it.name.startsWith("publish") }
+                .configureEach { mustRunAfter(checksBeforePublishing) }
+        }
     }
 }
 
@@ -104,11 +111,11 @@ tasks.register("publishLibrary") {
     group = "publishing"
     description = "Runs every check, then uploads the library to Maven Central, where it waits to be published by hand."
     dependsOn(checksBeforePublishing)
-    dependsOn(":eventus:publishToMavenCentral")
+    dependsOn(publishedModules.map { "$it:publishToMavenCentral" })
 }
 
 tasks.register("uploadLibrary") {
     group = "publishing"
     description = "Uploads the library to Maven Central without running the checks. For a commit already checked."
-    dependsOn(":eventus:publishToMavenCentral")
+    dependsOn(publishedModules.map { "$it:publishToMavenCentral" })
 }

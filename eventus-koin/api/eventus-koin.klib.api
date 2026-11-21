@@ -1,0 +1,11 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <eventus-root:eventus-koin>
+open annotation class io.github.mradzinski.eventus.koin/EventusKoinModule : kotlin/Annotation { // io.github.mradzinski.eventus.koin/EventusKoinModule|null[0]
+    constructor <init>() // io.github.mradzinski.eventus.koin/EventusKoinModule.<init>|<init>(){}[0]
+}
