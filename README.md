@@ -237,7 +237,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 
 | Guide | What it covers |
 |---|---|
-| [Key concepts](docs/key-concepts.md) | The types of the library and what each one is, and the three rules that follow from how they fit together. |
+| [Key concepts](docs/key-concepts.md) | How an event travels through Eventus, what each piece is, the lifecycle of each, and the rules that follow. Start here. |
 | [Choosing a dispatch strategy](docs/choosing-a-dispatch-strategy.md) | What happens when an event arrives again while its event handler is still running, and what the router keeps for each strategy. |
 | [Dependency injection](docs/dependency-injection.md) | Wiring event handlers with Koin, with a compile-time container, or by hand. |
 | [Checking and wiring event handlers at build time](docs/checking-and-wiring-event-handlers-at-build-time.md) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, and projects with several modules. |

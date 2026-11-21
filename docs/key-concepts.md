@@ -1,5 +1,124 @@
 # Key concepts
 
+Eventus is built from a small number of pieces that work together in one loop. This page shows the
+loop first and then explains each piece. Read it before the other pages, which assume you know these
+terms.
+
+## The loop
+
+```mermaid
+flowchart LR
+    UI -- "onEvent(event)" --> Router
+    Router -- "runs" --> EH[Event handler]
+    EH -- "update / emit" --> Store
+    Store -- "state" --> UI
+    Store -- "effects" --> UI
+```
+
+Take a counter with an Add button:
+
+1. The user taps Add. The UI sends an event: `onEvent(CounterEvent.OnIncrementClick)`.
+2. The router finds the one event handler registered for that event's class and runs it.
+3. The event handler does its job and writes the result to the store:
+   `store.update { it.copy(count = it.count + 1) }`.
+4. The store publishes the new state, and the UI draws it.
+5. If the event handler also has something for the UI to do once, such as showing a message, it emits
+   an effect, and the UI performs it.
+
+Every screen works like this, whatever it does. An event goes in, and state and effects come out.
+
+## The pieces
+
+### Event
+
+Something that happened and must be handled: a tap, a text change, something to report to analytics.
+An event is a class or object of your own that implements `UiEvent`. You declare the events of one
+screen as one sealed type:
+
+```kotlin
+sealed interface CounterEvent : UiEvent {
+
+    data object OnIncrementClick : CounterEvent
+    data object OnSaveClick : CounterEvent
+}
+```
+
+### Event handler
+
+The logic for one event. Each event has exactly one event handler, and each event handler is a class
+of its own, with a test of its own. An event handler takes what it depends on in its constructor,
+such as a repository, and receives the event and the store with each call:
+
+```kotlin
+class OnSaveClickHandler(
+    private val counters: CounterRepository,
+) : EventHandler<CounterEvent.OnSaveClick, CounterUiState, CounterEffect> {
+
+    override val eventType = CounterEvent.OnSaveClick::class
+
+    override suspend fun handle(event: CounterEvent.OnSaveClick, store: ScreenStore<CounterUiState, CounterEffect>) {
+        counters.save(store.current.count)
+        store.emit(CounterEffect.Saved)
+    }
+}
+```
+
+### Store
+
+The state and the effects of one screen, in one object: a `ScreenStore`. The router creates the store
+and hands it to every event handler. An event handler reads the state with `current`, changes it with
+`update` or `updateOptimistically`, and sends an effect with `emit`. The event handler receives the
+store and does not hold it, so an event handler keeps nothing between two events.
+
+### State
+
+Everything the UI needs to draw the screen, as one immutable value that implements `UiState`. The UI
+reads it from the router as a `StateFlow`.
+
+```kotlin
+data class CounterUiState(val count: Int = 0) : UiState
+```
+
+### Effect
+
+Something only the UI can do, once: show a message, navigate, vibrate. An effect implements
+`UiEffect`. The store delivers each effect once, to one collector, and keeps an effect until something
+collects it.
+
+```kotlin
+sealed interface CounterEffect : UiEffect {
+
+    data object Saved : CounterEffect
+}
+```
+
+### Router
+
+What the UI talks to. An `EventRouter` has three members: `state`, `effects` and `onEvent`. You create
+one router for each screen with the `EventRouter(...)` function, and your view model hands it to the
+UI by delegation, so the view model extends nothing from Eventus.
+
+### Error handler
+
+What the screen does when an event handler fails. Event handlers do not catch their own failures;
+they throw, and the router passes every failure to the screen's one `ErrorHandler`, with the event
+and the store. See [handling failures](handling-failures.md).
+
+### Dispatch strategy
+
+What the router does when an event arrives while its event handler is still running an earlier
+event of the same type. There are four: run both, keep only the latest, run them in order, or ignore the
+new one. Each event handler chooses its own. See
+[choosing a dispatch strategy](choosing-a-dispatch-strategy.md).
+
+### Scope
+
+The coroutine scope the router runs event handlers in. The router lives exactly as long as that
+scope. In a view model, `routerScope()` creates a scope that the view model and the router share. See
+[choosing the coroutine scope](choosing-the-coroutine-scope.md).
+
+### At a glance
+
 | Type | What it is |
 |---|---|
 | `UiState` | The state of one screen: everything the UI needs to draw it, as one immutable value. |
@@ -7,24 +126,73 @@
 | `UiEffect` | Something the UI must do once and then forget: show a message, navigate. |
 | `EventHandler<E, S, F>` | The logic for one event type `E` of a screen whose state is `S` and whose effects are `F`. |
 | `ErrorHandler<E, S, F>` | What the screen does when one of its event handlers fails. One per screen. |
-| `ScreenStore<S, F>` | The state and effects of one screen. The router creates it and hands it to every handler, which read it (`current`), change it (`update`, `updateOptimistically`) and send effects through it (`emit`). |
+| `ScreenStore<S, F>` | The state and effects of one screen. The router creates it and hands it to every event handler. |
 | `EventRouter<E, S, F>` | What the UI sees: `state`, `effects` and `onEvent`. Created by the `EventRouter(...)` function. |
-| `DispatchStrategy` | How a handler runs when its event arrives again while it is still running. |
+| `DispatchStrategy` | How an event handler runs when its event arrives again while it is still running. |
 | `routerScope()` | Creates the coroutine scope a view model and its router share. |
-
-Three rules follow from how these fit together:
-
-- **Declare a screen's events as one sealed type.** The router matches each event by its exact
-  class, so an event handler registered for a parent type does not receive the events of its
-  subtypes.
-- **Keep the state immutable.** `store.update { it.copy(...) }` builds a new value. A value that was
-  changed in place (an item added to a list the state already holds) is equal to the old one, so it
-  is never emitted and the UI never sees the change.
-- **The UI never gets the `ScreenStore`.** It reads `state` and `effects` and calls `onEvent`. Only
-  handlers, and the error handler, write to the store.
 
 If your app already has types called `UiState`, `UiEvent` or `UiEffect`, import these with an alias
 (`import io.github.mradzinski.eventus.UiState as EventusUiState`) or replace yours with them.
+
+## What an event handler produces
+
+An event handler can produce three things, in any combination, or none of them:
+
+| It is… | When | Example |
+|---|---|---|
+| **State** | The screen should still show it if the screen were drawn again from scratch. | The count, a loading indicator, a warning under a field. |
+| **An effect** | Only the UI can do it, once. | A "Saved" message, opening another screen. |
+| **Work** | It needs no UI at all. | Saving to a repository, reporting to analytics. |
+
+Work is done by the event handler itself, through what it depends on. An event handler that only does
+work, such as one that reports an event to analytics, changes no state and emits no effect. See
+[choosing between an effect and state](choosing-between-an-effect-and-state.md).
+
+## Lifecycle
+
+- **The router lives as long as its scope.** In a view model, that is until the view model is cleared.
+  The state lives with the router.
+- **An event handler holds nothing about the screen.** Your dependency-injection container can create
+  a fresh one for each view model.
+- **A run lasts until the event handler returns.** An event handler that does not return by itself,
+  such as one that collects a flow, runs until the scope is cancelled. See
+  [keeping work running](keeping-work-running.md).
+- **An effect waits until something collects it.** An effect emitted while nothing collects is not
+  lost.
+
+## The rules
+
+- **Every event has exactly one event handler.** An event with none throws at runtime if sent, and
+  two event handlers for one event stop the router from being created. The optional
+  [build-time check](checking-and-wiring-event-handlers-at-build-time.md) finds both when you build.
+- **Declare a screen's events as one sealed type.** The router matches each event by its exact class,
+  so an event handler registered for a parent type does not receive the events of its subtypes.
+- **Keep the state immutable.** `store.update { it.copy(...) }` builds a new value. A value that was
+  changed in place (an item added to a list the state already holds) is equal to the old one, so the
+  store never emits it and the UI never sees the change.
+- **An event handler holds no state of the screen.** What must outlast one event goes in the store.
+- **The UI never gets the store.** The UI reads `state` and `effects` and calls `onEvent`. Only event
+  handlers, and the error handler, write to the store.
+- **Eventus knows nothing about a UI.** Nothing in the router starts or stops because a screen is
+  visible or hidden.
+
+## The words these docs use
+
+- **Screen:** whatever one router serves. That is usually a screen of your app, but it can be anything
+  with events and state, such as an app bar shared by several screens.
+- **Run:** one execution of an event handler, for one event.
+- **Store:** the `ScreenStore` of a screen.
+- **Collector:** the code that receives the effects, usually in the UI.
+- **Handler:** short for event handler, once a page has said which kind it means. An error handler is
+  always called by its full name.
+
+## Where to go next
+
+- To choose how an event handler behaves under repeated events:
+  [choosing a dispatch strategy](choosing-a-dispatch-strategy.md).
+- To give event handlers to a view model: [dependency injection](dependency-injection.md).
+- To decide what happens when an event handler fails: [handling failures](handling-failures.md).
+- To test what you wrote: [testing](testing.md).
 
 ---
 
