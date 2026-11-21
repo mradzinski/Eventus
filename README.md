@@ -68,9 +68,36 @@ kotlin {
 }
 ```
 
-Two more artifacts are optional: `eventus-ksp`, which finds a missing handler when the app is built, and
-`eventus-koin`, which lets it write your Koin module of handlers. See
-[handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build).
+That is all the library needs. One more step is optional, and recommended.
+
+### Recommended: the build-time check
+
+`eventus-ksp` is a [KSP](https://kotlinlang.org/docs/ksp-overview.html) processor. With it, an event
+that has no handler fails the build; without it, that event throws when it is sent. It runs while your
+app is built and is never part of the app.
+
+Add the KSP plugin, 2.3.12 or newer, and the processor once for every target of the module:
+
+```kotlin
+// build.gradle.kts of the module that holds your screens
+plugins {
+    id("com.google.devtools.ksp") version "2.3.14"
+}
+
+dependencies {
+    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+}
+```
+
+A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
+a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc01")`.
+
+If you use Koin, the processor can also write the Koin module of your handlers. That takes one more
+artifact, `eventus-koin`, and one annotated property. See
+[handlers checked and wired by the build](#handlers-checked-and-wired-by-the-build) for both.
 
 ## Quick start
 
@@ -119,6 +146,10 @@ class OnSaveClickHandler(
     }
 }
 ```
+
+Every event needs exactly one handler. With [`eventus-ksp`](#recommended-the-build-time-check) the
+build tells you when one is missing: add an event to `CounterEvent` and forget its handler, and the
+module no longer compiles.
 
 **3. Give the router to the UI through your view model.** The view model has no logic. It delegates
 `state`, `effects` and `onEvent` to the router.
@@ -656,8 +687,8 @@ TaskListViewModel(
 
 ## Handlers checked and wired by the build
 
-`eventus-ksp` is an optional [KSP](https://kotlinlang.org/docs/ksp-overview.html) processor. It runs
-while your app is built, and is never part of the app. It does two things in the Gradle module you add
+`eventus-ksp` is an optional, recommended [KSP](https://kotlinlang.org/docs/ksp-overview.html)
+processor. It runs while your app is built, and is never part of the app. It does two things in the Gradle module you add
 it to:
 
 - **It checks the handlers.** An event without a handler class fails the build, not the app.
@@ -665,24 +696,8 @@ it to:
 
 ### Set up
 
-Add the KSP plugin, 2.3.12 or newer, and the processor once for every target of the module:
-
-```kotlin
-// build.gradle.kts of the module that holds your screens
-plugins {
-    id("com.google.devtools.ksp") version "2.3.14"
-}
-
-dependencies {
-    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-}
-```
-
-A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
-a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc01")`.
+Add the KSP plugin and the processor as shown in
+[the build-time check](#recommended-the-build-time-check) under Install.
 
 Building one target runs the processor for that target only, so a day of running the Android app runs
 it once per build, not once per target.
