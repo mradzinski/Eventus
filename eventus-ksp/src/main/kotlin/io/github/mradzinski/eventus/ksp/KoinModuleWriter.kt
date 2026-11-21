@@ -1,5 +1,6 @@
 package io.github.mradzinski.eventus.ksp
 
+import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.ClassKind
@@ -30,7 +31,7 @@ internal fun writeKoinModule(
     val file = codeGenerator.createNewFile(
         dependencies = Dependencies(aggregating = true, sources = sources.distinct().toTypedArray()),
         packageName = property.packageName.asString(),
-        fileName = "Eventus" + name.replaceFirstChar { it.uppercase() },
+        fileName = "Eventus" + name.first().uppercaseChar() + name.drop(1),
     )
 
     file.use { it.write(property.source(lines).toByteArray()) }
@@ -70,8 +71,10 @@ private fun Handler.definition(): String {
 private fun KSClassDeclaration.creation(): String {
     if (classKind == ClassKind.OBJECT) return "factory { $displayName }"
 
-    val parameterCount = primaryConstructor?.parameters?.size ?: 0
-    val arguments = List(parameterCount) { "get()" }.joinToString()
+    // A class with no primary constructor has at least one written out, or it would have the default one.
+    val constructor = primaryConstructor ?: getConstructors().first()
+
+    val arguments = List(constructor.parameters.size) { "get()" }.joinToString()
 
     return "factory { $displayName($arguments) }"
 }

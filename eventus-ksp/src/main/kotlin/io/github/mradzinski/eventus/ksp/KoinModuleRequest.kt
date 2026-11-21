@@ -42,10 +42,8 @@ private fun KSPropertyDeclaration.wrongTypeProblem(): Problem? {
     val type = type
         .resolve()
         .toClassType()
-        ?.declaration
-        ?.displayName
 
-    if (type == KOIN_MODULE) return null
+    if (type?.declaration?.displayName == KOIN_MODULE) return null
 
     return Problem(
         message = "${simpleName.asString()} must have the type $KOIN_MODULE.",

@@ -74,13 +74,8 @@ private fun KSClassDeclaration.toHandler(): Handler? {
 private fun KSClassDeclaration.isEventRoot(): Boolean {
     if (!isSealed || !isSubtypeOf(UI_EVENT)) return false
 
-    val hasSealedParent = superTypes.any { reference ->
-        reference
-            .resolve()
-            .toClassType()
-            ?.declaration
-            ?.isSealed == true
-    }
+    val parents = superTypes.mapNotNull { it.resolve().toClassType() }
+    val hasSealedParent = parents.any { it.declaration.isSealed }
 
     return !hasSealedParent
 }

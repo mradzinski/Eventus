@@ -30,27 +30,25 @@ internal fun KSClassDeclaration.isSubtypeOf(qualifiedName: String): Boolean = pa
 internal fun KSType.toClassType(bound: Map<String, KSType> = emptyMap()): ClassType? {
     if (isError) return null
 
+    // A star projection has no type of its own.
     val arguments = arguments.map { argument ->
-        argument.type
-            ?.resolve()
-            ?.substitute(bound)
+        argument.type?.let { it.resolve().substitute(bound) }
     }
 
-    return when (val declaration = declaration) {
-        is KSClassDeclaration -> ClassType(declaration, arguments)
+    val declaration = declaration
 
-        is KSTypeAlias ->
-            declaration.type
-                .resolve()
-                .toClassType(declaration.typeParameters.bind(arguments))
-
-        else -> null
+    if (declaration is KSTypeAlias) {
+        return declaration.type
+            .resolve()
+            .toClassType(declaration.typeParameters.bind(arguments))
     }
+
+    return (declaration as? KSClassDeclaration)?.let { ClassType(it, arguments) }
 }
 
 /** The way from this supertype to the one named [qualifiedName]: none if it is that one, or through it. */
 private fun ClassType.pathOnTo(qualifiedName: String): SupertypePath? {
-    if (declaration.qualifiedName?.asString() == qualifiedName) return SupertypePath(this, through = emptyList())
+    if (declaration.displayName == qualifiedName) return SupertypePath(this, through = emptyList())
 
     val path = declaration.pathTo(qualifiedName, bindings())
 

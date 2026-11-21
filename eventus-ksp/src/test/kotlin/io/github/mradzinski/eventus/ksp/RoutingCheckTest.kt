@@ -142,6 +142,47 @@ class RoutingCheckTest {
     }
 
     @Test
+    fun `an abstract event class is not required to have a handler`() {
+        val events = """
+            import io.github.mradzinski.eventus.UiEvent
+
+            sealed interface EditorEvent : UiEvent {
+                abstract class Draft : EditorEvent
+                data object OnSave : EditorEvent
+            }
+
+            class OnSaveHandler : io.github.mradzinski.eventus.EventHandler<EditorEvent.OnSave, ListState, ListEffect> {
+                override val eventType = EditorEvent.OnSave::class
+                override suspend fun handle(event: EditorEvent.OnSave, store: ListStore) = Unit
+            }
+        """.trimIndent()
+
+        val compiled = compile(listScreen, allListHandlers, events)
+
+        compiled.problems.shouldBeEmpty()
+        compiled.succeeded shouldBe true
+    }
+
+    // The compiler reports the unknown names itself; the processor must leave them to it and not fail.
+    @Test
+    fun `code that does not resolve is left to the compiler`() {
+        val broken = """
+            import io.github.mradzinski.eventus.UiEvent
+
+            class BrokenHandler : Missing<ListEvent.OnStart>()
+
+            class HalfBrokenHandler : ListHandler<Missing> ${handlerBody("ListEvent.OnStart")}
+
+            sealed interface BrokenEvent : UiEvent, Missing
+        """.trimIndent()
+
+        val compiled = compile(listScreen, allListHandlers, broken)
+
+        compiled.succeeded shouldBe false
+        compiled.problems.none { it.startsWith("No handler for app.ListEvent") } shouldBe true
+    }
+
+    @Test
     fun `a sealed type that is not an event is left alone`() {
         val other = """
             sealed interface Shape {

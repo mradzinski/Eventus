@@ -12,14 +12,16 @@ internal class Problem(val message: String, val symbol: KSNode)
  * a handler the router can never call.
  */
 internal fun Scan.routingProblems(): List<Problem> {
-    val routable = handlers.filter { it.isRoutable() }
-    val handlersByEvent = routable.groupBy { it.event?.displayName }
+    val handlersByEvent = handlers
+        .mapNotNull { handler -> handler.routableEvent?.let { event -> event.displayName to handler } }
+        .groupBy(keySelector = { it.first }, valueTransform = { it.second })
+
     val unroutable = handlers.mapNotNull { it.unroutableProblem() }
 
-    val duplicates = handlersByEvent.values.flatMap { sameEvent ->
+    val duplicates = handlersByEvent.flatMap { (event, sameEvent) ->
         sameEvent
             .drop(1)
-            .map { it.duplicateProblem(first = sameEvent.first()) }
+            .map { it.duplicateProblem(event = event, first = sameEvent.first()) }
     }
 
     val missing = eventRoots
@@ -46,7 +48,10 @@ internal fun Scan.koinProblems(): List<Problem> {
 }
 
 /** The router matches an event by its exact class, so only a handler of one concrete class is ever called. */
-internal fun Handler.isRoutable(): Boolean = event != null && !event.isAbstract
+internal fun Handler.isRoutable(): Boolean = routableEvent != null
+
+/** The event this handler is called for, or null when the router can never call it. */
+internal val Handler.routableEvent: KSClassDeclaration? get() = event?.takeUnless { it.isAbstract }
 
 /** The concrete event classes of a sealed type, including those of the sealed types nested in it. */
 private fun KSClassDeclaration.leaves(): List<KSClassDeclaration> = getSealedSubclasses()
@@ -75,8 +80,8 @@ private fun Handler.unroutableProblem(): Problem? {
     )
 }
 
-private fun Handler.duplicateProblem(first: Handler): Problem = Problem(
-    message = "${event?.displayName} has two handlers: ${first.declaration.displayName} and " +
+private fun Handler.duplicateProblem(event: String, first: Handler): Problem = Problem(
+    message = "$event has two handlers: ${first.declaration.displayName} and " +
         "${declaration.displayName}. An event has exactly one handler.",
     symbol = declaration,
 )

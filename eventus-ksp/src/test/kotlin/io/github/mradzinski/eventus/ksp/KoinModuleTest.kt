@@ -56,6 +56,22 @@ class KoinModuleTest {
     }
 
     @Test
+    fun `a handler with only a secondary constructor gets an argument for each of its parameters`() {
+        val handlers = allListHandlers.replace(
+            "class OnSearchHandler(val limit: Int) :",
+            "class OnSearchHandler :",
+        ).replace(
+            "override val eventType = ListEvent.OnSearch::class",
+            "constructor(limit: Int, name: String)\n        override val eventType = ListEvent.OnSearch::class",
+        )
+
+        val compiled = compile(listScreen, handlers, koinModuleRequest)
+
+        compiled.problems.shouldBeEmpty()
+        compiled.definitions() shouldContain "factory { app.OnSearchHandler(get(), get()) } bind app.ListHandler::class"
+    }
+
+    @Test
     fun `handlers of the same name on two screens are both registered`() {
         val editorScreen = """
             package app.editor
@@ -185,6 +201,26 @@ class KoinModuleTest {
         compiled.problems shouldContainExactly listOf(
             "handlersModule must have the type org.koin.core.module.Module.",
         )
+    }
+
+    @Test
+    fun `a property with type arguments that is not a module fails the build`() {
+        val request = koinModuleRequest.replace("org.koin.core.module.Module", "List<*>")
+        val compiled = compile(listScreen, allListHandlers, request)
+
+        compiled.koinModule.shouldBeNull()
+        compiled.problems shouldContainExactly listOf(
+            "handlersModule must have the type org.koin.core.module.Module.",
+        )
+    }
+
+    @Test
+    fun `a property whose type does not resolve fails the build`() {
+        val request = koinModuleRequest.replace("org.koin.core.module.Module", "Missing")
+        val compiled = compile(listScreen, allListHandlers, request)
+
+        compiled.koinModule.shouldBeNull()
+        compiled.problems shouldContain "handlersModule must have the type org.koin.core.module.Module."
     }
 
     @Test
