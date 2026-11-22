@@ -108,6 +108,22 @@ afterEvaluate {
     tasks.named("unpackSkikoWasmRuntime") { setOnlyIf { true } }
 }
 
+// The browser loads the drawing engine in the background, and nothing makes a test wait for it. A test
+// that composes before the engine has loaded fails with "... is not a function", which happens on a slow
+// machine such as a CI runner. This makes the engine's own loader wait until it is ready, so whatever
+// imports it, the tests included, starts after that. The task is looked up by name because the Compose
+// plugin creates it late.
+val skikoLoader = layout.buildDirectory.file("compose/skiko-runtime-processed-wasmjs/skiko.mjs")
+
+tasks.matching { it.name == "processSkikoRuntimeForKWasm" }.configureEach {
+    doLast {
+        skikoLoader
+            .get()
+            .asFile
+            .appendText("\nawait awaitSkiko;\n")
+    }
+}
+
 /** The lowest share of covered lines the build accepts, in percent. The same limit as `:eventus`. */
 val minimumLineCoveragePercent = 95
 
