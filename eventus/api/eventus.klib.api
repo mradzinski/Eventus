@@ -27,6 +27,10 @@ abstract fun interface <#A: in io.github.mradzinski.eventus/UiEvent> io.github.m
     }
 }
 
+abstract fun interface <#A: in io.github.mradzinski.eventus/UiEvent> io.github.mradzinski.eventus/RouterObserver { // io.github.mradzinski.eventus/RouterObserver|null[0]
+    abstract fun observe(io.github.mradzinski.eventus/RouterTrace<#A>) // io.github.mradzinski.eventus/RouterObserver.observe|observe(io.github.mradzinski.eventus.RouterTrace<1:0>){}[0]
+}
+
 abstract fun interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/ErrorHandler { // io.github.mradzinski.eventus/ErrorHandler|null[0]
     abstract fun handle(#A, kotlin/Throwable, io.github.mradzinski.eventus/ScreenStore<#B, #C>) // io.github.mradzinski.eventus/ErrorHandler.handle|handle(1:0;kotlin.Throwable;io.github.mradzinski.eventus.ScreenStore<1:1,1:2>){}[0]
 }
@@ -54,6 +58,132 @@ abstract interface io.github.mradzinski.eventus/UiEffect // io.github.mradzinski
 abstract interface io.github.mradzinski.eventus/UiEvent // io.github.mradzinski.eventus/UiEvent|null[0]
 
 abstract interface io.github.mradzinski.eventus/UiState // io.github.mradzinski.eventus/UiState|null[0]
+
+sealed interface <#A: out io.github.mradzinski.eventus/UiEvent> io.github.mradzinski.eventus/RouterTrace { // io.github.mradzinski.eventus/RouterTrace|null[0]
+    abstract val event // io.github.mradzinski.eventus/RouterTrace.event|{}event[0]
+        abstract fun <get-event>(): #A // io.github.mradzinski.eventus/RouterTrace.event.<get-event>|<get-event>(){}[0]
+    abstract val number // io.github.mradzinski.eventus/RouterTrace.number|{}number[0]
+        abstract fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.number.<get-number>|<get-number>(){}[0]
+
+    final class <#A1: out io.github.mradzinski.eventus/UiEvent> Cancelled : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.Cancelled|null[0]
+        constructor <init>(#A1, kotlin/Long, io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason) // io.github.mradzinski.eventus/RouterTrace.Cancelled.<init>|<init>(1:0;kotlin.Long;io.github.mradzinski.eventus.RouterTrace.Cancelled.Reason){}[0]
+
+        final val event // io.github.mradzinski.eventus/RouterTrace.Cancelled.event|{}event[0]
+            final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.Cancelled.event.<get-event>|<get-event>(){}[0]
+        final val number // io.github.mradzinski.eventus/RouterTrace.Cancelled.number|{}number[0]
+            final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Cancelled.number.<get-number>|<get-number>(){}[0]
+        final val reason // io.github.mradzinski.eventus/RouterTrace.Cancelled.reason|{}reason[0]
+            final fun <get-reason>(): io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason // io.github.mradzinski.eventus/RouterTrace.Cancelled.reason.<get-reason>|<get-reason>(){}[0]
+
+        final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.Cancelled.component1|component1(){}[0]
+        final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Cancelled.component2|component2(){}[0]
+        final fun component3(): io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason // io.github.mradzinski.eventus/RouterTrace.Cancelled.component3|component3(){}[0]
+        final fun copy(#A1 = ..., kotlin/Long = ..., io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason = ...): io.github.mradzinski.eventus/RouterTrace.Cancelled<#A1> // io.github.mradzinski.eventus/RouterTrace.Cancelled.copy|copy(1:0;kotlin.Long;io.github.mradzinski.eventus.RouterTrace.Cancelled.Reason){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Cancelled.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Cancelled.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Cancelled.toString|toString(){}[0]
+
+        sealed interface Reason { // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason|null[0]
+            final class ReplacedBy : io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason { // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy|null[0]
+                constructor <init>(kotlin/Long) // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.<init>|<init>(kotlin.Long){}[0]
+
+                final val number // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.number|{}number[0]
+                    final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.number.<get-number>|<get-number>(){}[0]
+
+                final fun component1(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.component1|component1(){}[0]
+                final fun copy(kotlin/Long = ...): io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.copy|copy(kotlin.Long){}[0]
+                final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.equals|equals(kotlin.Any?){}[0]
+                final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.hashCode|hashCode(){}[0]
+                final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ReplacedBy.toString|toString(){}[0]
+            }
+
+            final object ByHandler : io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason { // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ByHandler|null[0]
+                final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ByHandler.equals|equals(kotlin.Any?){}[0]
+                final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ByHandler.hashCode|hashCode(){}[0]
+                final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ByHandler.toString|toString(){}[0]
+            }
+
+            final object ScopeCancelled : io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason { // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ScopeCancelled|null[0]
+                final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ScopeCancelled.equals|equals(kotlin.Any?){}[0]
+                final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ScopeCancelled.hashCode|hashCode(){}[0]
+                final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Cancelled.Reason.ScopeCancelled.toString|toString(){}[0]
+            }
+        }
+    }
+
+    final class <#A1: out io.github.mradzinski.eventus/UiEvent> Completed : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.Completed|null[0]
+        constructor <init>(#A1, kotlin/Long) // io.github.mradzinski.eventus/RouterTrace.Completed.<init>|<init>(1:0;kotlin.Long){}[0]
+
+        final val event // io.github.mradzinski.eventus/RouterTrace.Completed.event|{}event[0]
+            final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.Completed.event.<get-event>|<get-event>(){}[0]
+        final val number // io.github.mradzinski.eventus/RouterTrace.Completed.number|{}number[0]
+            final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Completed.number.<get-number>|<get-number>(){}[0]
+
+        final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.Completed.component1|component1(){}[0]
+        final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Completed.component2|component2(){}[0]
+        final fun copy(#A1 = ..., kotlin/Long = ...): io.github.mradzinski.eventus/RouterTrace.Completed<#A1> // io.github.mradzinski.eventus/RouterTrace.Completed.copy|copy(1:0;kotlin.Long){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Completed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Completed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Completed.toString|toString(){}[0]
+    }
+
+    final class <#A1: out io.github.mradzinski.eventus/UiEvent> Dispatched : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.Dispatched|null[0]
+        constructor <init>(#A1, kotlin/Long, io.github.mradzinski.eventus/Dispatch, kotlin.collections/List<kotlin/Long>) // io.github.mradzinski.eventus/RouterTrace.Dispatched.<init>|<init>(1:0;kotlin.Long;io.github.mradzinski.eventus.Dispatch;kotlin.collections.List<kotlin.Long>){}[0]
+
+        final val dispatch // io.github.mradzinski.eventus/RouterTrace.Dispatched.dispatch|{}dispatch[0]
+            final fun <get-dispatch>(): io.github.mradzinski.eventus/Dispatch // io.github.mradzinski.eventus/RouterTrace.Dispatched.dispatch.<get-dispatch>|<get-dispatch>(){}[0]
+        final val event // io.github.mradzinski.eventus/RouterTrace.Dispatched.event|{}event[0]
+            final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.Dispatched.event.<get-event>|<get-event>(){}[0]
+        final val number // io.github.mradzinski.eventus/RouterTrace.Dispatched.number|{}number[0]
+            final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Dispatched.number.<get-number>|<get-number>(){}[0]
+        final val others // io.github.mradzinski.eventus/RouterTrace.Dispatched.others|{}others[0]
+            final fun <get-others>(): kotlin.collections/List<kotlin/Long> // io.github.mradzinski.eventus/RouterTrace.Dispatched.others.<get-others>|<get-others>(){}[0]
+
+        final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.Dispatched.component1|component1(){}[0]
+        final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Dispatched.component2|component2(){}[0]
+        final fun component3(): io.github.mradzinski.eventus/Dispatch // io.github.mradzinski.eventus/RouterTrace.Dispatched.component3|component3(){}[0]
+        final fun component4(): kotlin.collections/List<kotlin/Long> // io.github.mradzinski.eventus/RouterTrace.Dispatched.component4|component4(){}[0]
+        final fun copy(#A1 = ..., kotlin/Long = ..., io.github.mradzinski.eventus/Dispatch = ..., kotlin.collections/List<kotlin/Long> = ...): io.github.mradzinski.eventus/RouterTrace.Dispatched<#A1> // io.github.mradzinski.eventus/RouterTrace.Dispatched.copy|copy(1:0;kotlin.Long;io.github.mradzinski.eventus.Dispatch;kotlin.collections.List<kotlin.Long>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Dispatched.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Dispatched.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Dispatched.toString|toString(){}[0]
+    }
+
+    final class <#A1: out io.github.mradzinski.eventus/UiEvent> Failed : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.Failed|null[0]
+        constructor <init>(#A1, kotlin/Long, kotlin/Throwable) // io.github.mradzinski.eventus/RouterTrace.Failed.<init>|<init>(1:0;kotlin.Long;kotlin.Throwable){}[0]
+
+        final val error // io.github.mradzinski.eventus/RouterTrace.Failed.error|{}error[0]
+            final fun <get-error>(): kotlin/Throwable // io.github.mradzinski.eventus/RouterTrace.Failed.error.<get-error>|<get-error>(){}[0]
+        final val event // io.github.mradzinski.eventus/RouterTrace.Failed.event|{}event[0]
+            final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.Failed.event.<get-event>|<get-event>(){}[0]
+        final val number // io.github.mradzinski.eventus/RouterTrace.Failed.number|{}number[0]
+            final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Failed.number.<get-number>|<get-number>(){}[0]
+
+        final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.Failed.component1|component1(){}[0]
+        final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Failed.component2|component2(){}[0]
+        final fun component3(): kotlin/Throwable // io.github.mradzinski.eventus/RouterTrace.Failed.component3|component3(){}[0]
+        final fun copy(#A1 = ..., kotlin/Long = ..., kotlin/Throwable = ...): io.github.mradzinski.eventus/RouterTrace.Failed<#A1> // io.github.mradzinski.eventus/RouterTrace.Failed.copy|copy(1:0;kotlin.Long;kotlin.Throwable){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Failed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Failed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Failed.toString|toString(){}[0]
+    }
+
+    final class <#A1: out io.github.mradzinski.eventus/UiEvent> Started : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.Started|null[0]
+        constructor <init>(#A1, kotlin/Long) // io.github.mradzinski.eventus/RouterTrace.Started.<init>|<init>(1:0;kotlin.Long){}[0]
+
+        final val event // io.github.mradzinski.eventus/RouterTrace.Started.event|{}event[0]
+            final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.Started.event.<get-event>|<get-event>(){}[0]
+        final val number // io.github.mradzinski.eventus/RouterTrace.Started.number|{}number[0]
+            final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Started.number.<get-number>|<get-number>(){}[0]
+
+        final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.Started.component1|component1(){}[0]
+        final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Started.component2|component2(){}[0]
+        final fun copy(#A1 = ..., kotlin/Long = ...): io.github.mradzinski.eventus/RouterTrace.Started<#A1> // io.github.mradzinski.eventus/RouterTrace.Started.copy|copy(1:0;kotlin.Long){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.Started.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.Started.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Started.toString|toString(){}[0]
+    }
+}
 
 sealed interface io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch|null[0]
     final class Replace : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.Replace|null[0]
@@ -98,5 +228,5 @@ final class <#A: io.github.mradzinski.eventus/UiState, #B: io.github.mradzinski.
     final suspend fun <#A1: kotlin/Any?> updateOptimistically(kotlin/Function1<#A, #A>, kotlin/Function1<#A, #A>, kotlin.coroutines/SuspendFunction0<#A1>): #A1 // io.github.mradzinski.eventus/ScreenStore.updateOptimistically|updateOptimistically(kotlin.Function1<1:0,1:0>;kotlin.Function1<1:0,1:0>;kotlin.coroutines.SuspendFunction0<0:0>){0§<kotlin.Any?>}[0]
 }
 
-final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/EventRouter(kotlinx.coroutines/CoroutineScope, #B, kotlin.collections/Collection<io.github.mradzinski.eventus/EventHandler<*, #B, #C>>, io.github.mradzinski.eventus/ErrorHandler<#A, #B, #C>? = ...): io.github.mradzinski.eventus/EventRouter<#A, #B, #C> // io.github.mradzinski.eventus/EventRouter|EventRouter(kotlinx.coroutines.CoroutineScope;0:1;kotlin.collections.Collection<io.github.mradzinski.eventus.EventHandler<*,0:1,0:2>>;io.github.mradzinski.eventus.ErrorHandler<0:0,0:1,0:2>?){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]
+final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/EventRouter(kotlinx.coroutines/CoroutineScope, #B, kotlin.collections/Collection<io.github.mradzinski.eventus/EventHandler<*, #B, #C>>, io.github.mradzinski.eventus/ErrorHandler<#A, #B, #C>? = ..., io.github.mradzinski.eventus/RouterObserver<#A>? = ...): io.github.mradzinski.eventus/EventRouter<#A, #B, #C> // io.github.mradzinski.eventus/EventRouter|EventRouter(kotlinx.coroutines.CoroutineScope;0:1;kotlin.collections.Collection<io.github.mradzinski.eventus.EventHandler<*,0:1,0:2>>;io.github.mradzinski.eventus.ErrorHandler<0:0,0:1,0:2>?;io.github.mradzinski.eventus.RouterObserver<0:0>?){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]
 final fun io.github.mradzinski.eventus/routerScope(): kotlinx.coroutines/CoroutineScope // io.github.mradzinski.eventus/routerScope|routerScope(){}[0]

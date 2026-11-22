@@ -256,7 +256,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | [Updating the state optimistically](docs/updating-the-state-optimistically.md) | Showing a result at once and putting it back if the work fails. |
 | [Reaching another screen](docs/reaching-another-screen.md) | How one screen affects another without an event bus. |
 | [Choosing the coroutine scope](docs/choosing-the-coroutine-scope.md) | Which scope the router runs in, who cancels it, and threads. |
-| [Logging events](docs/logging-events.md) | Logging every event of a screen with a router that wraps another. |
+| [Logging events](docs/logging-events.md) | Having the router report what it does with each event: ignored, replaced, waiting, started and how it ended. One line gives a log, and a test can check the reports. |
 | [Where Eventus sits in your app](docs/where-eventus-sits-in-your-app.md) | Which modules of an app depend on Eventus and which never do. |
 | [What Eventus does not do](docs/what-eventus-does-not-do.md) | The limits of the library, stated plainly. |
 | [Project layout](docs/project-layout.md) | The modules of this repository, and how to run the sample, the checks and the formatter. |

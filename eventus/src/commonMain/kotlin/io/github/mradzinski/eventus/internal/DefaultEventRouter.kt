@@ -4,12 +4,15 @@ import io.github.mradzinski.eventus.Dispatch
 import io.github.mradzinski.eventus.ErrorHandler
 import io.github.mradzinski.eventus.EventHandler
 import io.github.mradzinski.eventus.EventRouter
+import io.github.mradzinski.eventus.RouterObserver
+import io.github.mradzinski.eventus.RouterTrace
 import io.github.mradzinski.eventus.ScreenStore
 import io.github.mradzinski.eventus.UiEffect
 import io.github.mradzinski.eventus.UiEvent
 import io.github.mradzinski.eventus.UiState
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.reflect.KClass
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -20,7 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /** The router behind the public `EventRouter` function. Its behavior is documented there. */
@@ -29,6 +32,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     initialState: S,
     handlers: Collection<EventHandler<*, S, F>>,
     private val errorHandler: ErrorHandler<E, S, F>?,
+    observer: RouterObserver<E>? = null,
 ) : EventRouter<E, S, F> {
 
     private val store = ScreenStore<S, F>(initialState)
@@ -56,8 +60,9 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     private val scope = CoroutineScope(scope.coroutineContext + SupervisorJob(parent = scope.coroutineContext[Job]))
 
     /**
-     * Guards [active] and [version]. It is only ever held to read or change them: no strategy, no
-     * handler, no error handler and no completion callback runs while it is held.
+     * Guards [active], [version], [lastNumber] and the queue of [reports]. It is only ever held to
+     * read or change them: no strategy, no handler, no error handler, no observer and no completion
+     * callback runs while it is held.
      */
     private val lock = SynchronizedObject()
 
@@ -66,6 +71,14 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
 
     /** Changes with every change of [active], so a decision made on an older list can be told apart. */
     private var version = 0
+
+    /** The number given to the last event that was dispatched. Only counted for an observer. */
+    private var lastNumber = 0L
+
+    /** Null without an observer: the router then numbers nothing and builds no report. */
+    private val reports: ReportQueue<E>? = observer?.let {
+        ReportQueue(observer = it, lock = lock, onFailure = ::failObserver)
+    }
 
     /** How many runs the router is keeping track of. Only for the test that checks nothing is retained. */
     internal val trackedRunCount: Int
@@ -127,58 +140,74 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         dispatch: Dispatch,
         version: Int,
     ): Boolean {
-        var replaced = emptyList<Job>()
+        var named = emptyList<ActiveRun<E>>()
+        var batch: ArrayList<RouterTrace<E>>? = null
 
         val run = synchronized(lock) {
             if (this.version != version) return false
 
-            val after = when (dispatch) {
-                is Dispatch.Ignore -> return true
+            named = runsNamedBy(dispatch)
 
-                is Dispatch.Run -> emptyList()
+            // Numbered and queued under the lock, so decisions are reported in the order they were made.
+            val number = nextNumber()
 
-                is Dispatch.WaitFor -> jobsOf(dispatch.events)
+            batch = reports?.queue(RouterTrace.Dispatched(event, number, dispatch, named.map { it.number }))
 
-                is Dispatch.Replace -> {
-                    replaced = jobsOf(dispatch.events)
+            if (dispatch is Dispatch.Ignore) return@synchronized null
+            if (dispatch is Dispatch.Replace) named.forEach { it.replacedBy = it.replacedBy ?: number }
 
-                    emptyList()
-                }
-            }
-
-            newRun(event, handler, after).also { run ->
-                active += ActiveRun(event, run)
+            ActiveRun(event, number).also { run ->
+                run.job = newRun(run, handler, after = if (dispatch is Dispatch.WaitFor) named else emptyList())
+                active += run
                 this.version++
             }
         }
 
-        run.invokeOnCompletion { forget(run) }
-        replaced.forEach { it.cancel() }
-        run.start()
+        reports?.deliver(batch)
+
+        if (run == null) return true
+
+        run.job.invokeOnCompletion { cause -> end(run, cause) }
+        if (dispatch is Dispatch.Replace) named.forEach { it.job.cancel() }
+        run.job.start()
 
         return true
     }
 
-    /** The runs of the active events that are equal to one of [events]. Called with the lock held. */
-    private fun jobsOf(events: List<UiEvent>): List<Job> {
+    private fun nextNumber(): Long {
+        if (reports == null) return 0
+
+        return ++lastNumber
+    }
+
+    /** The active runs of the events that [dispatch] names, by equality. Called with the lock held. */
+    private fun runsNamedBy(dispatch: Dispatch): List<ActiveRun<E>> {
+        val events = when (dispatch) {
+            is Dispatch.Run -> return emptyList()
+            is Dispatch.Ignore -> return emptyList()
+            is Dispatch.WaitFor -> dispatch.events
+            is Dispatch.Replace -> dispatch.events
+        }
+
         val named = events.toSet()
 
-        return active
-            .filter { it.event in named }
-            .map { it.job }
+        return active.filter { it.event in named }
     }
 
     /**
-     * Creates the run of [event] without starting it, so that no handler code runs while the lock is
+     * Creates the job of [run] without starting it, so that no handler code runs while the lock is
      * held. It first waits for the runs in [after]; `join` returns however they ended.
      */
     private fun newRun(
-        event: E,
+        run: ActiveRun<E>,
         handler: EventHandler<E, S, F>,
-        after: List<Job>,
-    ): Job = scope.launch(context = errorContext(event), start = CoroutineStart.LAZY) {
-        after.joinAll()
-        handler.handle(event, store)
+        after: List<ActiveRun<E>>,
+    ): Job = scope.launch(context = errorContext(run.event), start = CoroutineStart.LAZY) {
+        after.forEach { it.job.join() }
+        reports?.let { reports ->
+            reports.deliver(synchronized(lock) { reports.queue(RouterTrace.Started(run.event, run.number)) })
+        }
+        handler.handle(run.event, store)
     }
 
     private fun errorContext(event: E): CoroutineContext {
@@ -187,14 +216,50 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         return CoroutineExceptionHandler { _, error -> errorHandler.handle(event, error, store) }
     }
 
-    private fun forget(run: Job) {
-        synchronized(lock) {
-            active.removeAll { it.job === run }
+    /** Forgets [run] and reports how it ended, under one lock so that the two cannot be told apart. */
+    private fun end(run: ActiveRun<E>, cause: Throwable?) {
+        val batch = synchronized(lock) {
+            active.remove(run)
             version++
+            reports?.queue(run.ended(cause, scopeIsActive = scope.isActive))
         }
+
+        reports?.deliver(batch)
     }
 
-    private class ActiveRun<E>(val event: E, val job: Job)
+    /**
+     * An observer that throws is a mistake in the code, like a strategy that throws: it fails in the
+     * scope as an uncaught error. Once the scope is cancelled the failure is dropped.
+     */
+    private fun failObserver(trace: RouterTrace<E>, error: Exception) {
+        scope.launch { throw IllegalStateException("The observer failed for: $trace", error) }
+    }
+
+    /** A run that is running or waiting. Its [job] is set, and [replacedBy] changed, under the lock. */
+    private class ActiveRun<E : UiEvent>(val event: E, val number: Long) {
+
+        lateinit var job: Job
+
+        /** The number of the first event whose strategy replaced this run, if any. */
+        var replacedBy: Long? = null
+
+        /** The report of how this run ended, from the [cause] its job completed with. */
+        fun ended(cause: Throwable?, scopeIsActive: Boolean): RouterTrace<E> = when (cause) {
+            null -> RouterTrace.Completed(event, number)
+            is CancellationException -> RouterTrace.Cancelled(event, number, reason(scopeIsActive))
+            else -> RouterTrace.Failed(event, number, cause)
+        }
+
+        private fun reason(scopeIsActive: Boolean): RouterTrace.Cancelled.Reason {
+            val replacedBy = replacedBy
+
+            return when {
+                replacedBy != null -> RouterTrace.Cancelled.Reason.ReplacedBy(replacedBy)
+                scopeIsActive -> RouterTrace.Cancelled.Reason.ByHandler
+                else -> RouterTrace.Cancelled.Reason.ScopeCancelled
+            }
+        }
+    }
 
     private class Snapshot(val events: List<UiEvent>, val version: Int)
 }

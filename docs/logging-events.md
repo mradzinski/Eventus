@@ -1,43 +1,164 @@
 # Logging events
 
-`EventRouter` is an interface, so anything that should see every event is a wrapper around it and
-needs nothing from the library:
+The router can tell you what it does with every event: what the event's strategy answered, when its
+event handler started, and how its run ended. Pass an `observer` when you create the router. Each
+report prints as a sentence, so one line is a log:
 
 ```kotlin
-class LoggingRouter<E : UiEvent, S : UiState, F : UiEffect>(
-    private val delegate: EventRouter<E, S, F>,
-    private val log: (String) -> Unit,
-) : EventRouter<E, S, F> by delegate {
+class EditorViewModel(
+    handlers: Collection<EditorHandler<*>>,
+    scope: CoroutineScope = routerScope(),
+) : ViewModel(scope),
+    EventRouter<EditorEvent, EditorUiState, EditorEffect> by EventRouter(
+        scope = scope,
+        initialState = EditorUiState(),
+        handlers = handlers,
+        observer = { report -> println(report) },
+    )
+```
 
-    override fun onEvent(event: E) {
-        log("event: $event")
+Without an `observer`, the router does none of this work.
 
-        delegate.onEvent(event)
+## Reading the reports
+
+Every event gets a number when the router decides what to do with it, counting from 1. All the
+reports of one event carry its number, so you can tell two equal events apart and pair the start of
+a run with its end.
+
+**"I tapped Delete and nothing happened."** Save and Delete share
+`DispatchStrategy.DropIfAlreadyRunning<OnChangeClick>()`, and a save was still running:
+
+```text
+#1 OnSaveClick runs
+#1 OnSaveClick started
+#2 OnDeleteClick is ignored
+#1 OnSaveClick completed
+```
+
+**"My search results never arrived."** The query and the filter share
+`DispatchStrategy.Latest<OnCriteriaChange>()`, and the filter changed before the search answered:
+
+```text
+#1 OnQueryChange(query=cat) runs
+#1 OnQueryChange(query=cat) started
+#2 OnFilterChange(filter=New) replaces #1
+#1 OnQueryChange(query=cat) was replaced by #2
+#2 OnFilterChange(filter=New) started
+#2 OnFilterChange(filter=New) completed
+```
+
+**"The second tap took a long time."** The plus button uses
+`DispatchStrategy.Sequential<OnPlusClick>()`, so the second tap waited for the first:
+
+```text
+#1 OnPlusClick runs
+#1 OnPlusClick started
+#2 OnPlusClick waits for #1
+#1 OnPlusClick completed
+#2 OnPlusClick started
+#2 OnPlusClick completed
+```
+
+## The reports
+
+A report is a `RouterTrace`. Every report has the `event` and its `number`.
+
+| Report | It prints as | When |
+|---|---|---|
+| `Dispatched` | `runs`, `is ignored`, `replaces #1` or `waits for #1` | The strategy answered. It is the first report of every event, and the only one of an event that is ignored. |
+| `Started` | `started` | The event handler began. An event that waits starts when the events it waits for have ended. |
+| `Completed` | `completed` | The event handler returned. |
+| `Failed` | `failed: ` and the error | The event handler threw. The screen's `ErrorHandler` receives the same failure. |
+| `Cancelled` | See the next table | The run was cancelled. It may never have started. |
+
+A `Cancelled` report says why:
+
+| Reason | It prints as | When |
+|---|---|---|
+| `ReplacedBy(number)` | `was replaced by #2` | A strategy answered `Replace` for another event and named this run. |
+| `ScopeCancelled` | `was cancelled with the scope` | The router's scope was cancelled, as when a view model is cleared. |
+| `ByHandler` | `was cancelled by its own handler` | The event handler ended by a cancellation of its own, such as a timeout that the handler did not catch. |
+
+## Sending the reports to your logger
+
+The sentence is how a report prints. To use your own logger, pass the report's text to it:
+
+```kotlin
+observer = { report -> Log.d("Editor", report.toString()) }
+```
+
+A report carries no time, because a logger stamps its own lines.
+
+To write your own text, or to send something other than text, read the fields:
+
+```kotlin
+observer = { report ->
+    when (report) {
+        is RouterTrace.Failed -> crashReporter.record(report.error, event = report.event)
+        is RouterTrace.Dispatched -> if (report.dispatch is Dispatch.Ignore) metrics.count("ignored")
+        is RouterTrace.Started -> Unit
+        is RouterTrace.Completed -> Unit
+        is RouterTrace.Cancelled -> Unit
     }
 }
 ```
 
-Use `LoggingRouter` where the router is created, by wrapping the router the view model delegates to.
-Nothing else in the screen changes:
+## What you can rely on
+
+- **Reports arrive in order, one at a time**, also when events are sent from several threads at
+  once. The router never calls your `observer` twice at the same moment.
+- **Decisions arrive in the order the router made them:** `#1`, then `#2`, then `#3`.
+- **The reports of one event arrive in order:** dispatched, then started, then how the run ended.
+- **"`#2` replaces `#1`" arrives before "`#1` was replaced by `#2`".**
+- **Your `observer` does not always run on the same thread.** It runs where the reported thing
+  happened: on the thread that sent the event, inside a run, or on the thread that ended a run.
+
+## The rules of an observer
+
+- **Be quick, and do not wait for anything.** The router calls the `observer` while it handles the
+  event. Hand slow work, such as writing to a file, to something that does the work elsewhere.
+- **An `observer` that throws is a mistake in your code, and the router treats it as one.** The
+  event still runs. The exception is not passed to the screen's `ErrorHandler`. It reaches the
+  `CoroutineExceptionHandler` of the router's scope or, without one, the platform's handler for
+  uncaught exceptions. Once the scope is cancelled, the exception is dropped.
+
+## Checking in a test what the router did
+
+A report is a value, so a test can compare it. This test checks that a tap on Delete during a save
+is ignored:
 
 ```kotlin
-class TaskListViewModel(
-    handlers: Collection<TaskListHandler<*>>,
-    scope: CoroutineScope = routerScope(),
-) : ViewModel(scope),
-    EventRouter<TaskListEvent, TaskListUiState, TaskListEffect> by LoggingRouter(
-        delegate = EventRouter(
-            scope = scope,
-            initialState = TaskListUiState(),
-            handlers = handlers,
-        ),
-        log = { println(it) },
+@Test
+fun `delete is ignored while a save is running`() = runTest {
+    val reports = mutableListOf<RouterTrace<EditorEvent>>()
+
+    val router = EventRouter<EditorEvent, EditorUiState, EditorEffect>(
+        scope = backgroundScope,
+        initialState = EditorUiState(),
+        handlers = listOf(OnSaveClickHandler(tasks), OnDeleteClickHandler(tasks)),
+        observer = { reports += it },
     )
+
+    router.onEvent(OnSaveClick)
+    router.onEvent(OnDeleteClick)
+    testScheduler.runCurrent()
+
+    val expected = RouterTrace.Dispatched(
+        event = OnDeleteClick,
+        number = 2,
+        dispatch = Dispatch.Ignore,
+        others = emptyList(),
+    )
+
+    assertEquals(expected, reports.first { it.event == OnDeleteClick })
+}
 ```
 
-`LoggingRouter` logs each event when the event is sent and then passes the event on, so it also logs
-an event that `DropIfAlreadyRunning` ignores. Failures do not pass through `LoggingRouter`: log those
-in the screen's `ErrorHandler`.
+## What the reports do not cover
+
+- **State changes.** Collect the router's `state` to see them.
+- **Effects.** Log an effect where you collect the effects. Do not add a second collector for
+  logging: each effect goes to one collector, so the second one would take effects away from the UI.
 
 ---
 

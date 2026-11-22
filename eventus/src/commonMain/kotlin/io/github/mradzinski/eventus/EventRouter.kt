@@ -64,6 +64,8 @@ public interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
  * screen's store, so it can emit an effect or update the state. Cancellation is never reported. When
  * this is null, a handler's exception is not caught: it reaches the `CoroutineExceptionHandler` of
  * [scope] or, without one, the platform's handler for uncaught exceptions.
+ * @param observer Is told what the router does with each event, in order and one report at a time. See
+ * [RouterObserver]. When this is null, the router does none of that work.
  * @throws IllegalStateException when two handlers are registered for the same event type.
  */
 public fun <E : UiEvent, S : UiState, F : UiEffect> EventRouter(
@@ -71,9 +73,11 @@ public fun <E : UiEvent, S : UiState, F : UiEffect> EventRouter(
     initialState: S,
     handlers: Collection<EventHandler<*, S, F>>,
     errorHandler: ErrorHandler<E, S, F>? = null,
+    observer: RouterObserver<E>? = null,
 ): EventRouter<E, S, F> = DefaultEventRouter(
     scope = scope,
     initialState = initialState,
     handlers = handlers,
     errorHandler = errorHandler,
+    observer = observer,
 )

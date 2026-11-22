@@ -58,12 +58,122 @@ public abstract interface class io/github/mradzinski/eventus/EventRouter {
 }
 
 public final class io/github/mradzinski/eventus/EventRouterKt {
-	public static final fun EventRouter (Lkotlinx/coroutines/CoroutineScope;Lio/github/mradzinski/eventus/UiState;Ljava/util/Collection;Lio/github/mradzinski/eventus/ErrorHandler;)Lio/github/mradzinski/eventus/EventRouter;
-	public static synthetic fun EventRouter$default (Lkotlinx/coroutines/CoroutineScope;Lio/github/mradzinski/eventus/UiState;Ljava/util/Collection;Lio/github/mradzinski/eventus/ErrorHandler;ILjava/lang/Object;)Lio/github/mradzinski/eventus/EventRouter;
+	public static final fun EventRouter (Lkotlinx/coroutines/CoroutineScope;Lio/github/mradzinski/eventus/UiState;Ljava/util/Collection;Lio/github/mradzinski/eventus/ErrorHandler;Lio/github/mradzinski/eventus/RouterObserver;)Lio/github/mradzinski/eventus/EventRouter;
+	public static synthetic fun EventRouter$default (Lkotlinx/coroutines/CoroutineScope;Lio/github/mradzinski/eventus/UiState;Ljava/util/Collection;Lio/github/mradzinski/eventus/ErrorHandler;Lio/github/mradzinski/eventus/RouterObserver;ILjava/lang/Object;)Lio/github/mradzinski/eventus/EventRouter;
+}
+
+public abstract interface class io/github/mradzinski/eventus/RouterObserver {
+	public abstract fun observe (Lio/github/mradzinski/eventus/RouterTrace;)V
 }
 
 public final class io/github/mradzinski/eventus/RouterScopeKt {
 	public static final fun routerScope ()Lkotlinx/coroutines/CoroutineScope;
+}
+
+public abstract interface class io/github/mradzinski/eventus/RouterTrace {
+	public abstract fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
+	public abstract fun getNumber ()J
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Cancelled : io/github/mradzinski/eventus/RouterTrace {
+	public fun <init> (Lio/github/mradzinski/eventus/UiEvent;JLio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason;)V
+	public final fun component1 ()Lio/github/mradzinski/eventus/UiEvent;
+	public final fun component2 ()J
+	public final fun component3 ()Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason;
+	public final fun copy (Lio/github/mradzinski/eventus/UiEvent;JLio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason;)Lio/github/mradzinski/eventus/RouterTrace$Cancelled;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/RouterTrace$Cancelled;Lio/github/mradzinski/eventus/UiEvent;JLio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason;ILjava/lang/Object;)Lio/github/mradzinski/eventus/RouterTrace$Cancelled;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
+	public fun getNumber ()J
+	public final fun getReason ()Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason {
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ByHandler : io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason {
+	public static final field INSTANCE Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ByHandler;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ReplacedBy : io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason {
+	public fun <init> (J)V
+	public final fun component1 ()J
+	public final fun copy (J)Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ReplacedBy;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ReplacedBy;JILjava/lang/Object;)Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ReplacedBy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNumber ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ScopeCancelled : io/github/mradzinski/eventus/RouterTrace$Cancelled$Reason {
+	public static final field INSTANCE Lio/github/mradzinski/eventus/RouterTrace$Cancelled$Reason$ScopeCancelled;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Completed : io/github/mradzinski/eventus/RouterTrace {
+	public fun <init> (Lio/github/mradzinski/eventus/UiEvent;J)V
+	public final fun component1 ()Lio/github/mradzinski/eventus/UiEvent;
+	public final fun component2 ()J
+	public final fun copy (Lio/github/mradzinski/eventus/UiEvent;J)Lio/github/mradzinski/eventus/RouterTrace$Completed;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/RouterTrace$Completed;Lio/github/mradzinski/eventus/UiEvent;JILjava/lang/Object;)Lio/github/mradzinski/eventus/RouterTrace$Completed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
+	public fun getNumber ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Dispatched : io/github/mradzinski/eventus/RouterTrace {
+	public fun <init> (Lio/github/mradzinski/eventus/UiEvent;JLio/github/mradzinski/eventus/Dispatch;Ljava/util/List;)V
+	public final fun component1 ()Lio/github/mradzinski/eventus/UiEvent;
+	public final fun component2 ()J
+	public final fun component3 ()Lio/github/mradzinski/eventus/Dispatch;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Lio/github/mradzinski/eventus/UiEvent;JLio/github/mradzinski/eventus/Dispatch;Ljava/util/List;)Lio/github/mradzinski/eventus/RouterTrace$Dispatched;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/RouterTrace$Dispatched;Lio/github/mradzinski/eventus/UiEvent;JLio/github/mradzinski/eventus/Dispatch;Ljava/util/List;ILjava/lang/Object;)Lio/github/mradzinski/eventus/RouterTrace$Dispatched;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDispatch ()Lio/github/mradzinski/eventus/Dispatch;
+	public fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
+	public fun getNumber ()J
+	public final fun getOthers ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Failed : io/github/mradzinski/eventus/RouterTrace {
+	public fun <init> (Lio/github/mradzinski/eventus/UiEvent;JLjava/lang/Throwable;)V
+	public final fun component1 ()Lio/github/mradzinski/eventus/UiEvent;
+	public final fun component2 ()J
+	public final fun component3 ()Ljava/lang/Throwable;
+	public final fun copy (Lio/github/mradzinski/eventus/UiEvent;JLjava/lang/Throwable;)Lio/github/mradzinski/eventus/RouterTrace$Failed;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/RouterTrace$Failed;Lio/github/mradzinski/eventus/UiEvent;JLjava/lang/Throwable;ILjava/lang/Object;)Lio/github/mradzinski/eventus/RouterTrace$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getError ()Ljava/lang/Throwable;
+	public fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
+	public fun getNumber ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/RouterTrace$Started : io/github/mradzinski/eventus/RouterTrace {
+	public fun <init> (Lio/github/mradzinski/eventus/UiEvent;J)V
+	public final fun component1 ()Lio/github/mradzinski/eventus/UiEvent;
+	public final fun component2 ()J
+	public final fun copy (Lio/github/mradzinski/eventus/UiEvent;J)Lio/github/mradzinski/eventus/RouterTrace$Started;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/RouterTrace$Started;Lio/github/mradzinski/eventus/UiEvent;JILjava/lang/Object;)Lio/github/mradzinski/eventus/RouterTrace$Started;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
+	public fun getNumber ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/mradzinski/eventus/ScreenStore {

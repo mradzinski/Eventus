@@ -3,6 +3,7 @@ package io.github.mradzinski.eventus
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -66,11 +67,66 @@ class ThreadSafetyTest {
         handler.mostAtOnce.get() shouldBe 1
     }
 
-    private fun router(handler: TestHandler): EventRouter<TestEvent, TestState, TestEffect> = EventRouter(
+    @Test
+    fun `reports from many threads arrive one at a time and in order`() {
+        readyMadeStrategies.forEach { strategy ->
+            val reports = ArrayList<RouterTrace<TestEvent>>()
+            val observing = AtomicInteger(0)
+            val overlaps = AtomicInteger(0)
+
+            // The list is not safe to share on purpose: the router must never call this twice at once.
+            val observer = RouterObserver<TestEvent> { trace ->
+                if (observing.incrementAndGet() != 1) overlaps.incrementAndGet()
+
+                reports += trace
+                observing.decrementAndGet()
+            }
+
+            val router = router(CountingHandler(strategy, CountDownLatch(0)), observer)
+
+            sendFromEveryThread(router)
+            awaitEveryRun()
+
+            val dispatched = reports.filterIsInstance<RouterTrace.Dispatched<TestEvent>>()
+
+            overlaps.get() shouldBe 0
+            dispatched.map { it.number } shouldContainExactly (1L..THREADS * EVENTS_PER_THREAD).toList()
+            reports.groupBy { it.number }.values.forEach { ofOneEvent -> ofOneEvent.shouldBeInOrder() }
+            dispatched.forEach { it.shouldComeBeforeTheRunsItReplaces(reports) }
+        }
+    }
+
+    private fun router(
+        handler: TestHandler,
+        observer: RouterObserver<TestEvent>? = null,
+    ): EventRouter<TestEvent, TestState, TestEffect> = EventRouter(
         scope = scope,
         initialState = TestState(),
         handlers = listOf(handler),
+        observer = observer,
     )
+
+    /** Dispatched first, then started unless it never ran, then one end unless it was ignored. */
+    private fun List<RouterTrace<TestEvent>>.shouldBeInOrder() {
+        val ignored = (first() as RouterTrace.Dispatched).dispatch is Dispatch.Ignore
+        val ends = filter { it !is RouterTrace.Dispatched && it !is RouterTrace.Started }
+
+        first().shouldBeInstanceOf<RouterTrace.Dispatched<TestEvent>>()
+        count { it is RouterTrace.Dispatched } shouldBe 1
+        ends.size shouldBe if (ignored) 0 else 1
+
+        if (!ignored) last() shouldBe ends.single()
+    }
+
+    private fun RouterTrace.Dispatched<TestEvent>.shouldComeBeforeTheRunsItReplaces(
+        reports: List<RouterTrace<TestEvent>>,
+    ) {
+        val reason = RouterTrace.Cancelled.Reason.ReplacedBy(number)
+
+        val firstReplaced = reports.indexOfFirst { it is RouterTrace.Cancelled && it.reason == reason }
+
+        if (firstReplaced >= 0) (reports.indexOf(this) < firstReplaced) shouldBe true
+    }
 
     /** Starts every thread, releases them together and waits until each has sent all of its events. */
     private fun sendFromEveryThread(router: EventRouter<TestEvent, TestState, TestEffect>) {
