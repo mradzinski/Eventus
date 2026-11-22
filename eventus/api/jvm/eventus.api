@@ -10,7 +10,13 @@ public final class io/github/mradzinski/eventus/Dispatch$Ignore : io/github/mrad
 
 public final class io/github/mradzinski/eventus/Dispatch$Replace : io/github/mradzinski/eventus/Dispatch {
 	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/mradzinski/eventus/Dispatch$Replace;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/Dispatch$Replace;Ljava/util/List;ILjava/lang/Object;)Lio/github/mradzinski/eventus/Dispatch$Replace;
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEvents ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/mradzinski/eventus/Dispatch$Run : io/github/mradzinski/eventus/Dispatch {
@@ -22,7 +28,13 @@ public final class io/github/mradzinski/eventus/Dispatch$Run : io/github/mradzin
 
 public final class io/github/mradzinski/eventus/Dispatch$WaitFor : io/github/mradzinski/eventus/Dispatch {
 	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/mradzinski/eventus/Dispatch$WaitFor;
+	public static synthetic fun copy$default (Lio/github/mradzinski/eventus/Dispatch$WaitFor;Ljava/util/List;ILjava/lang/Object;)Lio/github/mradzinski/eventus/Dispatch$WaitFor;
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEvents ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class io/github/mradzinski/eventus/DispatchStrategy {

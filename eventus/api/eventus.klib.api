@@ -191,6 +191,12 @@ sealed interface io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski
 
         final val events // io.github.mradzinski.eventus/Dispatch.Replace.events|{}events[0]
             final fun <get-events>(): kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/Dispatch.Replace.events.<get-events>|<get-events>(){}[0]
+
+        final fun component1(): kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/Dispatch.Replace.component1|component1(){}[0]
+        final fun copy(kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> = ...): io.github.mradzinski.eventus/Dispatch.Replace // io.github.mradzinski.eventus/Dispatch.Replace.copy|copy(kotlin.collections.List<io.github.mradzinski.eventus.UiEvent>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/Dispatch.Replace.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/Dispatch.Replace.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/Dispatch.Replace.toString|toString(){}[0]
     }
 
     final class WaitFor : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.WaitFor|null[0]
@@ -198,6 +204,12 @@ sealed interface io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski
 
         final val events // io.github.mradzinski.eventus/Dispatch.WaitFor.events|{}events[0]
             final fun <get-events>(): kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/Dispatch.WaitFor.events.<get-events>|<get-events>(){}[0]
+
+        final fun component1(): kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/Dispatch.WaitFor.component1|component1(){}[0]
+        final fun copy(kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> = ...): io.github.mradzinski.eventus/Dispatch.WaitFor // io.github.mradzinski.eventus/Dispatch.WaitFor.copy|copy(kotlin.collections.List<io.github.mradzinski.eventus.UiEvent>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/Dispatch.WaitFor.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/Dispatch.WaitFor.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/Dispatch.WaitFor.toString|toString(){}[0]
     }
 
     final object Ignore : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.Ignore|null[0]

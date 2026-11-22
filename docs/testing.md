@@ -44,10 +44,7 @@ fun `a new change replaces the one still being saved for that task and no other`
 
     val dispatch = handler.strategy.decide(OnTaskDoneChange(taskId = 2L, done = false), active)
 
-    assertEquals(
-        listOf(OnTaskDoneChange(taskId = 2L, done = true)),
-        (dispatch as Dispatch.Replace).events,
-    )
+    assertEquals(Dispatch.Replace(listOf(OnTaskDoneChange(taskId = 2L, done = true))), dispatch)
 }
 ```
 

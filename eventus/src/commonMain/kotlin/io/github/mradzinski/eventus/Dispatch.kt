@@ -19,11 +19,11 @@ public sealed interface Dispatch {
      * Cancel the runs of [events], then run the event. A run that was still waiting is cancelled before
      * it starts. With no events it is the same as [Run].
      */
-    public class Replace(public val events: List<UiEvent>) : Dispatch
+    public data class Replace(public val events: List<UiEvent>) : Dispatch
 
     /**
      * Run the event once the runs of [events] have ended, whether they ended well, failed or were
      * cancelled. With no events it is the same as [Run].
      */
-    public class WaitFor(public val events: List<UiEvent>) : Dispatch
+    public data class WaitFor(public val events: List<UiEvent>) : Dispatch
 }

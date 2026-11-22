@@ -9,7 +9,7 @@ import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListStore
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListUiState
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 import kotlinx.coroutines.test.runTest
 
@@ -42,7 +42,6 @@ class OnTaskDoneChangeHandlerTest {
 
         val dispatch = handler.strategy.decide(OnTaskDoneChange(taskId = 2L, done = false), active)
 
-        dispatch.shouldBeInstanceOf<Dispatch.Replace>().events shouldContainExactly
-            listOf(OnTaskDoneChange(taskId = 2L, done = true))
+        dispatch shouldBe Dispatch.Replace(listOf(OnTaskDoneChange(taskId = 2L, done = true)))
     }
 }

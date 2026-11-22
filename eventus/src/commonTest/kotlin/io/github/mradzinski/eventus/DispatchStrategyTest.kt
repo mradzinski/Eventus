@@ -1,6 +1,5 @@
 package io.github.mradzinski.eventus
 
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -68,21 +67,30 @@ class DispatchStrategyTest {
     }
 
     @Test
-    fun `with nothing active every ready-made strategy lets the event run`() {
-        replacedBy(DispatchStrategy.Latest<Plus>(), active = emptyList()).shouldBeEmpty()
-        awaitedBy(DispatchStrategy.Sequential<Plus>(), active = emptyList()).shouldBeEmpty()
-        DispatchStrategy.DropIfAlreadyRunning<Plus>().decide(Plus("a"), emptyList()) shouldBe Dispatch.Run
+    fun `with nothing that matches every ready-made strategy answers run`() {
+        val unrelated = listOf(Run("x"), Tick)
+
+        listOf(emptyList(), unrelated).forEach { active ->
+            DispatchStrategy.Latest<Plus>().decide(Plus("a"), active) shouldBe Dispatch.Run
+            DispatchStrategy.Sequential<Plus>().decide(Plus("a"), active) shouldBe Dispatch.Run
+            DispatchStrategy.DropIfAlreadyRunning<Plus>().decide(Plus("a"), active) shouldBe Dispatch.Run
+        }
     }
 
-    private fun replacedBy(strategy: DispatchStrategy<Plus>, active: List<UiEvent> = this.active): List<UiEvent> =
-        strategy
-            .decide(Plus("a"), active)
-            .shouldBeInstanceOf<Dispatch.Replace>()
-            .events
+    @Test
+    fun `two answers that name the same events are equal`() {
+        Dispatch.Replace(listOf(Plus("a"))) shouldBe Dispatch.Replace(listOf(Plus("a")))
+        Dispatch.WaitFor(listOf(Plus("a"))) shouldBe Dispatch.WaitFor(listOf(Plus("a")))
+        Dispatch.WaitFor(listOf(Plus("a"))).toString() shouldBe "WaitFor(events=[Plus(item=a)])"
+    }
 
-    private fun awaitedBy(strategy: DispatchStrategy<Plus>, active: List<UiEvent> = this.active): List<UiEvent> =
-        strategy
-            .decide(Plus("a"), active)
-            .shouldBeInstanceOf<Dispatch.WaitFor>()
-            .events
+    private fun replacedBy(strategy: DispatchStrategy<Plus>): List<UiEvent> = strategy
+        .decide(Plus("a"), active)
+        .shouldBeInstanceOf<Dispatch.Replace>()
+        .events
+
+    private fun awaitedBy(strategy: DispatchStrategy<Plus>): List<UiEvent> = strategy
+        .decide(Plus("a"), active)
+        .shouldBeInstanceOf<Dispatch.WaitFor>()
+        .events
 }

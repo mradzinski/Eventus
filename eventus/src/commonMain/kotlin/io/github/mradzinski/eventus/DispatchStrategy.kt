@@ -61,7 +61,10 @@ public fun interface DispatchStrategy<in E : UiEvent> {
      */
     public fun decide(event: E, active: List<UiEvent>): Dispatch
 
-    /** The ready-made strategies. */
+    /**
+     * The ready-made strategies. Each one answers [Dispatch.Run] when no active event matches the
+     * events it looks at.
+     */
     public companion object {
 
         /** Every event runs at once, in a coroutine of its own, whatever else is active. The default. */
@@ -117,11 +120,27 @@ public fun interface DispatchStrategy<in E : UiEvent> {
 
         @PublishedApi
         internal fun <T : UiEvent> latest(matches: (event: T, other: UiEvent) -> Boolean): DispatchStrategy<T> =
-            DispatchStrategy { event, active -> Dispatch.Replace(active.filter { matches(event, it) }) }
+            DispatchStrategy { event, active ->
+                val earlier = active.filter { matches(event, it) }
+
+                if (earlier.isEmpty()) {
+                    Dispatch.Run
+                } else {
+                    Dispatch.Replace(earlier)
+                }
+            }
 
         @PublishedApi
         internal fun <T : UiEvent> sequential(matches: (event: T, other: UiEvent) -> Boolean): DispatchStrategy<T> =
-            DispatchStrategy { event, active -> Dispatch.WaitFor(active.filter { matches(event, it) }) }
+            DispatchStrategy { event, active ->
+                val earlier = active.filter { matches(event, it) }
+
+                if (earlier.isEmpty()) {
+                    Dispatch.Run
+                } else {
+                    Dispatch.WaitFor(earlier)
+                }
+            }
 
         @PublishedApi
         internal fun <T : UiEvent> dropIfAlreadyRunning(
