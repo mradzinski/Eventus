@@ -10,20 +10,27 @@ An event router for Model-View-ViewModel (MVVM) screens on Kotlin Multiplatform.
 (UI) sends events, each event goes to its own small event handler class, and the screen's state and
 one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web** from common code.
 
-- One event, one handler class, one test class: a screen with 50 events is 50 small files, not a
+- 🧩 One event, one handler class, one test class: a screen with 50 events is 50 small files, not a
   view model with 50 functions
-- Four ready-made ways to run a handler while other events are active: at once, latest only, in order,
-  or ignore a repeat. Each also works across several events or for each item of a list, and you can
-  write your own
-- The view model extends nothing from this library: it delegates to a router
-- State is one immutable value in a `StateFlow`; the router delivers each effect once, and keeps it
+- 🚦 Four ready-made ways to run a handler while other events are active: at once, latest only, in
+  order, or ignore a repeat. Each also works across several events or for each item of a list, and
+  you can write your own
+- 🪶 The view model extends nothing from this library: it delegates to a router
+- 🎯 State is one immutable value in a `StateFlow`; the router delivers each effect once, and keeps it
   until something collects it
-- Handlers get the screen's state from the router, so no dependency-injection scope can be set up
+- 💉 Handlers get the screen's state from the router, so no dependency-injection scope can be set up
   wrong
-- A handler that fails does not stop the screen, and every failure reaches one place
-- Optimistic updates in one call: show the result at once, put it back if the work fails
-- Depends only on `kotlinx.coroutines`: no Compose, no lifecycle, no dependency-injection library
-- Safe to call from any thread
+- 🛟 A handler that fails does not stop the screen, and every failure reaches one place
+- ⚡ Optimistic updates in one call: show the result at once, put it back if the work fails
+- 🔍 See what the router does with each event: one line gives a log of what ran, what was ignored and
+  what was replaced
+- 🔄 Lives as long as your view model: a rotation does not interrupt an event that is running, and
+  effects wait for the screen to come back
+- 📦 Depends only on `kotlinx.coroutines` and `atomicfu`: no Compose, no lifecycle, no
+  dependency-injection library
+- 🧵 Safe to call from any thread
+- 🧰 Optional extras: a build-time check that every event has a handler, generated Koin modules, and
+  helpers for Compose
 
 ## Contents
 
