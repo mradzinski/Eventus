@@ -155,6 +155,17 @@ work, such as one that reports an event to analytics, changes no state and emits
 
 - **The router lives as long as its scope.** In a view model, that is until the view model is cleared.
   The state lives with the router.
+- **A view model outlives the screen that shows it.** On Android, rotating the device destroys the
+  screen and creates it again, and the view model is kept. So the router is untouched: the state, the
+  events that are running and the effects that are waiting are all still there for the new screen.
+  On iOS a rotation recreates nothing.
+- **Sending the app to the background does not stop the router.** Events that are running go on for
+  as long as the system lets the app run, the state keeps changing, and an effect waits until the UI
+  collects again.
+- **The router ends when the view model is cleared or the app's process dies.** A view model is
+  cleared when the user leaves its screen for good. A process dies when the system stops the app to
+  reclaim memory, or when the app crashes. Eventus brings nothing back after either; see
+  [what Eventus does not do](what-eventus-does-not-do.md).
 - **An event handler holds nothing about the screen.** Your dependency-injection container can create
   a fresh one for each view model.
 - **A run lasts until the event handler returns.** An event handler that does not return by itself,

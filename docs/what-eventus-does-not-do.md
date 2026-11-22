@@ -1,7 +1,13 @@
 # What Eventus does not do
 
-- **It does not restore state after the process is stopped.** Pass a restored value as
-  `initialState` if you save one.
+- **It does not bring anything back after the app's process has died.** When the system stops the
+  app to reclaim memory, or the app crashes, the router is gone with its state, its running events
+  and its waiting effects. See the [lifecycle](key-concepts.md#lifecycle) for when that happens.
+  What comes back is your app's decision. If you pass a restored value as `initialState`, save and
+  restore the state related to your UI. Do not restore events. State related to effects can be
+  restored if you want to: for example, an effect that notifies the user that the app has been
+  restored. Decide also whether the screen keeps the restored state when it opens or loads fresh
+  data over it.
 - **The library alone does not check at compile time that every event has a handler.** The optional
   processor does; see [checking and wiring event handlers at build
   time](checking-and-wiring-event-handlers-at-build-time.md).
