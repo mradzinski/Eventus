@@ -34,7 +34,7 @@ class RouterObserverTest {
         open(Tick)
 
         reports shouldContainExactly listOf(
-            Dispatched(Tick, number = 1, dispatch = Dispatch.Run, others = emptyList()),
+            Dispatched(Tick, number = 1, dispatch = Dispatch.Run, replacedOrAwaited = emptyList()),
             Started(Tick, number = 1),
             Completed(Tick, number = 1),
         )
@@ -47,7 +47,7 @@ class RouterObserverTest {
         send(router, Plus("save"), Minus("delete"))
 
         reports.drop(2) shouldContainExactly listOf(
-            Dispatched(Minus("delete"), number = 2, dispatch = Dispatch.Ignore, others = emptyList()),
+            Dispatched(Minus("delete"), number = 2, dispatch = Dispatch.Ignore, replacedOrAwaited = emptyList()),
         )
     }
 

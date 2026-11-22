@@ -155,7 +155,7 @@ public final class io/github/mradzinski/eventus/RouterTrace$Dispatched : io/gith
 	public final fun getDispatch ()Lio/github/mradzinski/eventus/Dispatch;
 	public fun getEvent ()Lio/github/mradzinski/eventus/UiEvent;
 	public fun getNumber ()J
-	public final fun getOthers ()Ljava/util/List;
+	public final fun getReplacedOrAwaited ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

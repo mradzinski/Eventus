@@ -22,18 +22,18 @@ public sealed interface RouterTrace<out E : UiEvent> {
      * The strategy of the event's handler answered [dispatch]. It is the first report of every event,
      * and the only one of an event that is ignored.
      *
-     * @property others The numbers of the events that this one replaces or waits for. Empty for the
+     * @property replacedOrAwaited The numbers of the events that this one replaces or waits for. Empty for the
      * other answers, and when none of the events the strategy named was still active.
      */
     public data class Dispatched<out E : UiEvent>(
         override val event: E,
         override val number: Long,
         val dispatch: Dispatch,
-        val others: List<Long>,
+        val replacedOrAwaited: List<Long>,
     ) : RouterTrace<E> {
 
         override fun toString(): String {
-            val others = others.joinToString { "#$it" }
+            val others = replacedOrAwaited.joinToString { "#$it" }
 
             return when {
                 dispatch is Dispatch.Ignore -> "${subject()} is ignored"

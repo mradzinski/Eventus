@@ -136,8 +136,8 @@ sealed interface <#A: out io.github.mradzinski.eventus/UiEvent> io.github.mradzi
             final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.Dispatched.event.<get-event>|<get-event>(){}[0]
         final val number // io.github.mradzinski.eventus/RouterTrace.Dispatched.number|{}number[0]
             final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Dispatched.number.<get-number>|<get-number>(){}[0]
-        final val others // io.github.mradzinski.eventus/RouterTrace.Dispatched.others|{}others[0]
-            final fun <get-others>(): kotlin.collections/List<kotlin/Long> // io.github.mradzinski.eventus/RouterTrace.Dispatched.others.<get-others>|<get-others>(){}[0]
+        final val replacedOrAwaited // io.github.mradzinski.eventus/RouterTrace.Dispatched.replacedOrAwaited|{}replacedOrAwaited[0]
+            final fun <get-replacedOrAwaited>(): kotlin.collections/List<kotlin/Long> // io.github.mradzinski.eventus/RouterTrace.Dispatched.replacedOrAwaited.<get-replacedOrAwaited>|<get-replacedOrAwaited>(){}[0]
 
         final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.Dispatched.component1|component1(){}[0]
         final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.Dispatched.component2|component2(){}[0]

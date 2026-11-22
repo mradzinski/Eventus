@@ -23,7 +23,7 @@ class RouterLogTest {
                 event = TaskListEvent.OnRefresh,
                 number = 3,
                 dispatch = Dispatch.Ignore,
-                others = emptyList(),
+                replacedOrAwaited = emptyList(),
             ),
         )
 

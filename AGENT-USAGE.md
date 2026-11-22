@@ -180,7 +180,7 @@ sealed interface RouterTrace<out E : UiEvent> {
         override val event: E,
         override val number: Long,
         val dispatch: Dispatch,
-        val others: List<Long>,
+        val replacedOrAwaited: List<Long>,
     ) : RouterTrace<E>
 
     data class Started<out E : UiEvent>(override val event: E, override val number: Long) : RouterTrace<E>
@@ -665,7 +665,7 @@ The observer is a `RouterObserver<E>`, a function interface with one function,
 
 | Report | Extra fields |
 |---|---|
-| `RouterTrace.Dispatched` | `dispatch: Dispatch`, `others: List<Long>` (the numbers it replaces or waits for) |
+| `RouterTrace.Dispatched` | `dispatch: Dispatch`, `replacedOrAwaited: List<Long>` (the numbers of those events) |
 | `RouterTrace.Started` | None |
 | `RouterTrace.Completed` | None |
 | `RouterTrace.Failed` | `error: Throwable` |

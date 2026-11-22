@@ -147,7 +147,7 @@ fun `delete is ignored while a save is running`() = runTest {
         event = OnDeleteClick,
         number = 2,
         dispatch = Dispatch.Ignore,
-        others = emptyList(),
+        replacedOrAwaited = emptyList(),
     )
 
     assertEquals(expected, reports.first { it.event == OnDeleteClick })
