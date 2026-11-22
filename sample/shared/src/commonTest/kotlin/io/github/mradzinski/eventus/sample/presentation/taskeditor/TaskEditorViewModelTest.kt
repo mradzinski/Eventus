@@ -3,6 +3,7 @@ package io.github.mradzinski.eventus.sample.presentation.taskeditor
 import app.cash.turbine.test
 import io.github.mradzinski.eventus.sample.data.OfflineException
 import io.github.mradzinski.eventus.sample.fake.FakeTaskRepository
+import io.github.mradzinski.eventus.sample.fake.silentLogger
 import io.github.mradzinski.eventus.sample.fake.task
 import io.github.mradzinski.eventus.sample.presentation.common.FailureReason
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.handlers.OnSaveClickHandler
@@ -69,6 +70,7 @@ class TaskEditorViewModelTest {
             OnSaveClickHandler(tasks),
         ),
         errorHandler = TaskEditorErrorHandler(),
+        logger = silentLogger(),
         scope = backgroundScope,
     )
 }

@@ -22,9 +22,11 @@ kotlin {
         // Host (JVM) tests are off by default with this plugin; this runs commonTest on Android too.
         withHostTest {}
     }
+
     jvm {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
     }
+
     listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
         target.binaries.framework {
             baseName = "SampleShared"
@@ -39,6 +41,7 @@ kotlin {
             implementation(projects.eventusKoin)
             // `collectEffects`, which each route performs its effects with.
             implementation(projects.eventusCompose)
+
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
@@ -53,16 +56,20 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.kermit)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.kotest.assertions.core)
             implementation(libs.turbine)
         }
+
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
         }
+
         jvmTest.dependencies {
             // Lists the subclasses of a sealed event type, for the tests that check every event has a handler.
             implementation(libs.kotlin.reflect)

@@ -1,8 +1,10 @@
 package io.github.mradzinski.eventus.sample.presentation.taskeditor
 
 import androidx.lifecycle.ViewModel
+import co.touchlab.kermit.Logger
 import io.github.mradzinski.eventus.EventRouter
 import io.github.mradzinski.eventus.routerScope
+import io.github.mradzinski.eventus.sample.presentation.common.RouterLog
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -15,6 +17,7 @@ internal class TaskEditorViewModel(
     taskId: Long?,
     handlers: Collection<TaskEditorHandler<*>>,
     errorHandler: TaskEditorErrorHandler,
+    logger: Logger,
     scope: CoroutineScope = routerScope(),
 ) : ViewModel(scope),
     EventRouter<TaskEditorEvent, TaskEditorUiState, TaskEditorEffect> by EventRouter(
@@ -22,6 +25,7 @@ internal class TaskEditorViewModel(
         initialState = TaskEditorUiState.Loading,
         handlers = handlers,
         errorHandler = errorHandler,
+        observer = RouterLog(logger, tag = "TaskEditor"),
     ) {
 
     init {

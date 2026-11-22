@@ -1,8 +1,10 @@
 package io.github.mradzinski.eventus.sample.presentation.tasklist
 
 import androidx.lifecycle.ViewModel
+import co.touchlab.kermit.Logger
 import io.github.mradzinski.eventus.EventRouter
 import io.github.mradzinski.eventus.routerScope
+import io.github.mradzinski.eventus.sample.presentation.common.RouterLog
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -11,10 +13,13 @@ import kotlinx.coroutines.CoroutineScope
  *
  * It sends [TaskListEvent.OnScreenOpened] as soon as it is created, which starts following the tasks. That
  * lasts as long as the view model does, so the list is up to date when the user comes back to it.
+ *
+ * What the router does with each event goes to the app's log, under the tag `TaskList`.
  */
 internal class TaskListViewModel(
     handlers: Collection<TaskListHandler<*>>,
     errorHandler: TaskListErrorHandler,
+    logger: Logger,
     scope: CoroutineScope = routerScope(),
 ) : ViewModel(scope),
     EventRouter<TaskListEvent, TaskListUiState, TaskListEffect> by EventRouter(
@@ -22,6 +27,7 @@ internal class TaskListViewModel(
         initialState = TaskListUiState(),
         handlers = handlers,
         errorHandler = errorHandler,
+        observer = RouterLog(logger, tag = "TaskList"),
     ) {
 
     init {

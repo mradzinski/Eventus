@@ -1,6 +1,7 @@
 package io.github.mradzinski.eventus.sample.presentation.app
 
 import io.github.mradzinski.eventus.sample.fake.FakeConnectivity
+import io.github.mradzinski.eventus.sample.fake.silentLogger
 import io.github.mradzinski.eventus.sample.presentation.app.handlers.OnAppStartedHandler
 import io.github.mradzinski.eventus.sample.presentation.app.handlers.OnOfflineChangeHandler
 import io.kotest.matchers.shouldBe
@@ -38,6 +39,7 @@ class AppViewModelTest {
             OnAppStartedHandler(connectivity),
             OnOfflineChangeHandler(connectivity),
         ),
+        logger = silentLogger(),
         scope = backgroundScope,
     )
 }

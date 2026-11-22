@@ -1,5 +1,7 @@
 package io.github.mradzinski.eventus.sample.di
 
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.StaticConfig
 import io.github.mradzinski.eventus.koin.EventusKoinModule
 import io.github.mradzinski.eventus.sample.data.Connectivity
 import io.github.mradzinski.eventus.sample.data.InMemoryConnectivity
@@ -15,6 +17,20 @@ import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListViewMod
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+
+/**
+ * The app's logger: one configuration that never changes, writing where [appLogWriter] says for each
+ * platform. Every view model takes it and gives it to the log of
+ * its router, with a tag of its own.
+ */
+internal val loggingModule: Module = module {
+    single {
+        Logger(
+            config = StaticConfig(logWriterList = listOf(appLogWriter())),
+            tag = "EventusSample",
+        )
+    }
+}
 
 internal val dataModule: Module = module {
     single<Connectivity> { InMemoryConnectivity() }
@@ -40,12 +56,18 @@ internal val taskListModule: Module = module {
         TaskListViewModel(
             handlers = getAll<TaskListHandler<*>>(),
             errorHandler = get(),
+            logger = get(),
         )
     }
 }
 
 internal val appShellModule: Module = module {
-    viewModel { AppViewModel(handlers = getAll<AppHandler<*>>()) }
+    viewModel {
+        AppViewModel(
+            handlers = getAll<AppHandler<*>>(),
+            logger = get(),
+        )
+    }
 }
 
 internal val taskEditorModule: Module = module {
@@ -54,11 +76,13 @@ internal val taskEditorModule: Module = module {
             taskId = key.taskId,
             handlers = getAll<TaskEditorHandler<*>>(),
             errorHandler = get(),
+            logger = get(),
         )
     }
 }
 
 internal val sampleModules: List<Module> = listOf(
+    loggingModule,
     dataModule,
     handlersModule,
     appShellModule,

@@ -1,8 +1,10 @@
 package io.github.mradzinski.eventus.sample.presentation.app
 
 import androidx.lifecycle.ViewModel
+import co.touchlab.kermit.Logger
 import io.github.mradzinski.eventus.EventRouter
 import io.github.mradzinski.eventus.routerScope
+import io.github.mradzinski.eventus.sample.presentation.common.RouterLog
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -11,12 +13,16 @@ import kotlinx.coroutines.CoroutineScope
  * It sends [AppEvent.OnAppStarted] as soon as it is created. The work that event starts lasts as long as
  * the view model does.
  */
-internal class AppViewModel(handlers: Collection<AppHandler<*>>, scope: CoroutineScope = routerScope()) :
-    ViewModel(scope),
+internal class AppViewModel(
+    handlers: Collection<AppHandler<*>>,
+    logger: Logger,
+    scope: CoroutineScope = routerScope(),
+) : ViewModel(scope),
     EventRouter<AppEvent, AppUiState, AppEffect> by EventRouter(
         scope = scope,
         initialState = AppUiState(),
         handlers = handlers,
+        observer = RouterLog(logger, tag = "App"),
     ) {
 
     init {
