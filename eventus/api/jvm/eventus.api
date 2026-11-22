@@ -1,11 +1,40 @@
-public final class io/github/mradzinski/eventus/DispatchStrategy : java/lang/Enum {
-	public static final field Concurrent Lio/github/mradzinski/eventus/DispatchStrategy;
-	public static final field DropIfBusy Lio/github/mradzinski/eventus/DispatchStrategy;
-	public static final field Latest Lio/github/mradzinski/eventus/DispatchStrategy;
-	public static final field Sequential Lio/github/mradzinski/eventus/DispatchStrategy;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/mradzinski/eventus/DispatchStrategy;
-	public static fun values ()[Lio/github/mradzinski/eventus/DispatchStrategy;
+public abstract interface class io/github/mradzinski/eventus/Dispatch {
+}
+
+public final class io/github/mradzinski/eventus/Dispatch$Ignore : io/github/mradzinski/eventus/Dispatch {
+	public static final field INSTANCE Lio/github/mradzinski/eventus/Dispatch$Ignore;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/Dispatch$Replace : io/github/mradzinski/eventus/Dispatch {
+	public fun <init> (Ljava/util/List;)V
+	public final fun getEvents ()Ljava/util/List;
+}
+
+public final class io/github/mradzinski/eventus/Dispatch$Run : io/github/mradzinski/eventus/Dispatch {
+	public static final field INSTANCE Lio/github/mradzinski/eventus/Dispatch$Run;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/mradzinski/eventus/Dispatch$WaitFor : io/github/mradzinski/eventus/Dispatch {
+	public fun <init> (Ljava/util/List;)V
+	public final fun getEvents ()Ljava/util/List;
+}
+
+public abstract interface class io/github/mradzinski/eventus/DispatchStrategy {
+	public static final field Companion Lio/github/mradzinski/eventus/DispatchStrategy$Companion;
+	public abstract fun decide (Lio/github/mradzinski/eventus/UiEvent;Ljava/util/List;)Lio/github/mradzinski/eventus/Dispatch;
+}
+
+public final class io/github/mradzinski/eventus/DispatchStrategy$Companion {
+	public final fun dropIfAlreadyRunning (Lkotlin/jvm/functions/Function2;)Lio/github/mradzinski/eventus/DispatchStrategy;
+	public final fun getConcurrent ()Lio/github/mradzinski/eventus/DispatchStrategy;
+	public final fun latest (Lkotlin/jvm/functions/Function2;)Lio/github/mradzinski/eventus/DispatchStrategy;
+	public final fun sequential (Lkotlin/jvm/functions/Function2;)Lio/github/mradzinski/eventus/DispatchStrategy;
 }
 
 public abstract interface class io/github/mradzinski/eventus/ErrorHandler {

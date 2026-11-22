@@ -13,7 +13,7 @@ import io.github.mradzinski.eventus.sample.presentation.app.AppStore
 internal class OnAppStartedHandler(private val connectivity: Connectivity) : AppHandler<OnAppStarted> {
 
     override val eventType = OnAppStarted::class
-    override val strategy = DispatchStrategy.Latest
+    override val strategy = DispatchStrategy.Latest<OnAppStarted>()
 
     override suspend fun handle(event: OnAppStarted, store: AppStore) {
         connectivity.online.collect { online ->

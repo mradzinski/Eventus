@@ -64,7 +64,7 @@ stops being visible:
 viewModel.notifyVisibility { visible -> ChatEvent.OnVisibilityChange(visible) }
 ```
 
-Use one event type that carries the visibility, and handle it with `DispatchStrategy.Latest`. The
+Use one event type that carries the visibility, and handle it with the `Latest` strategy. The
 event handler starts the work when the screen is visible and returns at once when it is not:
 
 ```kotlin

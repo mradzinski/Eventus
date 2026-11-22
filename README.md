@@ -12,8 +12,9 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 
 - One event, one handler class, one test class: a screen with 50 events is 50 small files, not a
   view model with 50 functions
-- Four ways to run a handler when its event arrives again: at once, latest only, in order, or ignore
-  while busy
+- Four ready-made ways to run a handler while other events are active: at once, latest only, in order,
+  or ignore a repeat. Each also works across several events or for each item of a list, and you can
+  write your own
 - The view model extends nothing from this library: it delegates to a router
 - State is one immutable value in a `StateFlow`; the router delivers each effect once, and keeps it
   until something collects it
@@ -150,7 +151,9 @@ class OnSaveClickHandler(
 ) : EventHandler<CounterEvent.OnSaveClick, CounterUiState, CounterEffect> {
 
     override val eventType = CounterEvent.OnSaveClick::class
-    override val strategy = DispatchStrategy.DropIfBusy   // a second tap while saving is ignored
+
+    // A second tap on Save is ignored while a save is running.
+    override val strategy = DispatchStrategy.DropIfAlreadyRunning<CounterEvent.OnSaveClick>()
 
     override suspend fun handle(event: CounterEvent.OnSaveClick, store: CounterStore) {
         counters.save(store.current.count)   // throws when it fails: the screen's ErrorHandler takes it
@@ -240,7 +243,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | Guide | What it covers |
 |---|---|
 | [Key concepts](docs/key-concepts.md) | How an event travels through Eventus, what each piece is, the lifecycle of each, and the rules that follow. Start here. |
-| [Choosing a dispatch strategy](docs/choosing-a-dispatch-strategy.md) | What happens when an event arrives again while its event handler is still running, and what the router keeps for each strategy. |
+| [Choosing a dispatch strategy](docs/choosing-a-dispatch-strategy.md) | What the router does with an event while other events are active: the four ready-made strategies with a real case each, sharing one between several events, applying one to each item of a list, and writing your own. |
 | [Dependency injection](docs/dependency-injection.md) | Wiring event handlers with Koin, with a compile-time container, or by hand. |
 | [Checking and wiring event handlers at build time](docs/checking-and-wiring-event-handlers-at-build-time.md) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, and projects with several modules. |
 | [Using the Compose helpers](docs/using-the-compose-helpers.md) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |

@@ -19,7 +19,7 @@ typealias TaskListStore = ScreenStore<TaskListUiState, TaskListEffect>
 class OnRefreshHandler(private val tasks: TaskRepository) : TaskListHandler<OnRefresh> {
 
     override val eventType = OnRefresh::class
-    override val strategy = DispatchStrategy.DropIfBusy
+    override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnRefresh>()
 
     override suspend fun handle(event: OnRefresh, store: TaskListStore) { /* … */ }
 }

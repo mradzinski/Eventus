@@ -6,11 +6,11 @@ import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEvent.O
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListHandler
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListStore
 
-/** Fetches the tasks again. `DropIfBusy` ignores the button while a refresh is under way. */
+/** Fetches the tasks again. `DropIfAlreadyRunning` ignores the button while a refresh is under way. */
 internal class OnRefreshHandler(private val tasks: TaskRepository) : TaskListHandler<OnRefresh> {
 
     override val eventType = OnRefresh::class
-    override val strategy = DispatchStrategy.DropIfBusy
+    override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnRefresh>()
 
     override suspend fun handle(event: OnRefresh, store: TaskListStore) {
         store.update { it.copy(refreshing = true) }

@@ -41,7 +41,7 @@ class ThreadSafetyTest {
     @Test
     fun `sequential events keep the order each thread sent them in`() {
         val handled = CountDownLatch(THREADS * EVENTS_PER_THREAD)
-        val router = router(CountingHandler(DispatchStrategy.Sequential, handled))
+        val router = router(CountingHandler(DispatchStrategy.Sequential<Run>(), handled))
 
         sendFromEveryThread(router)
 
@@ -56,7 +56,7 @@ class ThreadSafetyTest {
     }
 
     @Test
-    fun `drop if busy never runs two events of one type at the same time`() {
+    fun `drop if already running never runs two events of one type at the same time`() {
         val handler = OverlapHandler()
         val router = router(handler)
 
@@ -106,7 +106,7 @@ class ThreadSafetyTest {
     private fun allIds(): List<String> = List(THREADS) { thread -> List(EVENTS_PER_THREAD) { "$thread-$it" } }.flatten()
 
     /** Logs the id of each event and counts it off [handled]. */
-    private class CountingHandler(override val strategy: DispatchStrategy, private val handled: CountDownLatch) :
+    private class CountingHandler(override val strategy: DispatchStrategy<Run>, private val handled: CountDownLatch) :
         EventHandler<Run, TestState, TestEffect> {
 
         override val eventType = Run::class
@@ -125,7 +125,7 @@ class ThreadSafetyTest {
         private val active = AtomicInteger(0)
 
         override val eventType = Run::class
-        override val strategy = DispatchStrategy.DropIfBusy
+        override val strategy = DispatchStrategy.DropIfAlreadyRunning<Run>()
 
         override suspend fun handle(event: Run, store: TestStore) {
             val now = active.incrementAndGet()

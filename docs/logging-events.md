@@ -36,8 +36,8 @@ class TaskListViewModel(
 ```
 
 `LoggingRouter` logs each event when the event is sent and then passes the event on, so it also logs
-an event that `DropIfBusy` ignores. Failures do not pass through `LoggingRouter`: log those in the
-screen's `ErrorHandler`.
+an event that `DropIfAlreadyRunning` ignores. Failures do not pass through `LoggingRouter`: log those
+in the screen's `ErrorHandler`.
 
 ---
 

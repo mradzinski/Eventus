@@ -28,6 +28,32 @@ class OnSaveClickHandlerTest {
 To see the states a handler passes through, collect `store.state` around the call. For a handler that
 never returns by itself, launch it in `backgroundScope` and let `runTest` cancel it.
 
+## Testing a dispatch strategy
+
+A strategy is a function, so a test calls it. Give it the new event and the events that are active,
+and look at the answer. This test is for a handler whose strategy is
+`DispatchStrategy.Latest<OnTaskDoneChange> { it.taskId }`:
+
+```kotlin
+@Test
+fun `a new change replaces the one still being saved for that task and no other`() {
+    val active = listOf(
+        OnTaskDoneChange(taskId = 1L, done = true),
+        OnTaskDoneChange(taskId = 2L, done = true),
+    )
+
+    val dispatch = handler.strategy.decide(OnTaskDoneChange(taskId = 2L, done = false), active)
+
+    assertEquals(
+        listOf(OnTaskDoneChange(taskId = 2L, done = true)),
+        (dispatch as Dispatch.Replace).events,
+    )
+}
+```
+
+The ready-made strategies need no test of their own. Test a strategy when it has a key or when you
+wrote the function yourself. See [choosing a dispatch strategy](choosing-a-dispatch-strategy.md).
+
 ## Testing a view model
 
 Pass the test's scope, so the test decides when handlers run:

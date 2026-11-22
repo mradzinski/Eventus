@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 internal class OnSearchChangeHandler : TaskListHandler<OnSearchChange> {
 
     override val eventType = OnSearchChange::class
-    override val strategy = DispatchStrategy.Latest
+    override val strategy = DispatchStrategy.Latest<OnSearchChange>()
 
     override suspend fun handle(event: OnSearchChange, store: TaskListStore) {
         store.update { it.copy(query = event.query) }

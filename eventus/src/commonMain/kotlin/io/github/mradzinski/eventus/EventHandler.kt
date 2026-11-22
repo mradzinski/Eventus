@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
  * ) : EventHandler<OnRefresh, TaskListUiState, TaskListEffect> {
  *
  *     override val eventType = OnRefresh::class
- *     override val strategy = DispatchStrategy.DropIfBusy
+ *     override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnRefresh>()
  *
  *     override suspend fun handle(event: OnRefresh, store: ScreenStore<TaskListUiState, TaskListEffect>) {
  *         tasks.refresh()
@@ -35,8 +35,11 @@ public interface EventHandler<E : UiEvent, S : UiState, F : UiEffect> {
      */
     public val eventType: KClass<E>
 
-    /** How the router runs this handler when its event arrives again while a previous run is active. */
-    public val strategy: DispatchStrategy
+    /**
+     * What the router does with an event of this handler while other events are running or waiting.
+     * The default runs every event at once.
+     */
+    public val strategy: DispatchStrategy<E>
         get() = DispatchStrategy.Concurrent
 
     /**
@@ -45,55 +48,4 @@ public interface EventHandler<E : UiEvent, S : UiState, F : UiEffect> {
      * @param store The state and effects of the screen the event came from.
      */
     public suspend fun handle(event: E, store: ScreenStore<S, F>)
-}
-
-/**
- * What an [EventRouter] does when an event arrives while the handler of that event type is still
- * running a previous one.
- *
- * Each strategy applies per event type: two different events never wait for, cancel or drop each
- * other. What the router remembers for each strategy, and for how long, is stated on each entry.
- *
- * A strategy says nothing about how long a run lasts. A handler that does not return by itself, such as
- * one that collects a flow, runs until the router's scope is cancelled, unless its strategy replaces it
- * first. The router knows nothing about a user interface: nothing starts or stops a run because a screen
- * is shown or hidden.
- */
-public enum class DispatchStrategy {
-
-    /**
-     * Every event runs at once, in a coroutine of its own. The default.
-     *
-     * The router keeps nothing: a run is forgotten as soon as it is started and ends by itself.
-     */
-    Concurrent,
-
-    /**
-     * A new event cancels the run that is still active and starts over. For input that makes the
-     * previous work pointless, such as a search box or a slider.
-     *
-     * The router keeps the active run of the event type, to be able to cancel it, and forgets it the
-     * moment that run ends.
-     */
-    Latest,
-
-    /**
-     * Events run one after the other, in the order they were sent. For changes that must be applied in
-     * order, such as a toggle tapped several times.
-     *
-     * The first event of a type starts a queue and one worker coroutine for that type. Both then live
-     * for as long as the router's scope does, also while the queue is empty, so the router holds one
-     * idle coroutine for every event type that was sent at least once with this strategy. A run that
-     * fails does not stop the queue.
-     */
-    Sequential,
-
-    /**
-     * An event that arrives while a run is active is ignored. For actions that must not run twice,
-     * such as a submit button tapped again.
-     *
-     * The router keeps the active run of the event type, to know that it is busy, and forgets it the
-     * moment that run ends.
-     */
-    DropIfBusy,
 }

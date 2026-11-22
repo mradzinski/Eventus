@@ -15,7 +15,7 @@ class OnFavoriteChangeHandler(
 ) : EventHandler<OnFavoriteChange, ProfileUiState, ProfileEffect> {
 
     override val eventType = OnFavoriteChange::class
-    override val strategy = DispatchStrategy.Sequential
+    override val strategy = DispatchStrategy.Sequential<OnFavoriteChange>()
 
     override suspend fun handle(event: OnFavoriteChange, store: ScreenStore<ProfileUiState, ProfileEffect>) {
         val profileId = store.current.profileId
@@ -41,8 +41,8 @@ class OnFavoriteChangeHandler(
 - **`stateIfFailed` receives the state as it is then, not a copy from before.** Undo only your own
   change, as above, and everything else that changed meanwhile (text the user typed, say) stays.
 - **Choose the strategy for repeated taps.** `Sequential` applies them one after the other, each
-  starting from what the previous one left. `DropIfBusy` ignores taps until the save is done. With
-  the default, two saves for one value can overlap and undo each other in the wrong order.
+  starting from what the previous one left. `DropIfAlreadyRunning` ignores taps until the save is
+  done. With the default, two saves for one value can overlap and undo each other in the wrong order.
 
 ## Data the screen observes
 

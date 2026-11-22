@@ -14,7 +14,7 @@ import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListUiState
 internal class OnScreenOpenedHandler(private val tasks: TaskRepository) : TaskListHandler<OnScreenOpened> {
 
     override val eventType = OnScreenOpened::class
-    override val strategy = DispatchStrategy.Latest
+    override val strategy = DispatchStrategy.Latest<OnScreenOpened>()
 
     override suspend fun handle(event: OnScreenOpened, store: TaskListStore) {
         tasks

@@ -1,7 +1,7 @@
 # Debouncing
 
 To wait until the user has stopped typing, sliding or resizing before doing the expensive part, use
-`DispatchStrategy.Latest` and put a `delay` where the event handler should pause:
+the `Latest` strategy and put a `delay` where the event handler should pause:
 
 ```kotlin
 class OnSearchChangeHandler(
@@ -9,7 +9,7 @@ class OnSearchChangeHandler(
 ) : EventHandler<OnSearchChange, TaskListUiState, TaskListEffect> {
 
     override val eventType = OnSearchChange::class
-    override val strategy = DispatchStrategy.Latest
+    override val strategy = DispatchStrategy.Latest<OnSearchChange>()
 
     override suspend fun handle(event: OnSearchChange, store: ScreenStore<TaskListUiState, TaskListEffect>) {
         store.update { it.copy(query = event.query) }    // at once: the field shows the keystroke
@@ -70,7 +70,8 @@ fun `it shows the text at once and searches after the pause`() = runTest {
 ```
 
 For a button that must not act twice, debouncing is the wrong tool: it would make the first tap wait.
-Use `DropIfBusy`, which runs the first tap at once and ignores the rest until it has finished.
+Use `DropIfAlreadyRunning`, which runs the first tap at once and ignores the rest until it has
+finished.
 
 ---
 

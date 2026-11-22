@@ -11,7 +11,7 @@ import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorUiS
 internal class OnRetryClickHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnRetryClick> {
 
     override val eventType = OnRetryClick::class
-    override val strategy = DispatchStrategy.DropIfBusy
+    override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnRetryClick>()
 
     override suspend fun handle(event: OnRetryClick, store: TaskEditorStore) {
         val failed = store.current as? TaskEditorUiState.LoadFailed ?: return

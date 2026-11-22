@@ -37,6 +37,8 @@ public interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
      * Sends [event] to the handler registered for its exact class, which runs it as its
      * [DispatchStrategy] says. It returns at once and is safe to call from any thread.
      *
+     * A strategy that throws does not throw from here: see [DispatchStrategy.decide].
+     *
      * @throws IllegalStateException when the event has no registered handler.
      */
     public fun onEvent(event: E)
@@ -49,10 +51,9 @@ public interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
  * runs. Handlers run in child coroutines of [scope] and are cancelled with it: the router lives exactly
  * as long as [scope] does and has nothing to close. One handler failing does not cancel the others.
  *
- * What the router remembers while it runs depends on the strategy of each handler and is stated on
- * each [DispatchStrategy] entry. In short: nothing for `Concurrent`; the active run, until it ends,
- * for `Latest` and `DropIfBusy`; one queue and one worker per event type, until [scope]
- * ends, for `Sequential`.
+ * While it lives, the router remembers only the events that are running or waiting to run, each until
+ * its run ends. Which events wait, are cancelled or are ignored is decided by the [DispatchStrategy] of
+ * each handler.
  *
  * @param scope Where the handlers run. A view model passes the scope it is closed with, for example
  * the one from [routerScope]. The router keeps a job in this scope until the scope is cancelled, so

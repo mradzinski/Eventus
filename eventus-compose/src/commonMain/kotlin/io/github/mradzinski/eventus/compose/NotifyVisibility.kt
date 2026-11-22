@@ -19,7 +19,7 @@ import io.github.mradzinski.eventus.UiEvent
  * This is for the few screens with work too costly to keep running then, such as an open socket: the
  * handler of the event starts that work when the screen is visible and returns at once when it is not.
  *
- * Use one event type that carries the visibility, and handle it with `DispatchStrategy.Latest`. A new
+ * Use one event type that carries the visibility, and handle it with the `Latest` strategy. A new
  * event of a type cancels the run before it only within that type, so two separate events, one for
  * visible and one for hidden, would not stop each other's work.
  *

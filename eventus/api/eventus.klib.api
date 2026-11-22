@@ -6,17 +6,25 @@
 // - Show declarations: true
 
 // Library unique name: <eventus-root:eventus>
-final enum class io.github.mradzinski.eventus/DispatchStrategy : kotlin/Enum<io.github.mradzinski.eventus/DispatchStrategy> { // io.github.mradzinski.eventus/DispatchStrategy|null[0]
-    enum entry Concurrent // io.github.mradzinski.eventus/DispatchStrategy.Concurrent|null[0]
-    enum entry DropIfBusy // io.github.mradzinski.eventus/DispatchStrategy.DropIfBusy|null[0]
-    enum entry Latest // io.github.mradzinski.eventus/DispatchStrategy.Latest|null[0]
-    enum entry Sequential // io.github.mradzinski.eventus/DispatchStrategy.Sequential|null[0]
+abstract fun interface <#A: in io.github.mradzinski.eventus/UiEvent> io.github.mradzinski.eventus/DispatchStrategy { // io.github.mradzinski.eventus/DispatchStrategy|null[0]
+    abstract fun decide(#A, kotlin.collections/List<io.github.mradzinski.eventus/UiEvent>): io.github.mradzinski.eventus/Dispatch // io.github.mradzinski.eventus/DispatchStrategy.decide|decide(1:0;kotlin.collections.List<io.github.mradzinski.eventus.UiEvent>){}[0]
 
-    final val entries // io.github.mradzinski.eventus/DispatchStrategy.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.mradzinski.eventus/DispatchStrategy> // io.github.mradzinski.eventus/DispatchStrategy.entries.<get-entries>|<get-entries>#static(){}[0]
+    final object Companion { // io.github.mradzinski.eventus/DispatchStrategy.Companion|null[0]
+        final val Concurrent // io.github.mradzinski.eventus/DispatchStrategy.Companion.Concurrent|{}Concurrent[0]
+            final fun <get-Concurrent>(): io.github.mradzinski.eventus/DispatchStrategy<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/DispatchStrategy.Companion.Concurrent.<get-Concurrent>|<get-Concurrent>(){}[0]
 
-    final fun valueOf(kotlin/String): io.github.mradzinski.eventus/DispatchStrategy // io.github.mradzinski.eventus/DispatchStrategy.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<io.github.mradzinski.eventus/DispatchStrategy> // io.github.mradzinski.eventus/DispatchStrategy.values|values#static(){}[0]
+        final fun <#A2: io.github.mradzinski.eventus/UiEvent> dropIfAlreadyRunning(kotlin/Function2<#A2, io.github.mradzinski.eventus/UiEvent, kotlin/Boolean>): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.dropIfAlreadyRunning|dropIfAlreadyRunning(kotlin.Function2<0:0,io.github.mradzinski.eventus.UiEvent,kotlin.Boolean>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final fun <#A2: io.github.mradzinski.eventus/UiEvent> latest(kotlin/Function2<#A2, io.github.mradzinski.eventus/UiEvent, kotlin/Boolean>): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.latest|latest(kotlin.Function2<0:0,io.github.mradzinski.eventus.UiEvent,kotlin.Boolean>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final fun <#A2: io.github.mradzinski.eventus/UiEvent> sequential(kotlin/Function2<#A2, io.github.mradzinski.eventus/UiEvent, kotlin/Boolean>): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.sequential|sequential(kotlin.Function2<0:0,io.github.mradzinski.eventus.UiEvent,kotlin.Boolean>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> DropIfAlreadyRunning(): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.DropIfAlreadyRunning|DropIfAlreadyRunning(){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> DropIfAlreadyRunning(noinline kotlin/Function1<#A2, kotlin/Any?>): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.DropIfAlreadyRunning|DropIfAlreadyRunning(kotlin.Function1<0:0,kotlin.Any?>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> Latest(): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.Latest|Latest(){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> Latest(noinline kotlin/Function1<#A2, kotlin/Any?>): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.Latest|Latest(kotlin.Function1<0:0,kotlin.Any?>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> Sequential(): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.Sequential|Sequential(){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> Sequential(noinline kotlin/Function1<#A2, kotlin/Any?>): io.github.mradzinski.eventus/DispatchStrategy<#A2> // io.github.mradzinski.eventus/DispatchStrategy.Companion.Sequential|Sequential(kotlin.Function1<0:0,kotlin.Any?>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> matcher(): kotlin/Function2<#A2, io.github.mradzinski.eventus/UiEvent, kotlin/Boolean> // io.github.mradzinski.eventus/DispatchStrategy.Companion.matcher|matcher(){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+        final inline fun <#A2: reified io.github.mradzinski.eventus/UiEvent> matcher(noinline kotlin/Function1<#A2, kotlin/Any?>): kotlin/Function2<#A2, io.github.mradzinski.eventus/UiEvent, kotlin/Boolean> // io.github.mradzinski.eventus/DispatchStrategy.Companion.matcher|matcher(kotlin.Function1<0:0,kotlin.Any?>){0§<io.github.mradzinski.eventus.UiEvent>}[0]
+    }
 }
 
 abstract fun interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/ErrorHandler { // io.github.mradzinski.eventus/ErrorHandler|null[0]
@@ -27,7 +35,7 @@ abstract interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mrad
     abstract val eventType // io.github.mradzinski.eventus/EventHandler.eventType|{}eventType[0]
         abstract fun <get-eventType>(): kotlin.reflect/KClass<#A> // io.github.mradzinski.eventus/EventHandler.eventType.<get-eventType>|<get-eventType>(){}[0]
     open val strategy // io.github.mradzinski.eventus/EventHandler.strategy|{}strategy[0]
-        open fun <get-strategy>(): io.github.mradzinski.eventus/DispatchStrategy // io.github.mradzinski.eventus/EventHandler.strategy.<get-strategy>|<get-strategy>(){}[0]
+        open fun <get-strategy>(): io.github.mradzinski.eventus/DispatchStrategy<#A> // io.github.mradzinski.eventus/EventHandler.strategy.<get-strategy>|<get-strategy>(){}[0]
 
     abstract suspend fun handle(#A, io.github.mradzinski.eventus/ScreenStore<#B, #C>) // io.github.mradzinski.eventus/EventHandler.handle|handle(1:0;io.github.mradzinski.eventus.ScreenStore<1:1,1:2>){}[0]
 }
@@ -46,6 +54,34 @@ abstract interface io.github.mradzinski.eventus/UiEffect // io.github.mradzinski
 abstract interface io.github.mradzinski.eventus/UiEvent // io.github.mradzinski.eventus/UiEvent|null[0]
 
 abstract interface io.github.mradzinski.eventus/UiState // io.github.mradzinski.eventus/UiState|null[0]
+
+sealed interface io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch|null[0]
+    final class Replace : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.Replace|null[0]
+        constructor <init>(kotlin.collections/List<io.github.mradzinski.eventus/UiEvent>) // io.github.mradzinski.eventus/Dispatch.Replace.<init>|<init>(kotlin.collections.List<io.github.mradzinski.eventus.UiEvent>){}[0]
+
+        final val events // io.github.mradzinski.eventus/Dispatch.Replace.events|{}events[0]
+            final fun <get-events>(): kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/Dispatch.Replace.events.<get-events>|<get-events>(){}[0]
+    }
+
+    final class WaitFor : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.WaitFor|null[0]
+        constructor <init>(kotlin.collections/List<io.github.mradzinski.eventus/UiEvent>) // io.github.mradzinski.eventus/Dispatch.WaitFor.<init>|<init>(kotlin.collections.List<io.github.mradzinski.eventus.UiEvent>){}[0]
+
+        final val events // io.github.mradzinski.eventus/Dispatch.WaitFor.events|{}events[0]
+            final fun <get-events>(): kotlin.collections/List<io.github.mradzinski.eventus/UiEvent> // io.github.mradzinski.eventus/Dispatch.WaitFor.events.<get-events>|<get-events>(){}[0]
+    }
+
+    final object Ignore : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.Ignore|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/Dispatch.Ignore.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/Dispatch.Ignore.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/Dispatch.Ignore.toString|toString(){}[0]
+    }
+
+    final object Run : io.github.mradzinski.eventus/Dispatch { // io.github.mradzinski.eventus/Dispatch.Run|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/Dispatch.Run.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/Dispatch.Run.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/Dispatch.Run.toString|toString(){}[0]
+    }
+}
 
 final class <#A: io.github.mradzinski.eventus/UiState, #B: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/ScreenStore { // io.github.mradzinski.eventus/ScreenStore|null[0]
     constructor <init>(#A) // io.github.mradzinski.eventus/ScreenStore.<init>|<init>(1:0){}[0]

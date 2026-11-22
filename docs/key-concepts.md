@@ -106,10 +106,10 @@ and the store. See [handling failures](handling-failures.md).
 
 ### Dispatch strategy
 
-What the router does when an event arrives while its event handler is still running an earlier
-event of the same type. There are four: run both, keep only the latest, run them in order, or ignore the
-new one. Each event handler chooses its own. See
-[choosing a dispatch strategy](choosing-a-dispatch-strategy.md).
+What the router does with an event while other events are still running or waiting. Four are
+ready-made: run it at once, let it replace the one before, run it in order, or ignore it. Each of them
+also works across several events or for each item of a list, and you can write your own. Each event
+handler chooses its own. See [choosing a dispatch strategy](choosing-a-dispatch-strategy.md).
 
 ### Scope
 
@@ -128,7 +128,8 @@ scope. In a view model, `routerScope()` creates a scope that the view model and 
 | `ErrorHandler<E, S, F>` | What the screen does when one of its event handlers fails. One per screen. |
 | `ScreenStore<S, F>` | The state and effects of one screen. The router creates it and hands it to every event handler. |
 | `EventRouter<E, S, F>` | What the UI sees: `state`, `effects` and `onEvent`. Created by the `EventRouter(...)` function. |
-| `DispatchStrategy` | How an event handler runs when its event arrives again while it is still running. |
+| `DispatchStrategy<E>` | What the router does with an event `E` while other events are running or waiting. |
+| `Dispatch` | The answer of a strategy: run the event, ignore it, replace other events, or wait for them. |
 | `routerScope()` | Creates the coroutine scope a view model and its router share. |
 
 If your app already has types called `UiState`, `UiEvent` or `UiEffect`, import these with an alias

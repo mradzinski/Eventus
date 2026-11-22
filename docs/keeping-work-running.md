@@ -19,7 +19,7 @@ class OnScreenOpenedHandler(
 ) : EventHandler<OnScreenOpened, TaskListUiState, TaskListEffect> {
 
     override val eventType = OnScreenOpened::class
-    override val strategy = DispatchStrategy.Latest   // sent again, it starts over; it never runs twice
+    override val strategy = DispatchStrategy.Latest<OnScreenOpened>()   // sent again, it starts over; it never runs twice
 
     override suspend fun handle(event: OnScreenOpened, store: ScreenStore<TaskListUiState, TaskListEffect>) {
         tasks.observeTasks().collect { loaded -> store.update { it.copy(tasks = loaded) } }
@@ -60,7 +60,7 @@ class OnVisibilityChangeHandler(
 ) : EventHandler<OnVisibilityChange, ChatUiState, ChatEffect> {
 
     override val eventType = OnVisibilityChange::class
-    override val strategy = DispatchStrategy.Latest
+    override val strategy = DispatchStrategy.Latest<OnVisibilityChange>()
 
     override suspend fun handle(event: OnVisibilityChange, store: ScreenStore<ChatUiState, ChatEffect>) {
         if (!event.visible) return   // the run that was reading the socket is already cancelled

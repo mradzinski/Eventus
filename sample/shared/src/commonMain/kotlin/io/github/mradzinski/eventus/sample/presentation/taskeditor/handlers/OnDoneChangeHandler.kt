@@ -20,7 +20,7 @@ import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorUiS
 internal class OnDoneChangeHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnDoneChange> {
 
     override val eventType = OnDoneChange::class
-    override val strategy = DispatchStrategy.Sequential
+    override val strategy = DispatchStrategy.Sequential<OnDoneChange>()
 
     override suspend fun handle(event: OnDoneChange, store: TaskEditorStore) {
         val form = store.current as? TaskEditorUiState.Editing ?: return
