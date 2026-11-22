@@ -43,6 +43,9 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 - Targets: `android` (minSdk 24), `jvm`, `iosArm64`, `iosSimulatorArm64`, `iosX64`, `js`, `wasmJs`.
 - The examples use the multiplatform `androidx.lifecycle` `ViewModel` and Compose, because that is
   how most apps use the library. Neither is required.
+- **Working with an AI agent?** Give it [AGENT-USAGE.md](AGENT-USAGE.md). It is one file with
+  everything an agent needs to write correct Eventus code: the API, the rules, a complete screen,
+  the error messages with their fixes, and skills it can save.
 
 ## Installing
 
