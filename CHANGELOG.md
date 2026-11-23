@@ -3,7 +3,7 @@
 What changed in each version of Eventus, newest first. Versions follow
 [semantic versioning](https://semver.org).
 
-## 1.0.0-rc01 (not released yet)
+## 1.0.0-rc01 (2026-11-22)
 
 The first release. It is a release candidate: the API is meant to stay as it is, and this version
 is for trying it in real apps before 1.0.0.
