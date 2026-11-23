@@ -30,6 +30,9 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 
 - [Before you begin](#before-you-begin)
 - [Installing](#installing)
+  - [Optional: integration with Koin](#optional-integration-with-koin)
+  - [Optional: integration with Metro](#optional-integration-with-metro)
+  - [Optional: adding the Compose helpers](#optional-adding-the-compose-helpers)
 - [Quick start](#quick-start)
 - [Documentation](#documentation)
 - [Changelog](#changelog)
@@ -87,7 +90,7 @@ dependencies {
 A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
 a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc02")`.
 
-### Optional: generating the Koin module
+### Optional: integration with Koin
 
 If you use Koin, `eventus-koin` lets the processor write the Koin module of your event handlers from
 one annotated property. It needs the build-time check above. See [Generating the Koin
@@ -99,7 +102,7 @@ commonMain.dependencies {
 }
 ```
 
-### Optional: generating the Metro bindings
+### Optional: integration with Metro
 
 If you use Metro, `eventus-metro` lets the processor write the Metro bindings of your event handlers
 from one annotation on each screen. It needs the build-time check above. See [Generating the Metro
