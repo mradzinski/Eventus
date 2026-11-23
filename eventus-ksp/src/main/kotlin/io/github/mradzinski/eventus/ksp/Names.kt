@@ -2,6 +2,7 @@ package io.github.mradzinski.eventus.ksp
 
 // The processor finds Eventus, Koin and Metro types by name, so it needs none of those libraries to run.
 internal const val EVENT_HANDLER = "io.github.mradzinski.eventus.EventHandler"
+internal const val EVENT_ROUTER = "io.github.mradzinski.eventus.EventRouter"
 internal const val ERROR_HANDLER = "io.github.mradzinski.eventus.ErrorHandler"
 internal const val UI_EVENT = "io.github.mradzinski.eventus.UiEvent"
 internal const val KOIN_MODULE_ANNOTATION = "io.github.mradzinski.eventus.koin.EventusKoinModule"

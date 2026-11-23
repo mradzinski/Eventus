@@ -4,6 +4,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
 
 /** A class that implements `EventHandler` and can be created: not abstract, not an interface. */
@@ -13,15 +14,33 @@ internal class Handler(
     val event: KSClassDeclaration?,
     /** The interfaces between it and `EventHandler`, nearest first: usually the handler interface of its screen. */
     val screenInterfaces: List<KSClassDeclaration>,
+    /** The state and effect types it is written for, each null when it is not known. */
+    val state: KSType? = null,
+    val effect: KSType? = null,
+)
+
+/** A class that implements `EventRouter`, as a view model does by delegation. */
+internal class Router(
+    val declaration: KSClassDeclaration,
+    /** The event type it routes, or null when that is not one known class. */
+    val event: KSClassDeclaration?,
+    /** The state and effect types of its handlers, each null when it is not known. */
+    val state: KSType?,
+    val effect: KSType?,
 )
 
 /** What the processor found in the sources of one Gradle module. */
 internal class Scan(
     val handlers: List<Handler>,
     val errorHandlers: List<KSClassDeclaration>,
+    val routers: List<Router>,
     /** The sealed event types declared in this module that are not inside another sealed type. */
     val eventRoots: List<KSClassDeclaration>,
 )
+
+// `EventHandler<E, S, F>` and `EventRouter<E, S, F>` take their types in the same order.
+private const val STATE_ARGUMENT = 1
+private const val EFFECT_ARGUMENT = 2
 
 internal fun Resolver.scan(): Scan {
     val classes = getAllFiles()
@@ -34,6 +53,7 @@ internal fun Resolver.scan(): Scan {
     return Scan(
         handlers = creatable.mapNotNull { it.toHandler() },
         errorHandlers = creatable.filter { it.isSubtypeOf(ERROR_HANDLER) },
+        routers = creatable.mapNotNull { it.toRouter() },
         eventRoots = classes.filter { it.isEventRoot() },
     )
 }
@@ -68,6 +88,23 @@ private fun KSClassDeclaration.toHandler(): Handler? {
         declaration = this,
         event = event?.declaration,
         screenInterfaces = path.through,
+        state = path.supertype.arguments.getOrNull(STATE_ARGUMENT),
+        effect = path.supertype.arguments.getOrNull(EFFECT_ARGUMENT),
+    )
+}
+
+private fun KSClassDeclaration.toRouter(): Router? {
+    val arguments = pathTo(EVENT_ROUTER)?.supertype?.arguments ?: return null
+
+    val event = arguments
+        .firstOrNull()
+        ?.toClassType()
+
+    return Router(
+        declaration = this,
+        event = event?.declaration,
+        state = arguments.getOrNull(STATE_ARGUMENT),
+        effect = arguments.getOrNull(EFFECT_ARGUMENT),
     )
 }
 

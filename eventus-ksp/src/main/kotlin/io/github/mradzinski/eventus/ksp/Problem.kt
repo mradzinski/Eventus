@@ -29,7 +29,9 @@ internal fun Scan.routingProblems(): List<Problem> {
         .filterNot { it.displayName in handlersByEvent }
         .map { it.missingHandlerProblem() }
 
-    return unroutable + duplicates + missing
+    val handled = handlersByEvent.keys
+
+    return unroutable + duplicates + missing + routers.mapNotNull { it.widerTypeProblem(handlers, handled) }
 }
 
 /** What stops the generated Koin module from registering a handler in a way its view model can ask for. */
@@ -59,7 +61,7 @@ internal fun KSClassDeclaration.privateProblem(generated: String): Problem = Pro
 )
 
 /** The concrete event classes of a sealed type, including those of the sealed types nested in it. */
-private fun KSClassDeclaration.leaves(): List<KSClassDeclaration> = getSealedSubclasses()
+internal fun KSClassDeclaration.leaves(): List<KSClassDeclaration> = getSealedSubclasses()
     .flatMap { subclass ->
         when {
             subclass.isSealed -> subclass.leaves()
