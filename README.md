@@ -30,6 +30,7 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 
 - [Before you begin](#before-you-begin)
 - [Installing](#installing)
+  - [Recommended: adding the build-time check](#recommended-adding-the-build-time-check)
   - [Optional: integration with Koin](#optional-integration-with-koin)
   - [Optional: integration with Metro](#optional-integration-with-metro)
   - [Optional: adding the Compose helpers](#optional-adding-the-compose-helpers)
