@@ -7,6 +7,14 @@ Eventus needs no dependency-injection library, and works with any. Two facts mak
   own.
 - **The view model takes a `Collection` of handlers.** Adding an event never changes the view model.
 
+## Contents
+
+- [Giving each screen an event handler interface](#giving-each-screen-an-event-handler-interface)
+- [Using Koin](#using-koin)
+- [Using Metro](#using-metro)
+- [Using another container that resolves at compile time](#using-another-container-that-resolves-at-compile-time)
+- [Wiring by hand](#wiring-by-hand)
+
 ## Giving each screen an event handler interface
 
 One line per screen pays for itself:

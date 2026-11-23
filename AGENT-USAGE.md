@@ -387,6 +387,35 @@ Facts about failures:
 Do not change the view model class. If the handlers are listed by hand, the list is the only other
 place to touch.
 
+## Several screens in one feature
+
+A feature (often one Gradle module) can have several screens, each with its own view model, state,
+effects and handler interface. Give the feature one sealed event type with a sealed type for each
+screen inside it. Each screen names its own part:
+
+```kotlin
+sealed interface TasksEvent : UiEvent {
+    sealed interface List : TasksEvent { data object OnRefresh : List }
+    sealed interface Editor : TasksEvent { data object OnSaveClick : Editor }
+}
+
+interface TaskListHandler<E : TasksEvent.List> : EventHandler<E, TaskListUiState, TaskListEffect>
+// TaskListViewModel is an EventRouter<TasksEvent.List, TaskListUiState, TaskListEffect>
+```
+
+Sending another screen's event to a view model then does not compile, and `eventus-ksp` still
+wants exactly one handler for each event, because it looks inside nested sealed types. An event
+belongs to one screen: when two screens react to the same action, give each its own event class.
+
+The rule: **each view model routes a sealed type that holds exactly the events it handles.** It
+also covers a view model that sits above others (a feature's own view model) and a part of a
+screen that has its own view model: each gets its own sealed type inside the feature's type, such
+as `sealed interface Feature : TasksEvent { data object OnBackButtonClick : Feature }` routed by
+`EventRouter<TasksEvent.Feature, …>`. Never put an event directly under the feature's type and
+route the feature's type: that router accepts the other view models' events and throws for them,
+and `eventus-ksp` fails the build. Events are not passed between routers: the UI calls `onEvent`
+on the view model that handles the event.
+
 ## Deciding where something goes
 
 | It is… | Put it in | Example |
@@ -816,6 +845,7 @@ fun `a tap on increment raises the count`() = runTest {
 | `No handler for com.example.X. Add a class that implements EventHandler for it.` (build) | An event has no handler class. | Add the handler class. |
 | `X has two handlers: A and B. An event has exactly one handler.` (build) | Two classes handle one event. | Remove one. |
 | `… is never called: … is sealed or abstract` (build) | A handler names a parent type. | Name one concrete event class. |
+| `X routes every E, but it can never handle …` (build) | A class implementing `EventRouter<E, …>` routes a type that includes events other view models handle. | Give that view model's events a sealed type of their own inside `E`, and route that type. |
 | `… implements EventHandler directly` (build) | A Koin module is requested and a handler has no screen interface. | Implement the screen's handler interface. |
 | `… is private, so the generated Koin module cannot create it` (build) | A handler class is private. | Make it `internal`. |
 | `… is private, so the generated Metro bindings cannot create it` or `cannot name it` (build) | A handler class or an annotated handler interface is private. | Make it `internal`. |

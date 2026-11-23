@@ -15,6 +15,28 @@ The examples on this page give each screen a handler interface and a name for it
 `EventHandler<E, SearchUiState, SearchEffect>`, and `SearchStore` for
 `ScreenStore<SearchUiState, SearchEffect>`.
 
+## Contents
+
+- [The four ready-made strategies](#the-four-ready-made-strategies)
+  - [The type in the brackets](#the-type-in-the-brackets)
+  - [`Concurrent`: every event runs at once](#concurrent-every-event-runs-at-once)
+  - [`Latest`: the newest event replaces the one before](#latest-the-newest-event-replaces-the-one-before)
+  - [`Sequential`: events run in the order they were sent](#sequential-events-run-in-the-order-they-were-sent)
+  - [`DropIfAlreadyRunning`: a repeat is ignored](#dropifalreadyrunning-a-repeat-is-ignored)
+- [Sharing a strategy between several events](#sharing-a-strategy-between-several-events)
+  - [The newest of several inputs: `Latest<T>()`](#the-newest-of-several-inputs-latestt)
+  - [Actions that exclude each other: `DropIfAlreadyRunning<T>()`](#actions-that-exclude-each-other-dropifalreadyrunningt)
+  - [Several events in order: `Sequential<T>()`](#several-events-in-order-sequentialt)
+  - [Keeping the event handlers in agreement](#keeping-the-event-handlers-in-agreement)
+- [Applying a strategy to each item of a list](#applying-a-strategy-to-each-item-of-a-list)
+  - [Each item in order: `Sequential<T> { key }`](#each-item-in-order-sequentialt--key-)
+  - [Each item once: `DropIfAlreadyRunning<T> { key }`](#each-item-once-dropifalreadyrunningt--key-)
+  - [The newest for each item: `Latest<T> { key }`](#the-newest-for-each-item-latestt--key-)
+  - [Several events for each item](#several-events-for-each-item)
+- [Writing your own strategy](#writing-your-own-strategy)
+  - [The rules of a strategy function](#the-rules-of-a-strategy-function)
+- [What the router keeps](#what-the-router-keeps)
+
 ## The four ready-made strategies
 
 | Strategy | An event arrives while an earlier one is active | A real case |

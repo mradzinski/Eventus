@@ -10,6 +10,18 @@ and is never part of the app. It does this in the Gradle module you add it to:
 - **It writes the Metro bindings of the event handlers**, when you ask for them with one annotation
   on each screen.
 
+## Contents
+
+- [Setting up](#setting-up)
+- [What the check finds](#what-the-check-finds)
+- [Generating the Koin module](#generating-the-koin-module)
+- [Generating the Metro bindings](#generating-the-metro-bindings)
+  - [Declaring the graph](#declaring-the-graph)
+  - [What the processor needs](#what-the-processor-needs)
+- [Working with several modules](#working-with-several-modules)
+  - [With Koin](#with-koin)
+  - [With Metro](#with-metro)
+
 ## Setting up
 
 Add the KSP plugin and the processor as shown in
@@ -27,11 +39,19 @@ line:
 - **An event with two handler classes.**
 - **A handler the router can never call**: one whose event type is a sealed or abstract type, or a type
   parameter. The router sends an event to the handler of its exact class.
+- **A view model that routes a wider type than it can handle.** A class that implements
+  `EventRouter<TasksEvent, …>` accepts every `TasksEvent`. When some of those events have handlers
+  written for another state or other effects, this view model can never handle them. See [several
+  view models in one feature](key-concepts.md#several-view-models-in-one-feature).
 
 ```text
 e: [ksp] TaskListEvent.kt:14: No handler for com.example.TaskListEvent.OnRefresh. Add a class that
 implements EventHandler for it.
 ```
+
+The check of a view model's type looks at classes that implement `EventRouter`, as a view model does
+by delegation. It tells the handlers of one view model from those of another by their state and
+effect types.
 
 The processor looks at one Gradle module at a time, so **a screen's events and their handlers live in
 the same Gradle module**. See [working with several modules](#working-with-several-modules).

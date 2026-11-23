@@ -14,6 +14,11 @@ What changed in each version of Eventus, newest first. Versions follow
   Gradle modules. Written for and tested with Metro 1.6.0. See [checking and wiring event handlers
   at build time](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-metro-bindings).
 - `eventus-metro`: a new artifact that holds that annotation and nothing else.
+- **A build-time check of a view model's event type.** `eventus-ksp` now fails the build when a class
+  that implements `EventRouter` routes a wider type than it can handle: for example, a view model
+  that routes a whole feature's event type while other view models handle parts of it. Before, such
+  a view model threw when it was sent one of those events. See [several view models in one
+  feature](docs/key-concepts.md#several-view-models-in-one-feature).
 
 ## 1.0.0-rc01 (2026-11-22)
 

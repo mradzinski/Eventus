@@ -1,5 +1,12 @@
 # Testing
 
+## Contents
+
+- [Testing an event handler](#testing-an-event-handler)
+- [Testing a dispatch strategy](#testing-a-dispatch-strategy)
+- [Testing a view model](#testing-a-view-model)
+- [Checking that every event has a handler](#checking-that-every-event-has-a-handler)
+
 ## Testing an event handler
 
 An event handler test needs no router, no view model and no dependency injection. Create a store,

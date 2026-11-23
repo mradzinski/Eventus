@@ -8,6 +8,12 @@ to another. There are two ways to do it, and both leave each screen's router pri
 **Go down by default.** Going down is the way that keeps working as an app grows. Go up only for a
 control that belongs to one screen and is merely drawn somewhere shared.
 
+## Contents
+
+- [Going down, through what the screens share (the default)](#going-down-through-what-the-screens-share-the-default)
+- [Going up, through the UI (the exception)](#going-up-through-the-ui-the-exception)
+- [Why there is no bus](#why-there-is-no-bus)
+
 ## Going down, through what the screens share (the default)
 
 Give the part that acts its own event and event handler, and let that handler change something the

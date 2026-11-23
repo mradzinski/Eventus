@@ -4,6 +4,11 @@ When the user ticks a box or taps a heart, show the change at once and do the sa
 the saving fails, put the old value back and say why. Where the "at once" happens depends on who
 owns the data.
 
+## Contents
+
+- [State that only the screen holds](#state-that-only-the-screen-holds)
+- [Data the screen observes](#data-the-screen-observes)
+
 ## State that only the screen holds
 
 If the screen loaded a value once and keeps its own copy, the event handler changes that copy with

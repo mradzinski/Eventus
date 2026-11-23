@@ -3,6 +3,14 @@
 `eventus-compose` is an optional artifact with two helpers for a Compose UI. The library itself
 knows nothing about a UI; the helpers live on the UI's side.
 
+## Contents
+
+- [Installing](#installing)
+- [Performing effects](#performing-effects)
+- [Notifying the router that the screen is visible](#notifying-the-router-that-the-screen-is-visible)
+
+## Installing
+
 ```kotlin
 commonMain.dependencies {
     implementation("io.github.mradzinski:eventus-compose:1.0.0-rc02")

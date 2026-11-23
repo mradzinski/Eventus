@@ -4,6 +4,27 @@ Eventus is built from a small number of pieces that work together in one loop. T
 loop first and then explains each piece. Read it before the other pages, which assume you know these
 terms.
 
+## Contents
+
+- [The loop](#the-loop)
+- [The pieces](#the-pieces)
+  - [Event](#event)
+  - [Event handler](#event-handler)
+  - [Store](#store)
+  - [State](#state)
+  - [Effect](#effect)
+  - [Router](#router)
+  - [Error handler](#error-handler)
+  - [Dispatch strategy](#dispatch-strategy)
+  - [Scope](#scope)
+  - [At a glance](#at-a-glance)
+- [What an event handler produces](#what-an-event-handler-produces)
+- [Several view models in one feature](#several-view-models-in-one-feature)
+- [Lifecycle](#lifecycle)
+- [The rules](#the-rules)
+- [The words these docs use](#the-words-these-docs-use)
+- [Where to go next](#where-to-go-next)
+
 ## The loop
 
 ```mermaid
@@ -151,6 +172,76 @@ Work is done by the event handler itself, through what it depends on. An event h
 work, such as one that reports an event to analytics, changes no state and emits no effect. See
 [choosing between an effect and state](choosing-between-an-effect-and-state.md).
 
+## Several view models in one feature
+
+A feature often has more than one view model. Two screens of a feature each have one. And a part of
+a screen can have its own: a `Feature()` composable with a view model, which shows a `List()` and an
+`Editor()` composable that each have a view model too. A view model does not have to be a screen.
+
+The rule is the same in every such case:
+
+> **Each view model routes a sealed type that holds exactly the events it handles.**
+
+The feature can still have one event type. Give each view model a sealed type inside it, including
+the view model that sits above the others:
+
+```kotlin
+sealed interface TasksEvent : UiEvent {
+
+    sealed interface List : TasksEvent {
+        data object OnRefresh : List
+    }
+
+    sealed interface Editor : TasksEvent {
+        data object OnSaveClick : Editor
+    }
+
+    sealed interface Feature : TasksEvent {
+        data object OnBackButtonClick : Feature
+    }
+}
+
+class ListViewModel(/* … */) : EventRouter<TasksEvent.List, ListUiState, ListEffect> by /* … */
+class EditorViewModel(/* … */) : EventRouter<TasksEvent.Editor, EditorUiState, EditorEffect> by /* … */
+class FeatureViewModel(/* … */) : EventRouter<TasksEvent.Feature, FeatureUiState, FeatureEffect> by /* … */
+```
+
+Do not put an event directly under `TasksEvent` and have `FeatureViewModel` route `TasksEvent`:
+
+```kotlin
+sealed interface TasksEvent : UiEvent {
+    sealed interface List : TasksEvent { /* … */ }
+    sealed interface Editor : TasksEvent { /* … */ }
+
+    data object OnBackButtonClick : TasksEvent   // Wrong: it has no type of its own.
+}
+
+// Wrong: this view model accepts the events of the list and of the editor too.
+class FeatureViewModel(/* … */) : EventRouter<TasksEvent, FeatureUiState, FeatureEffect> by /* … */
+```
+
+A router accepts every event of its type. `TasksEvent.Editor.OnSaveClick` is a `TasksEvent`, so that
+`FeatureViewModel` would accept it, find no event handler for it, and throw.
+
+Two things enforce the rule:
+
+- **The compiler.** `FeatureViewModel.onEvent` takes a `TasksEvent.Feature`, so sending it
+  `TasksEvent.Editor.OnSaveClick` does not compile.
+- **The [build-time check](checking-and-wiring-event-handlers-at-build-time.md).** A view model that
+  routes a wider type than it can handle fails the build:
+
+```text
+e: [ksp] FeatureViewModel.kt:9: com.example.FeatureViewModel routes every com.example.TasksEvent, but it
+can never handle com.example.TasksEvent.Editor.OnSaveClick, com.example.TasksEvent.List.OnRefresh: the
+handlers of those events are written for another state or other effects. Give the events that
+FeatureViewModel handles a sealed type of their own inside TasksEvent, and route that type.
+```
+
+An event is not passed from one router to another. The UI sends each event to the view model that
+handles it: the back button calls `FeatureViewModel.onEvent`, and the refresh button calls
+`ListViewModel.onEvent`. See [structuring the events of a
+feature](structuring-the-events-of-a-feature.md) for the event handlers and their interfaces.
+
 ## Lifecycle
 
 - **The router lives as long as its scope.** In a view model, that is until the view model is cleared.
@@ -181,6 +272,8 @@ work, such as one that reports an event to analytics, changes no state and emits
   [build-time check](checking-and-wiring-event-handlers-at-build-time.md) finds both when you build.
 - **Declare a screen's events as one sealed type.** The router matches each event by its exact class,
   so an event handler registered for a parent type does not receive the events of its subtypes.
+- **A view model routes a sealed type that holds exactly the events it handles.** See [several view
+  models in one feature](#several-view-models-in-one-feature).
 - **Keep the state immutable.** `store.update { it.copy(...) }` builds a new value. A value that was
   changed in place (an item added to a list the state already holds) is equal to the old one, so the
   store never emits it and the UI never sees the change.

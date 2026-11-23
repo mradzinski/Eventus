@@ -1,8 +1,23 @@
 # Logging events
 
 The router can tell you what it does with every event: what the event's strategy answered, when its
-event handler started, and how its run ended. Pass an `observer` when you create the router. Each
-report prints as a sentence, so one line is a log:
+event handler started, and how its run ended.
+
+## Contents
+
+- [Turning the reports on](#turning-the-reports-on)
+- [Reading the reports](#reading-the-reports)
+- [The reports](#the-reports)
+- [Sending the reports to your logger](#sending-the-reports-to-your-logger)
+- [What you can rely on](#what-you-can-rely-on)
+- [The rules of an observer](#the-rules-of-an-observer)
+- [Checking in a test what the router did](#checking-in-a-test-what-the-router-did)
+- [What the reports do not cover](#what-the-reports-do-not-cover)
+
+## Turning the reports on
+
+Pass an `observer` when you create the router. Each report prints as a sentence, so one line is a
+log:
 
 ```kotlin
 class EditorViewModel(
