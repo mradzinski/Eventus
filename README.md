@@ -60,7 +60,7 @@ kotlin {
 }
 ```
 
-The library needs nothing else. One more step is optional, and recommended.
+The library needs nothing else. The steps below are optional, and the first one is recommended.
 
 ### Recommended: adding the build-time check
 
@@ -87,11 +87,29 @@ dependencies {
 A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
 a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc02")`.
 
-If you use Koin, the processor can also write the Koin module of your handlers. The generated module
-takes one more artifact, `eventus-koin`, and one annotated property. If you use Metro, the processor
-can write the Metro bindings of your handlers, with the artifact `eventus-metro` and one annotation
-on each screen. See [checking and wiring event handlers at build
-time](docs/checking-and-wiring-event-handlers-at-build-time.md) for all three.
+### Optional: generating the Koin module
+
+If you use Koin, `eventus-koin` lets the processor write the Koin module of your event handlers from
+one annotated property. It needs the build-time check above. See [Generating the Koin
+module](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-koin-module).
+
+```kotlin
+commonMain.dependencies {
+    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc02")
+}
+```
+
+### Optional: generating the Metro bindings
+
+If you use Metro, `eventus-metro` lets the processor write the Metro bindings of your event handlers
+from one annotation on each screen. It needs the build-time check above. See [Generating the Metro
+bindings](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-metro-bindings).
+
+```kotlin
+commonMain.dependencies {
+    implementation("io.github.mradzinski:eventus-metro:1.0.0-rc02")
+}
+```
 
 ### Optional: adding the Compose helpers
 
