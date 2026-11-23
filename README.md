@@ -289,6 +289,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | [Where Eventus sits in your app](docs/where-eventus-sits-in-your-app.md) | Which modules of an app depend on Eventus and which never do. |
 | [What Eventus does not do](docs/what-eventus-does-not-do.md) | The limits of the library, stated plainly. |
 | [Project layout](docs/project-layout.md) | The modules of this repository, and how to run the sample, the checks and the formatter. |
+| [Class diagram](docs/class-diagram.md) | Every type of the `eventus` module, public and internal, and how the types relate, as a picture. |
 
 ## Changelog
 

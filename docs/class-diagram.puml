@@ -1,0 +1,150 @@
+@startuml
+title The eventus module
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam nodesep 45
+skinparam ranksep 60
+skinparam packageStyle rectangle
+skinparam class {
+    BackgroundColor #F7F9FC
+    BorderColor #3B4A6B
+    ArrowColor #3B4A6B
+    FontSize 14
+}
+skinparam package {
+    BorderColor #9AA5BD
+    FontColor #3B4A6B
+}
+hide empty members
+set separator none
+
+package "Public: io.github.mradzinski.eventus" as Public {
+
+    interface UiEvent
+    interface UiState
+    interface UiEffect
+
+    interface "EventRouter<E, S, F>" as EventRouter {
+        state: StateFlow<S>
+        effects: Flow<F>
+        onEvent(event: E)
+    }
+
+    class "Top-level functions" as Functions <<functions>> {
+        EventRouter(scope, initialState, handlers, errorHandler, observer): EventRouter<E, S, F>
+        routerScope(): CoroutineScope
+    }
+
+    interface "EventHandler<E, S, F>" as EventHandler {
+        eventType: KClass<E>
+        strategy: DispatchStrategy<E>
+        {abstract} suspend handle(event: E, store: ScreenStore<S, F>)
+    }
+
+    class "ScreenStore<S, F>" as ScreenStore {
+        state: StateFlow<S>
+        current: S
+        effects: Flow<F>
+        update(transform: (S) -> S)
+        suspend updateOptimistically(stateUpdate, stateIfFailed, work)
+        emit(effect: F)
+    }
+
+    interface "ErrorHandler<E, S, F>" as ErrorHandler <<fun interface>> {
+        handle(event: E, error: Throwable, store: ScreenStore<S, F>)
+    }
+
+    interface "DispatchStrategy<E>" as DispatchStrategy <<fun interface>> {
+        decide(event: E, active: List<UiEvent>): Dispatch
+        --
+        {static} Concurrent
+        {static} Latest<T>()
+        {static} Sequential<T>()
+        {static} DropIfAlreadyRunning<T>()
+    }
+
+    interface Dispatch <<sealed>> {
+        Run
+        Ignore
+        {field} Replace(events)
+        {field} WaitFor(events)
+    }
+
+    interface "RouterObserver<E>" as RouterObserver <<fun interface>> {
+        observe(trace: RouterTrace<E>)
+    }
+
+    interface "RouterTrace<E>" as RouterTrace <<sealed>> {
+        event: E
+        number: Long
+        --
+        {field} Dispatched(dispatch, replacedOrAwaited)
+        Started
+        Completed
+        {field} Failed(error)
+        {field} Cancelled(reason)
+    }
+
+    interface "Cancelled.Reason" as Reason <<sealed>> {
+        {field} ReplacedBy(number)
+        ScopeCancelled
+        ByHandler
+    }
+}
+
+package "Internal: io.github.mradzinski.eventus.internal" as Internal {
+
+    class "DefaultEventRouter<E, S, F>" as DefaultEventRouter {
+        - scope: CoroutineScope
+        - lock: SynchronizedObject
+        - version: Int
+        onEvent(event: E)
+        - handlerFor(event: E)
+        - decide(event, handler, active): Dispatch?
+        - carryOut(event, handler, dispatch, version): Boolean
+        - end(run, cause)
+    }
+
+    class "ActiveRun<E>" as ActiveRun <<private>> {
+        event: E
+        number: Long
+        job: Job
+        replacedBy: Long?
+        ended(cause, scopeIsActive): RouterTrace<E>
+    }
+
+    class Snapshot <<private>> {
+        events: List<UiEvent>
+        version: Int
+    }
+
+    class "ReportQueue<E>" as ReportQueue {
+        queue(trace): batch
+        deliver(batch)
+    }
+}
+
+EventRouter <|.. DefaultEventRouter
+Functions ..> DefaultEventRouter : creates
+
+ScreenStore --* DefaultEventRouter : creates and owns
+EventHandler --o DefaultEventRouter : one for each event class
+ErrorHandler --o DefaultEventRouter : optional
+RouterObserver --o ReportQueue : delivers in order to
+
+DefaultEventRouter *-- ActiveRun : one for each active event
+DefaultEventRouter ..> Snapshot : asks a strategy with
+DefaultEventRouter *-right- ReportQueue : only with an observer
+
+EventHandler .up.> ScreenStore : reads and changes
+DispatchStrategy <-- EventHandler : chooses
+Dispatch <.. DispatchStrategy : answers
+RouterTrace <.. RouterObserver : receives
+Reason <.. RouterTrace : why a run was cancelled
+
+UiEvent <.. EventRouter : E
+UiState <.. EventRouter : S
+UiEffect <.. EventRouter : F
+@enduml
