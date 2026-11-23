@@ -5,7 +5,7 @@ knows nothing about a UI; the helpers live on the UI's side.
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc01")
+    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc02")
 }
 ```
 

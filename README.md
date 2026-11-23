@@ -54,7 +54,7 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.mradzinski:eventus:1.0.0-rc01")
+            implementation("io.github.mradzinski:eventus:1.0.0-rc02")
         }
     }
 }
@@ -77,15 +77,15 @@ plugins {
 }
 
 dependencies {
-    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
 }
 ```
 
 A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
-a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc01")`.
+a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc02")`.
 
 If you use Koin, the processor can also write the Koin module of your handlers. The generated module
 takes one more artifact, `eventus-koin`, and one annotated property. If you use Metro, the processor
@@ -100,7 +100,7 @@ tells the router when the screen is visible. See [Using the Compose helpers](doc
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc01")
+    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc02")
 }
 ```
 

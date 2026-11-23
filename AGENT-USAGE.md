@@ -23,7 +23,7 @@ class.
 ## Which artifact do I need?
 
 All artifacts have the group `io.github.mradzinski` and share one version. This file was written
-for `1.0.0-rc01`. Before you add a dependency, check Maven Central for the newest version and that
+for `1.0.0-rc02`. Before you add a dependency, check Maven Central for the newest version and that
 it is published. If it is not there, or you cannot check, tell the user and do not invent a version.
 
 | You want to… | Artifact | Where it goes |
@@ -31,7 +31,7 @@ it is published. If it is not there, or you cannot check, tell the user and do n
 | Use the library (always) | `eventus` | `commonMain` `implementation` |
 | Fail the build when an event has no handler (recommended) | `eventus-ksp` | One KSP configuration for each target |
 | Have the Koin module of your handlers generated | `eventus-koin` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
-| Have the Metro bindings of your handlers generated (from `1.0.0-rc02`) | `eventus-metro` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
+| Have the Metro bindings of your handlers generated | `eventus-metro` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
 | Collect effects in a Compose UI with one call | `eventus-compose` | `commonMain` `implementation` |
 
 Requirements: Kotlin 2.4.21 or newer. Targets: `android` (minSdk 24), `jvm`, `iosArm64`,
@@ -46,9 +46,10 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.mradzinski:eventus:1.0.0-rc01")
-            implementation("io.github.mradzinski:eventus-compose:1.0.0-rc01")   // optional
-            implementation("io.github.mradzinski:eventus-koin:1.0.0-rc01")      // optional
+            implementation("io.github.mradzinski:eventus:1.0.0-rc02")
+            implementation("io.github.mradzinski:eventus-compose:1.0.0-rc02")   // optional
+            implementation("io.github.mradzinski:eventus-koin:1.0.0-rc02")      // optional
+            implementation("io.github.mradzinski:eventus-metro:1.0.0-rc02")     // optional
         }
     }
 }
@@ -56,10 +57,10 @@ kotlin {
 dependencies {
     // One line for each target the module declares: "ksp" + the target's name, capitalized.
     // The other targets are "kspIosX64", "kspJs" and "kspWasmJs".
-    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
-    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc01")
+    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
 }
 ```
 
@@ -226,7 +227,7 @@ Package `io.github.mradzinski.eventus.koin` (artifact `eventus-koin`):
 annotation class EventusKoinModule   // on one `expect val` of Koin's type Module
 ```
 
-Package `io.github.mradzinski.eventus.metro` (artifact `eventus-metro`, from `1.0.0-rc02`):
+Package `io.github.mradzinski.eventus.metro` (artifact `eventus-metro`):
 
 ```kotlin
 annotation class ContributesEventHandlers(val scope: KClass<*>)   // on a screen's handler interface
@@ -637,7 +638,7 @@ Rules for the generated module: one `@EventusKoinModule` property for each Gradl
 classes are not `private`; a handler implements its screen's handler interface, not `EventHandler`
 directly; the property is written without a body.
 
-With Metro and `eventus-ksp` (from `1.0.0-rc02`, written for Metro 1.6.0), annotate the screen's
+With Metro and `eventus-ksp` (written for Metro 1.6.0), annotate the screen's
 handler interface with the scope of the graph that creates the view model. The processor
 generates, on each target, a binding container contributed to that scope, with one
 `@Provides @IntoSet` function for every handler class of the screen. Handler classes take no

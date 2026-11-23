@@ -42,7 +42,7 @@ Add the annotation to the Gradle module's common dependencies:
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc01")
+    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc02")
 }
 ```
 
