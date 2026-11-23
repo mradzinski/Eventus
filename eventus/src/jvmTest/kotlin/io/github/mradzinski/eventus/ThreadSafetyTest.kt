@@ -73,6 +73,9 @@ class ThreadSafetyTest {
             val reports = ArrayList<RouterTrace<TestEvent>>()
             val observing = AtomicInteger(0)
             val overlaps = AtomicInteger(0)
+            val decisions = AtomicInteger(0)
+            val unfinished = AtomicInteger(0)
+            val everyReportArrived = CountDownLatch(1)
 
             // The list is not safe to share on purpose: the router must never call this twice at once.
             val observer = RouterObserver<TestEvent> { trace ->
@@ -80,12 +83,32 @@ class ThreadSafetyTest {
 
                 reports += trace
                 observing.decrementAndGet()
+
+                // A run's last report can arrive after its job has ended, on another thread. So the test
+                // waits for the reports themselves: one decision for each event, and an end for each event
+                // that was not ignored. The list is not touched after this point.
+                when (trace) {
+                    is RouterTrace.Dispatched -> {
+                        if (trace.dispatch !is Dispatch.Ignore) unfinished.incrementAndGet()
+
+                        decisions.incrementAndGet()
+                    }
+
+                    is RouterTrace.Started -> Unit
+
+                    else -> unfinished.decrementAndGet()
+                }
+
+                if (decisions.get() == THREADS * EVENTS_PER_THREAD && unfinished.get() == 0) {
+                    everyReportArrived.countDown()
+                }
             }
 
             val router = router(CountingHandler(strategy, CountDownLatch(0)), observer)
 
             sendFromEveryThread(router)
             awaitEveryRun()
+            everyReportArrived.await(TIMEOUT_SECONDS, TimeUnit.SECONDS) shouldBe true
 
             val dispatched = reports.filterIsInstance<RouterTrace.Dispatched<TestEvent>>()
 
