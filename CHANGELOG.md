@@ -3,6 +3,18 @@
 What changed in each version of Eventus, newest first. Versions follow
 [semantic versioning](https://semver.org).
 
+## 1.0.0-rc02 (not released yet)
+
+### Added
+
+- **Metro support.** `eventus-ksp` generates the Metro bindings of a screen's event handlers from
+  one annotation on the screen's handler interface, `@ContributesEventHandlers(AppScope::class)`.
+  The view model injects `Set<TaskListHandler<*>>`, and the event handler classes take no
+  annotation. It works in multiplatform modules and in modules with a single platform, and across
+  Gradle modules. Written for and tested with Metro 1.6.0. See [checking and wiring event handlers
+  at build time](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-metro-bindings).
+- `eventus-metro`: a new artifact that holds that annotation and nothing else.
+
 ## 1.0.0-rc01 (2026-11-22)
 
 The first release. It is a release candidate: the API is meant to stay as it is, and this version

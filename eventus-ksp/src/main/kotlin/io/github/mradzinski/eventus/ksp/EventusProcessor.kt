@@ -22,7 +22,8 @@ internal class EventusProcessor(private val logger: KSPLogger, private val codeG
         val scan = resolver.scan()
         val request = resolver.koinModuleRequest()
         val koinProblems = if (request.property == null) emptyList() else scan.koinProblems()
-        val problems = scan.routingProblems() + request.problems + koinProblems
+        val metro = resolver.metroBindingsRequest(scan)
+        val problems = scan.routingProblems() + request.problems + koinProblems + metro.problems
 
         problems.forEach { logger.error(it.message, it.symbol) }
 
@@ -33,6 +34,8 @@ internal class EventusProcessor(private val logger: KSPLogger, private val codeG
                 codeGenerator = codeGenerator,
             )
         }
+
+        metro.bindings.forEach { writeMetroBindings(bindings = it, codeGenerator = codeGenerator) }
 
         return emptyList()
     }

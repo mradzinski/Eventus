@@ -5,10 +5,12 @@
 | `eventus/` | The library. All code is in `commonMain`. |
 | `eventus/api/` | The recorded public API. `checkKotlinAbi` fails when the code no longer matches it. |
 | `eventus-koin/` | The `@EventusKoinModule` annotation, and nothing else. |
-| `eventus-ksp/` | The symbol processor: the event handler check and the generated Koin module. JVM only, as a build tool. |
+| `eventus-metro/` | The `@ContributesEventHandlers` annotation, and nothing else. |
+| `eventus-ksp/` | The symbol processor: the event handler check, the generated Koin module and the generated Metro bindings. JVM only, as a build tool. |
 | `eventus-compose/` | The Compose helpers: `collectEffects` and `notifyVisibility`. |
 | `sample/shared/` | The sample app: a task list and a task editor, with navigation, Koin and tests. One module, layered by package, to keep it short. |
 | `sample/androidApp/`, `sample/desktopApp/` | Launchers. |
+| `integration/metro/` | Tests that run the generated Metro bindings through Metro's compiler plugin. Not published. |
 | `sample/iosApp/` | The Xcode project of the iOS launcher. |
 | `tooling/ktlint-rules/` | The project's own formatting rules, applied by ktlint next to its standard ones. |
 
@@ -34,7 +36,7 @@ tests need Chrome, and the iOS tests need a Mac with an iOS simulator:
 Run the checks of the optional artifacts:
 
 ```bash
-./gradlew :eventus-koin:check :eventus-ksp:check :eventus-compose:check
+./gradlew :eventus-koin:check :eventus-metro:check :eventus-ksp:check :eventus-compose:check :integration:metro:check
 ```
 
 Format your changes before you send them. This applies the project's style, including its own rules

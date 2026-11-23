@@ -12,6 +12,9 @@ dokka = "2.3.0"
 ksp = "2.3.14"
 # Compiles small sources with the processor applied, for the tests of eventus-ksp. Test tooling only.
 kctfork = "0.14.0"
+# Metro, a dependency injection compiler plugin. Used only by the tests of eventus-ksp and by integration/metro,
+# which show the bindings generated for it working. It never reaches a published artifact.
+metro = "1.6.0"
 # Build-time code quality tools: they never reach consumers of the library.
 detekt = "2.0.0-alpha.6"
 ktlint = "1.8.0"
@@ -64,6 +67,7 @@ kctfork-ksp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kctfork" }
 # above: kctfork asks for an older one, and KSP's parts do not work across versions.
 ksp-aa-embeddable = { module = "com.google.devtools.ksp:symbol-processing-aa-embeddable", version.ref = "ksp" }
 ksp-common-deps = { module = "com.google.devtools.ksp:symbol-processing-common-deps", version.ref = "ksp" }
+metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 
 # The project's own ktlint rules, built from tooling/ktlint-rules (an included build), not from a repository.
 eventus-ktlint-rules = { group = "io.github.mradzinski.eventus", name = "ktlint-rules" }
@@ -119,3 +123,4 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+metro = { id = "dev.zacsweers.metro", version.ref = "metro" }

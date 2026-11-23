@@ -17,9 +17,15 @@ internal class Compiled(
     val problems: List<String>,
     /** The text of the generated Koin module, or null when none was written. */
     val koinModule: String?,
+    /** The text of each generated Metro binding container, in file name order. */
+    val metroBindings: List<String> = emptyList(),
 )
 
 private const val PROCESSOR_ERROR = "e: [ksp] "
+private const val METRO_CONTAINER = "@BindingContainer"
+
+/** The annotation that asks for Metro bindings, as an app writes it on a handler interface. */
+internal const val METRO_REQUEST = "@io.github.mradzinski.eventus.metro.ContributesEventHandlers"
 private const val NOT_MULTIPLATFORM = "can be used only in multiplatform projects"
 
 /** One screen, declared the way the README does: a sealed event type and a handler interface of its own. */
@@ -78,6 +84,12 @@ internal val koinModuleRequest: String = """
     internal expect val handlersModule: org.koin.core.module.Module
 """.trimIndent()
 
+/** [listScreen] with its handler interface asking for Metro bindings in Metro's own `AppScope`. */
+internal val metroListScreen: String = listScreen.replace(
+    "interface ListHandler",
+    "$METRO_REQUEST(dev.zacsweers.metro.AppScope::class)\ninterface ListHandler",
+)
+
 /**
  * Compiles [sources] together with the Koin module the processor generates for them, to show that the
  * generated code is valid against the real Koin. The module is compiled as a plain property, without
@@ -118,7 +130,10 @@ internal fun compile(vararg sources: String): Compiled {
 
     val generated = compilation.kspSourcesDir
         .walkTopDown()
-        .firstOrNull { it.isFile && it.name.startsWith("Eventus") }
+        .filter { it.isFile && it.name.startsWith("Eventus") }
+        .sortedBy { it.name }
+        .map { it.readText() }
+        .toList()
 
     return Compiled(
         succeeded = result.exitCode == KotlinCompilation.ExitCode.OK,
@@ -128,6 +143,7 @@ internal fun compile(vararg sources: String): Compiled {
             // Not from the processor: the test compiles a plain JVM module, where `expect` is not allowed.
             .filterNot { NOT_MULTIPLATFORM in it }
             .map { it.substringAfter(": ", missingDelimiterValue = it).substringAfter(": ") },
-        koinModule = generated?.readText(),
+        koinModule = generated.firstOrNull { METRO_CONTAINER !in it },
+        metroBindings = generated.filter { METRO_CONTAINER in it },
     )
 }

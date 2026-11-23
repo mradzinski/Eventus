@@ -2,11 +2,13 @@
 
 `eventus-ksp` is an optional, recommended [Kotlin Symbol Processing
 (KSP)](https://kotlinlang.org/docs/ksp-overview.html) processor. It runs while your app is built,
-and is never part of the app. It does two things in the Gradle module you add it to:
+and is never part of the app. It does this in the Gradle module you add it to:
 
 - **It checks the event handlers.** An event without a handler class fails the build, not the app.
 - **It writes the Koin module of the event handlers**, when you ask for it with one annotated
   property.
+- **It writes the Metro bindings of the event handlers**, when you ask for them with one annotation
+  on each screen.
 
 ## Setting up
 
@@ -101,14 +103,138 @@ The generated module resolves each constructor parameter of a handler with Koin'
 exists only in a multiplatform module, so a module with a single platform gets the check but not the
 generated module.
 
+## Generating the Metro bindings
+
+Metro support starts with version `1.0.0-rc02` of `eventus-ksp` and `eventus-metro`. It was written
+for and tested with Metro 1.6.0, and uses only what Metro documents.
+
+Add the annotation to the dependencies of the Gradle module, next to Metro's own Gradle plugin:
+
+```kotlin
+commonMain.dependencies {
+    implementation("io.github.mradzinski:eventus-metro:1.0.0-rc02")
+}
+```
+
+Then annotate the [handler interface of each
+screen](dependency-injection.md#giving-each-screen-an-event-handler-interface) with the scope of the
+Metro graph that creates the screen's view model. `AppScope` is Metro's own, and the usual one:
+
+```kotlin
+@ContributesEventHandlers(AppScope::class)
+interface TaskListHandler<E : TaskListEvent> : EventHandler<E, TaskListUiState, TaskListEffect>
+```
+
+That line is all a screen writes. The event handler classes take no annotation. On each target the
+processor writes one Metro binding container for the screen, contributed to that scope, with one
+provider for every handler class that implements the interface:
+
+```kotlin
+// generated
+@ContributesTo(dev.zacsweers.metro.AppScope::class)
+@BindingContainer
+@Origin(com.example.tasklist.TaskListHandler::class)
+public object EventusTaskListHandlerBindings {
+
+    @Provides
+    @IntoSet
+    public fun onRefreshHandler(
+        p0: com.example.data.TaskRepository,
+    ): com.example.tasklist.TaskListHandler<*> = com.example.tasklist.OnRefreshHandler(p0)
+
+    // …one provider for every handler of this screen
+}
+```
+
+The view model asks Metro for the set, and an error handler takes Metro's own `@Inject`:
+
+```kotlin
+@Inject
+class TaskListViewModel(
+    handlers: Set<TaskListHandler<*>>,
+    errorHandler: TaskListErrorHandler,
+    scope: CoroutineScope = routerScope(),
+) : ViewModel(scope),
+    EventRouter<TaskListEvent, TaskListUiState, TaskListEffect> by EventRouter(
+        scope = scope,
+        initialState = TaskListUiState(),
+        handlers = handlers,
+        errorHandler = errorHandler,
+    )
+
+@Inject
+class TaskListErrorHandler : ErrorHandler<TaskListEvent, TaskListUiState, TaskListEffect> { /* … */ }
+```
+
+Metro uses the default value of `scope` when the graph provides no `CoroutineScope`.
+
+A new event then takes a new event class and a new handler class, and nothing else.
+
+### Declaring the graph
+
+The generated container reaches every graph of its scope with no line in the graph:
+
+```kotlin
+@DependencyGraph(AppScope::class)
+interface AppGraph {
+    val taskListViewModel: TaskListViewModel
+}
+```
+
+In a multiplatform module, declare the graph once for each platform, in that platform's source set,
+such as `androidMain` or `iosMain`.
+The processor writes the containers into each target, and Metro's documentation states that a graph
+in common code cannot see what a platform source set contributes. Common code can still share an
+interface that every platform graph extends:
+
+```kotlin
+// commonMain
+interface AppGraph {
+    val taskListViewModel: TaskListViewModel
+}
+
+// androidMain
+@DependencyGraph(AppScope::class)
+interface AndroidAppGraph : AppGraph
+
+// iosMain
+@DependencyGraph(AppScope::class)
+interface IosAppGraph : AppGraph
+```
+
+A module with a single platform has one graph, and the generated bindings work there too.
+
+### What the processor needs
+
+The processor reports a build error when one of these rules is broken:
+
+- **The annotation is on an interface that extends `EventHandler`.**
+- **The interface is not `private`**, and neither is any handler that implements it. The generated
+  code is in another file. `internal` is fine.
+- **The scope is a class the compiler can find.**
+
+Three more things to know:
+
+- **The container is as visible as the interface.** An `internal` interface gets an `internal`
+  container, which only a graph in the same Gradle module sees.
+- **Metro supplies each constructor parameter of a handler by its type.** A qualifier on the
+  parameter, such as `@Named("io")`, is kept. A default value is not used: Metro is asked for every
+  parameter.
+- **An interface with no handler classes gets no container.** Metro then reports that it has no
+  binding for the set.
+
 ## Working with several modules
 
 Keep a screen's events and its handlers in the same Gradle module. That is how Eventus is meant to be
 used, and it is what the processor relies on: it reads the sources of the module it runs in, and
 nothing else. If a handler is in a different module from its event, the processor cannot check it.
 
-Each module that has handlers then repeats the same setup: its own `ksp` lines, and its own annotated
-property, which can stay `internal`. Another module cannot name an internal property, so the feature
+Each module that has handlers then repeats the same setup: its own `ksp` lines and, for a generated
+Koin module or generated Metro bindings, its own annotations.
+
+### With Koin
+
+Each module declares its own annotated property, which can stay `internal`. Another module cannot name an internal property, so the feature
 exposes one public Koin module that includes it:
 
 ```kotlin
@@ -142,6 +268,34 @@ Every feature can call its property `handlersModule` and have a handler called `
 the properties are internal to their modules, and each screen asks for its own handler interface, so
 one feature never receives another's handlers. A missing handler fails the build of its own feature
 module only.
+
+### With Metro
+
+Each feature module annotates its own handler interfaces, and the module that declares the graph
+depends on the features. Nothing else connects them: Metro finds the contributions of the modules
+the graph's module depends on.
+
+```kotlin
+// :feature:tasklist
+@ContributesEventHandlers(AppScope::class)
+interface TaskListHandler<E : TaskListEvent> : EventHandler<E, TaskListUiState, TaskListEffect>
+
+internal class OnRefreshHandler(private val tasks: TaskRepository) : TaskListHandler<OnRefresh> { /* … */ }
+
+// :app, once for each platform
+@DependencyGraph(AppScope::class)
+interface AndroidAppGraph {
+    val taskListViewModel: TaskListViewModel
+}
+```
+
+A graph in another Gradle module sees only a public container, so in a feature module the handler
+interface is public, and so are the types its handlers take in their constructors. The handler
+classes can stay `internal`. A container that is not public is invisible to a graph in another
+module, and Metro then reports that it has no binding for the set.
+
+Two features can each have a handler called `OnScreenOpenedHandler`: every screen has its own
+container and its own set.
 
 ---
 

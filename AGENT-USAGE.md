@@ -31,6 +31,7 @@ it is published. If it is not there, or you cannot check, tell the user and do n
 | Use the library (always) | `eventus` | `commonMain` `implementation` |
 | Fail the build when an event has no handler (recommended) | `eventus-ksp` | One KSP configuration for each target |
 | Have the Koin module of your handlers generated | `eventus-koin` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
+| Have the Metro bindings of your handlers generated (from `1.0.0-rc02`) | `eventus-metro` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
 | Collect effects in a Compose UI with one call | `eventus-compose` | `commonMain` `implementation` |
 
 Requirements: Kotlin 2.4.21 or newer. Targets: `android` (minSdk 24), `jvm`, `iosArm64`,
@@ -225,6 +226,12 @@ Package `io.github.mradzinski.eventus.koin` (artifact `eventus-koin`):
 annotation class EventusKoinModule   // on one `expect val` of Koin's type Module
 ```
 
+Package `io.github.mradzinski.eventus.metro` (artifact `eventus-metro`, from `1.0.0-rc02`):
+
+```kotlin
+annotation class ContributesEventHandlers(val scope: KClass<*>)   // on a screen's handler interface
+```
+
 These blocks are declarations to read, not code to copy: bodies and initializers are left out.
 The examples in the "Adding a screen" section compile once the app's own types that they name
 exist. The shorter snippets elsewhere are fragments: they leave out imports and the app's own types.
@@ -372,7 +379,7 @@ Facts about failures:
 1. Add the event class to the screen's sealed event type.
 2. Add one handler class for it, implementing the screen's handler interface.
 3. Register the handler where the screen's other handlers are registered. With the generated Koin
-   module, this step does not exist.
+   module or the generated Metro bindings, this step does not exist.
 4. Send the event from the UI with `onEvent`.
 5. Add a test class for the handler.
 
@@ -630,6 +637,54 @@ Rules for the generated module: one `@EventusKoinModule` property for each Gradl
 classes are not `private`; a handler implements its screen's handler interface, not `EventHandler`
 directly; the property is written without a body.
 
+With Metro and `eventus-ksp` (from `1.0.0-rc02`, written for Metro 1.6.0), annotate the screen's
+handler interface with the scope of the graph that creates the view model. The processor
+generates, on each target, a binding container contributed to that scope, with one
+`@Provides @IntoSet` function for every handler class of the screen. Handler classes take no
+annotation:
+
+```kotlin
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.DependencyGraph
+import dev.zacsweers.metro.Inject
+import io.github.mradzinski.eventus.metro.ContributesEventHandlers
+
+@ContributesEventHandlers(AppScope::class)
+interface CounterHandler<E : CounterEvent> : EventHandler<E, CounterUiState, CounterEffect>
+
+@Inject
+class CounterErrorHandler : ErrorHandler<CounterEvent, CounterUiState, CounterEffect> { /* … */ }
+
+// Metro uses the default value of `scope` when the graph provides no CoroutineScope.
+@Inject
+class CounterViewModel(
+    handlers: Set<CounterHandler<*>>,
+    errorHandler: CounterErrorHandler,
+    scope: CoroutineScope = routerScope(),
+) : ViewModel(scope),
+    EventRouter<CounterEvent, CounterUiState, CounterEffect> by EventRouter(
+        scope = scope,
+        initialState = CounterUiState(),
+        handlers = handlers,
+        errorHandler = errorHandler,
+    )
+
+// In a multiplatform module: one graph for each platform, in that platform's source set
+// (androidMain, jvmMain, iosMain, …). A graph in commonMain does not see the generated bindings.
+// In a module with a single platform: this one graph.
+@DependencyGraph(AppScope::class)
+interface AndroidAppGraph {
+    val counterViewModel: CounterViewModel
+}
+```
+
+Rules for the generated bindings: the annotation goes on an interface that extends `EventHandler`;
+neither the interface nor a handler class is `private`; the generated container is as visible as
+the interface, so a graph in another Gradle module needs a public interface (handler classes can
+stay `internal`); Metro supplies every constructor parameter of a handler by type, keeping
+qualifiers such as `@Named`, and a handler's default values are not used; error handlers are not generated, so
+give them `@Inject`. Handler classes take no Metro annotation.
+
 ## Logging and debugging
 
 Pass an `observer` to see what the router does with every event. Each report prints as a sentence.
@@ -762,6 +817,10 @@ fun `a tap on increment raises the count`() = runTest {
 | `… is never called: … is sealed or abstract` (build) | A handler names a parent type. | Name one concrete event class. |
 | `… implements EventHandler directly` (build) | A Koin module is requested and a handler has no screen interface. | Implement the screen's handler interface. |
 | `… is private, so the generated Koin module cannot create it` (build) | A handler class is private. | Make it `internal`. |
+| `… is private, so the generated Metro bindings cannot create it` or `cannot name it` (build) | A handler class or an annotated handler interface is private. | Make it `internal`. |
+| `… must be an interface that extends EventHandler` (build) | `@ContributesEventHandlers` is on something else. | Put it on the screen's handler interface. |
+| `The scope that … gives to @ContributesEventHandlers is not a known class` (build) | The scope does not resolve. | Name an existing class, such as Metro's `AppScope`. |
+| `[Metro/MissingBinding] No binding found for Set<XHandler<*>>` (build) | The graph does not see the generated bindings. | Declare the graph in a platform source set; across Gradle modules, make the handler interface public; check the KSP line of that target. |
 | `IllegalStateException: No handler registered for X` (run) | The event's handler was not given to the router. | Register it; add `eventus-ksp` to catch it at build time. |
 | `IllegalStateException: Multiple handlers registered for X` (when the router is created) | Two handlers for one event in the collection. | Remove one. |
 | `Type of 'val strategy: DispatchStrategy<A>' is not a subtype of … DispatchStrategy<B>` (compile) | The strategy names a type the handler's event is not part of. | Name the event itself or a parent of it. |
@@ -827,7 +886,7 @@ Read the Eventus agent guide (your saved copy, or https://raw.githubusercontent.
 5. Choose a strategy for each handler. The default suits quick work. Anything that calls a repository needs a decision: use the skill eventus-choose-strategy.
 6. Write one ErrorHandler class for the screen that turns an exception into an effect or a state.
 7. Write the view model: a constructor and a delegation clause to EventRouter(...), with no logic. If the screen observes data, add one opening event and send it from init.
-8. Register the handlers the way the project does. With a generated Koin module there is nothing to register.
+8. Register the handlers the way the project does. With a generated Koin module or generated Metro bindings there is nothing to register.
 9. In the UI, read state, call onEvent, and collect effects in exactly one place.
 10. Write one test class for each handler, in the test source set. Build and run the tests for the targets you are allowed to build.
 ```
@@ -847,7 +906,7 @@ Read the Eventus agent guide (your saved copy, or https://raw.githubusercontent.
 3. Decide the strategy: use the skill eventus-choose-strategy.
 4. Decide what the handler produces. What the screen must still show if drawn again is state. What the UI does once is an effect. Work that needs no UI is done through the handler's dependencies.
 5. If the handler changes data that the screen observes from a repository, call the repository and write nothing to the state. A value that comes from the event may be saved as it is; never compute the value to save from the current state.
-6. Register the handler where the screen's other handlers are registered, unless a Koin module is generated.
+6. Register the handler where the screen's other handlers are registered, unless a Koin module or Metro bindings are generated.
 7. Send the event from the UI with onEvent.
 8. Add a test class for the handler and build. If the build says "No handler for …", a handler class is missing.
 ```

@@ -1,0 +1,4 @@
+public abstract interface annotation class io/github/mradzinski/eventus/metro/ContributesEventHandlers : java/lang/annotation/Annotation {
+	public abstract fun scope ()Ljava/lang/Class;
+}
+

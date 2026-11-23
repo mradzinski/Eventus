@@ -79,8 +79,8 @@ cancelled, and `runTest` waits for its own scope to finish.
 
 An event that has no registered handler throws `IllegalStateException` at runtime if sent, which may
 be three taps into a screen. With [`eventus-ksp`](checking-and-wiring-event-handlers-at-build-time.md) the build
-finds a handler that was never written, and its generated Koin module registers every handler there is,
-so this test is not needed.
+finds a handler that was never written, and its generated Koin module or Metro bindings register every
+handler there is, so this test is not needed.
 
 Without `eventus-ksp`, find the missing handler with one test per screen. The test compares the
 events of the sealed type with the handlers your container really provides, so it catches a handler

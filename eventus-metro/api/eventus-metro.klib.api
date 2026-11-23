@@ -1,0 +1,14 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <eventus-root:eventus-metro>
+open annotation class io.github.mradzinski.eventus.metro/ContributesEventHandlers : kotlin/Annotation { // io.github.mradzinski.eventus.metro/ContributesEventHandlers|null[0]
+    constructor <init>(kotlin.reflect/KClass<*>) // io.github.mradzinski.eventus.metro/ContributesEventHandlers.<init>|<init>(kotlin.reflect.KClass<*>){}[0]
+
+    final val scope // io.github.mradzinski.eventus.metro/ContributesEventHandlers.scope|{}scope[0]
+        final fun <get-scope>(): kotlin.reflect/KClass<*> // io.github.mradzinski.eventus.metro/ContributesEventHandlers.scope.<get-scope>|<get-scope>(){}[0]
+}

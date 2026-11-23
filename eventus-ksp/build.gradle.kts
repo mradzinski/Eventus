@@ -28,7 +28,7 @@ java {
 }
 
 dependencies {
-    // The processor recognizes Eventus and Koin types by name, so it depends on neither.
+    // The processor recognizes Eventus, Koin and Metro types by name, so it depends on none of them.
     implementation(libs.ksp.api)
 
     testImplementation(libs.kotlin.test)
@@ -41,6 +41,8 @@ dependencies {
     testImplementation(projects.eventus)
     testImplementation(projects.eventusKoin)
     testImplementation(libs.koin.core)
+    testImplementation(projects.eventusMetro)
+    testImplementation(libs.metro.runtime)
 }
 
 /** The lowest share of covered lines the build accepts, in percent. The same limit as `:eventus`. */

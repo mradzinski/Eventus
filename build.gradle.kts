@@ -63,9 +63,9 @@ subprojects {
     }
 }
 
-// What is published, each as its own artifact with the same version: the library, the annotation that asks
-// for a generated Koin module, the symbol processor, and the Compose helpers.
-val publishedModules = listOf(":eventus", ":eventus-koin", ":eventus-ksp", ":eventus-compose")
+// What is published, each as its own artifact with the same version: the library, the annotations that ask
+// for a generated Koin module and for generated Metro bindings, the symbol processor, and the Compose helpers.
+val publishedModules = listOf(":eventus", ":eventus-koin", ":eventus-metro", ":eventus-ksp", ":eventus-compose")
 
 // One command to upload the library to Maven Central: ./gradlew publishLibrary
 // It refuses to start, with a clear message, when the one-time setup (Central Portal token, signing key) is

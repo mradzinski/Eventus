@@ -38,7 +38,7 @@ internal fun Scan.koinProblems(): List<Problem> {
 
     val private = registered
         .filter { Modifier.PRIVATE in it.modifiers }
-        .map { it.privateProblem() }
+        .map { it.privateProblem(generated = "the generated Koin module") }
 
     val unbound = handlers
         .filter { it.screenInterfaces.isEmpty() }
@@ -52,6 +52,11 @@ internal fun Handler.isRoutable(): Boolean = routableEvent != null
 
 /** The event this handler is called for, or null when the router can never call it. */
 internal val Handler.routableEvent: KSClassDeclaration? get() = event?.takeUnless { it.isAbstract }
+
+internal fun KSClassDeclaration.privateProblem(generated: String): Problem = Problem(
+    message = "$displayName is private, so $generated cannot create it. Make it internal.",
+    symbol = this,
+)
 
 /** The concrete event classes of a sealed type, including those of the sealed types nested in it. */
 private fun KSClassDeclaration.leaves(): List<KSClassDeclaration> = getSealedSubclasses()
@@ -88,11 +93,6 @@ private fun Handler.duplicateProblem(event: String, first: Handler): Problem = P
 
 private fun KSClassDeclaration.missingHandlerProblem(): Problem = Problem(
     message = "No handler for $displayName. Add a class that implements EventHandler for it.",
-    symbol = this,
-)
-
-private fun KSClassDeclaration.privateProblem(): Problem = Problem(
-    message = "$displayName is private, so the generated Koin module cannot create it. Make it internal.",
     symbol = this,
 )
 

@@ -49,9 +49,34 @@ never stop.
 You do not have to write the handler lines by hand: `eventus-ksp` generates them. See [checking and
 wiring event handlers at build time](checking-and-wiring-event-handlers-at-build-time.md).
 
-## Using a container that resolves at compile time
+## Using Metro
 
-Containers such as Metro and Dagger keep type arguments, so there you can multibind each handler into
+Provide each event handler into a set of the screen's handler interface, and inject that set into
+the view model:
+
+```kotlin
+@ContributesTo(AppScope::class)
+@BindingContainer
+object TaskListHandlerBindings {
+
+    @Provides
+    @IntoSet
+    fun onRefreshHandler(tasks: TaskRepository): TaskListHandler<*> = OnRefreshHandler(tasks)
+
+    // …one function per handler
+}
+
+@Inject
+class TaskListViewModel(handlers: Set<TaskListHandler<*>>) : /* … */
+```
+
+You do not have to write the container by hand: `eventus-ksp` generates it from one annotation on
+the handler interface. See [checking and wiring event handlers at build
+time](checking-and-wiring-event-handlers-at-build-time.md#generating-the-metro-bindings).
+
+## Using another container that resolves at compile time
+
+Containers such as Dagger keep type arguments, so there you can multibind each handler into
 `Set<EventHandler<*, TaskListUiState, TaskListEffect>>` and inject that set into the view model.
 
 ## Wiring by hand
