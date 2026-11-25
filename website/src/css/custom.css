@@ -1,0 +1,47 @@
+/*
+ * The colors come from the banner: teal on deep navy. The light theme uses a darker teal, so links
+ * and the active sidebar entry keep enough contrast on white.
+ */
+:root {
+  --ifm-color-primary: #0f766e;
+  --ifm-color-primary-dark: #0e6a63;
+  --ifm-color-primary-darker: #0d645d;
+  --ifm-color-primary-darkest: #0a534d;
+  --ifm-color-primary-light: #10827a;
+  --ifm-color-primary-lighter: #11887f;
+  --ifm-color-primary-lightest: #149c92;
+  --ifm-code-font-size: 90%;
+  --docusaurus-highlighted-code-line-bg: rgba(15, 118, 110, 0.12);
+}
+
+/*
+ * Docusaurus leaves the light theme's page background transparent and relies on the browser painting
+ * white behind it. A browser or embedded view that paints dark there shows dark text on dark, so the
+ * light theme states its background.
+ */
+html[data-theme='light'] {
+  --ifm-background-color: #ffffff;
+}
+
+html[data-theme='dark'] {
+  --ifm-color-primary: #5eead4;
+  --ifm-color-primary-dark: #44e7ce;
+  --ifm-color-primary-darker: #37e5ca;
+  --ifm-color-primary-darkest: #1cd3b6;
+  --ifm-color-primary-light: #78edda;
+  --ifm-color-primary-lighter: #85efde;
+  --ifm-color-primary-lightest: #acf4e9;
+  --ifm-background-color: #07161f;
+  --ifm-background-surface-color: #0b2330;
+  --ifm-navbar-background-color: #0b2330;
+  --ifm-footer-background-color: #0b2330;
+  --ifm-toc-border-color: rgba(94, 234, 212, 0.16);
+  --ifm-table-border-color: rgba(159, 232, 220, 0.2);
+  --ifm-table-stripe-background: rgba(255, 255, 255, 0.03);
+  --ifm-code-background: rgba(94, 234, 212, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(94, 234, 212, 0.14);
+}
+
+.navbar__logo {
+  height: 1.9rem;
+}

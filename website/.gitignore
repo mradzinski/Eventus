@@ -1,0 +1,8 @@
+node_modules/
+build/
+.docusaurus/
+# Generated from ../README.md, ../CHANGELOG.md and ../docs by sync-docs.mjs
+docs/
+# The API reference, copied from ../build/dokka/html by sync-docs.mjs
+static/api/
+.preview/

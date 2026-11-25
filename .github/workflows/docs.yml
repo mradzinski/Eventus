@@ -1,0 +1,85 @@
+# Builds the documentation site and publishes it to GitHub Pages: https://mradzinski.github.io/Eventus/
+#
+# The site is made of two parts. The pages come from README.md, CHANGELOG.md and docs/, which stay the only
+# source: website/sync-docs.mjs copies them into a Docusaurus site. The API reference comes from the KDoc
+# of every published module, gathered by `./gradlew :dokkaGenerate` and served under /api.
+#
+# One-time setup, in the repository's settings on GitHub: Pages > Build and deployment > Source > GitHub Actions.
+name: docs
+
+on:
+  push:
+    branches: [main]
+  # By hand, from the Actions tab.
+  workflow_dispatch:
+
+# Only one deployment at a time; a newer push replaces a run that has not deployed yet.
+concurrency:
+  group: docs
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the site
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      # The same Java release the project is built with locally.
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build the API reference
+        run: ./gradlew :dokkaGenerate
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install the site's dependencies
+        working-directory: website
+        run: npm ci
+
+      # Fails on a link or a heading link that leads nowhere.
+      - name: Build the site
+        working-directory: website
+        run: npm run build
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: website/build
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v5

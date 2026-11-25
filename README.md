@@ -4,6 +4,8 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/mradzinski/eventus/build.yml?branch=main&style=flat-square&label=build)](https://github.com/mradzinski/eventus/actions/workflows/build.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/mradzinski/eventus?style=flat-square&label=coverage)](https://codecov.io/gh/mradzinski/eventus)
 
+**[Read the documentation at mradzinski.github.io/Eventus](https://mradzinski.github.io/Eventus/)**
+
 # Eventus
 
 An event router for Model-View-ViewModel (MVVM) screens on Kotlin Multiplatform. The user interface
@@ -47,7 +49,7 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 - Targets: `android` (minSdk 24), `jvm`, `iosArm64`, `iosSimulatorArm64`, `iosX64`, `js`, `wasmJs`.
 - The examples use the multiplatform `androidx.lifecycle` `ViewModel` and Compose, because that is
   how most apps use the library. Neither is required.
-- **Working with an AI agent?** Give it [AGENT-USAGE.md](AGENT-USAGE.md). It is one file with
+- **Working with an AI agent?** Give it the [guide for AI agents](AGENT-USAGE.md). It is one file with
   everything an agent needs to write correct Eventus code: the API, the rules, a complete screen,
   the error messages with their fixes, and skills it can save.
 
@@ -302,7 +304,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md).
+See the [changelog](CHANGELOG.md).
 
 ## License
 

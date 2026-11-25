@@ -11,7 +11,8 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.maven.publish) apply false
-    alias(libs.plugins.dokka) apply false
+    // Applied here to gather the API reference of every published module into one site; see the end.
+    alias(libs.plugins.dokka)
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kover) apply false
     alias(libs.plugins.ksp) apply false
@@ -121,4 +122,14 @@ tasks.register("uploadLibrary") {
     group = "publishing"
     description = "Uploads the library to Maven Central without running the checks. For a commit already checked."
     dependsOn(publishedModules.map { "$it:publishToMavenCentral" })
+}
+
+// One API reference for every published module, for the documentation site: ./gradlew :dokkaGenerate
+// writes it to build/dokka/html. Each module still builds its own reference for its javadoc jar.
+dependencies {
+    publishedModules.forEach { module -> dokka(project(module)) }
+}
+
+dokka {
+    moduleName.set("Eventus")
 }

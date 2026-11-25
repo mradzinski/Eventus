@@ -79,4 +79,5 @@ is for trying it in real apps before 1.0.0.
 
 ### For AI agents
 
-`AGENT-USAGE.md` is one file with what an agent needs to use the library, and skills it can save.
+The [guide for AI agents](AGENT-USAGE.md) is one file with what an agent needs to use the library, and
+skills it can save.
