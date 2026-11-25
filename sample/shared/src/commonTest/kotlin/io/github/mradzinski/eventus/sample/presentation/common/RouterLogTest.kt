@@ -7,6 +7,7 @@ import co.touchlab.kermit.StaticConfig
 import io.github.mradzinski.eventus.Dispatch
 import io.github.mradzinski.eventus.RouterTrace
 import io.github.mradzinski.eventus.sample.data.OfflineException
+import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEffect
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEvent
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlin.test.Test
@@ -29,6 +30,17 @@ class RouterLogTest {
 
         written.lines shouldContainExactly listOf(
             Line(Severity.Debug, tag = "TaskList", message = "#3 OnRefresh is ignored", throwable = null),
+        )
+    }
+
+    @Test
+    fun `an effect is logged with the event it came from`() {
+        val effect = TaskListEffect.OpenEditor(taskId = 7)
+
+        log.observe(RouterTrace.EffectEmitted(TaskListEvent.OnRefresh, number = 4, effect = effect))
+
+        written.lines shouldContainExactly listOf(
+            Line(Severity.Debug, tag = "TaskList", message = "#4 OnRefresh emitted $effect", throwable = null),
         )
     }
 

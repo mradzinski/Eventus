@@ -2,8 +2,8 @@ package io.github.mradzinski.eventus
 
 /**
  * Is told what an [EventRouter] does with each event: what the strategy of its handler answered, when
- * its handler started, and how its run ended. Pass one to `EventRouter(...)` to log a screen, to see
- * why an event did nothing, or to check in a test what the router did.
+ * its handler started, which effects it emitted, and how its run ended. Pass one to `EventRouter(...)`
+ * to log a screen, to see why an event did nothing, or to check in a test what the router did.
  *
  * Every report prints as a sentence, so one line is a log:
  *
@@ -13,6 +13,7 @@ package io.github.mradzinski.eventus
  * // #1 OnSaveClick runs
  * // #1 OnSaveClick started
  * // #2 OnDeleteClick is ignored
+ * // #1 OnSaveClick emitted Close
  * // #1 OnSaveClick completed
  * ```
  *
@@ -29,7 +30,7 @@ public fun interface RouterObserver<in E : UiEvent> {
      *
      * If it throws, the event still runs. The failure is not passed to the screen's [ErrorHandler]: it
      * is a mistake in the code, so it fails in the router's scope as an uncaught error. Once that scope
-     * is cancelled there is nowhere left to raise it, and it is dropped.
+     * is canceled there is nowhere left to raise it, and it is dropped.
      */
     public fun observe(trace: RouterTrace<E>)
 }

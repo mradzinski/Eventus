@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -96,6 +98,8 @@ class ThreadSafetyTest {
 
                     is RouterTrace.Started -> Unit
 
+                    is RouterTrace.EffectEmitted -> Unit
+
                     else -> unfinished.decrementAndGet()
                 }
 
@@ -116,6 +120,7 @@ class ThreadSafetyTest {
             dispatched.map { it.number } shouldContainExactly (1L..THREADS * EVENTS_PER_THREAD).toList()
             reports.groupBy { it.number }.values.forEach { ofOneEvent -> ofOneEvent.shouldBeInOrder() }
             dispatched.forEach { it.shouldComeBeforeTheRunsItReplaces(reports) }
+            router.shouldDeliver(reports.filterIsInstance<RouterTrace.EffectEmitted<TestEvent>>().map { it.effect })
         }
     }
 
@@ -129,16 +134,49 @@ class ThreadSafetyTest {
         observer = observer,
     )
 
-    /** Dispatched first, then started unless it never ran, then one end unless it was ignored. */
+    /**
+     * Dispatched first, then started unless it never ran, then the one effect of a run that started,
+     * then one end unless it was ignored.
+     */
     private fun List<RouterTrace<TestEvent>>.shouldBeInOrder() {
         val ignored = (first() as RouterTrace.Dispatched).dispatch is Dispatch.Ignore
-        val ends = filter { it !is RouterTrace.Dispatched && it !is RouterTrace.Started }
+        val started = indexOfFirst { it is RouterTrace.Started }
+        val emitted = indexOfFirst { it is RouterTrace.EffectEmitted }
+
+        val ends = filter {
+            it !is RouterTrace.Dispatched && it !is RouterTrace.Started && it !is RouterTrace.EffectEmitted
+        }
 
         first().shouldBeInstanceOf<RouterTrace.Dispatched<TestEvent>>()
         count { it is RouterTrace.Dispatched } shouldBe 1
+        count { it is RouterTrace.EffectEmitted } shouldBe count { it is RouterTrace.Started }
         ends.size shouldBe if (ignored) 0 else 1
 
+        if (started >= 0) (started < emitted) shouldBe true
         if (!ignored) last() shouldBe ends.single()
+    }
+
+    /** The effects the UI gets are the ones that were reported: none is taken by a report, none is added. */
+    private fun EventRouter<TestEvent, TestState, TestEffect>.shouldDeliver(reported: List<UiEffect>) {
+        if (reported.isEmpty()) return
+
+        val delivered = runBlocking {
+            withTimeout(TIMEOUT_SECONDS.seconds) {
+                effects
+                    .take(reported.size)
+                    .toList()
+            }
+        }
+
+        val deliveredNames = delivered
+            .map { it.toString() }
+            .sorted()
+
+        val reportedNames = reported
+            .map { it.toString() }
+            .sorted()
+
+        deliveredNames shouldContainExactly reportedNames
     }
 
     private fun RouterTrace.Dispatched<TestEvent>.shouldComeBeforeTheRunsItReplaces(
@@ -184,7 +222,7 @@ class ThreadSafetyTest {
 
     private fun allIds(): List<String> = List(THREADS) { thread -> List(EVENTS_PER_THREAD) { "$thread-$it" } }.flatten()
 
-    /** Logs the id of each event and counts it off [handled]. */
+    /** Logs and shows the id of each event and counts it off [handled]. */
     private class CountingHandler(override val strategy: DispatchStrategy<Run>, private val handled: CountDownLatch) :
         EventHandler<Run, TestState, TestEffect> {
 
@@ -192,6 +230,7 @@ class ThreadSafetyTest {
 
         override suspend fun handle(event: Run, store: TestStore) {
             store.log(event.id)
+            store.emit(Shown(event.id))
             handled.countDown()
         }
     }

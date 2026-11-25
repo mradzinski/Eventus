@@ -22,6 +22,7 @@ internal class RouterLog(logger: Logger, tag: String) : RouterObserver<UiEvent> 
 
             is RouterTrace.Dispatched,
             is RouterTrace.Started,
+            is RouterTrace.EffectEmitted,
             is RouterTrace.Completed,
             is RouterTrace.Cancelled,
             -> logger.d { trace.toString() }

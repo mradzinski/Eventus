@@ -187,6 +187,12 @@ sealed interface RouterTrace<out E : UiEvent> {
 
     data class Started<out E : UiEvent>(override val event: E, override val number: Long) : RouterTrace<E>
 
+    data class EffectEmitted<out E : UiEvent>(
+        override val event: E,
+        override val number: Long,
+        val effect: UiEffect,
+    ) : RouterTrace<E>
+
     data class Completed<out E : UiEvent>(override val event: E, override val number: Long) : RouterTrace<E>
 
     data class Failed<out E : UiEvent>(
@@ -738,12 +744,14 @@ class CounterViewModel(
 #1 OnSaveClick runs
 #1 OnSaveClick started
 #2 OnDeleteClick is ignored
+#1 OnSaveClick emitted Close
 #1 OnSaveClick completed
 ```
 
 When a user says "I tapped it and nothing happened" or "my results never arrived", add the
 observer and read the lines: `is ignored`, `replaces #1`, `waits for #1`, `was replaced by #2`,
-`was cancelled with the scope`, `was cancelled by its own handler`, `failed: …`.
+`was cancelled with the scope`, `was cancelled by its own handler`, `failed: …`. A line that ends
+with `emitted` and an effect says which event the effect came from.
 
 The observer is a `RouterObserver<E>`, a function interface with one function,
 `observe(trace: RouterTrace<E>)`. A report is a `RouterTrace<E>` with `event` and `number`:
@@ -752,6 +760,7 @@ The observer is a `RouterObserver<E>`, a function interface with one function,
 |---|---|
 | `RouterTrace.Dispatched` | `dispatch: Dispatch`, `replacedOrAwaited: List<Long>` (the numbers of those events) |
 | `RouterTrace.Started` | None |
+| `RouterTrace.EffectEmitted` | `effect: UiEffect` |
 | `RouterTrace.Completed` | None |
 | `RouterTrace.Failed` | `error: Throwable` |
 | `RouterTrace.Cancelled` | `reason`: `Reason.ReplacedBy(number)`, `Reason.ScopeCancelled` or `Reason.ByHandler` |
@@ -760,6 +769,7 @@ The observer is a `RouterObserver<E>`, a function interface with one function,
 |---|---|
 | `runs`, `is ignored`, `replaces #1`, `waits for #1` | `Dispatched`, with `dispatch` set to the strategy's answer |
 | `started` | `Started` |
+| `emitted Close` (the effect) | `EffectEmitted` |
 | `completed` | `Completed` |
 | `failed: …` | `Failed` |
 | `was replaced by #2`, `was cancelled with the scope`, `was cancelled by its own handler` | `Cancelled` |
@@ -767,6 +777,10 @@ The observer is a `RouterObserver<E>`, a function interface with one function,
 - Every event the router is sent gets a `Dispatched` report first, the first event of a screen
   included. An ignored event gets no other report. Numbers start at 1, so a screen's opening event
   is usually `#1`.
+- An `EffectEmitted` report is delivered at the moment of the emission, for an effect of the event
+  handler and for an effect that the `ErrorHandler` emits for that event's failure. The second one
+  comes before the event's `Failed` report. The UI still gets the effect from `effects`.
+- A `when` that lists every report must list `EffectEmitted` too.
 - A `Cancelled` report is delivered when the cancelled run has ended. In a test, that is after the
   next `testScheduler.runCurrent()`.
 - The router never calls the observer from two threads at once, so an observer may add to a plain
@@ -987,6 +1001,7 @@ Read the section "Logging and debugging" of the Eventus agent guide (your saved 
    - "was replaced by #n": a Latest strategy cancelled it. Check whether the two events should share a strategy.
    - "waits for #n" with no "started" after it: the event it waits for never ends. A handler that observes data must not be in a Sequential group.
    - "failed: …": the handler threw. Check the screen's ErrorHandler.
+   - "emitted …": the effect came from this event. An effect on screen with no such line was not emitted by this router.
    - "was cancelled with the scope": the view model was cleared while it ran.
    - No line at all: the UI did not call onEvent, or the event's strategy function threw.
    - "started" and "completed" but nothing on screen: the handler did not change the state, or the state was mutated in place.

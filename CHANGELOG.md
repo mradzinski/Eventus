@@ -3,6 +3,22 @@
 What changed in each version of Eventus, newest first. Versions follow
 [semantic versioning](https://semver.org).
 
+## 1.0.0-rc03 (not released yet)
+
+### Added
+
+- **Effects in the router's reports.** A router with an `observer` now reports each effect at the
+  moment it is emitted, with the event it came from: `#3 OnSaveClick emitted Close`. That includes
+  an effect the screen's `ErrorHandler` emits for a failed event. The UI still gets every effect.
+  See [logging events](docs/logging-events.md).
+
+
+### Changed
+
+- `RouterTrace` has a new report, `EffectEmitted`. A `when` that lists every report and has no
+  `else` no longer compiles until it lists the new one. A one-line observer, such as
+  `observer = { println(it) }`, needs no change.
+
 ## 1.0.0-rc02 (2026-11-23)
 
 ### Added

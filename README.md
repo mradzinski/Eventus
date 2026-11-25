@@ -284,7 +284,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | [Updating the state optimistically](docs/updating-the-state-optimistically.md) | Showing a result at once and putting it back if the work fails. |
 | [Reaching another screen](docs/reaching-another-screen.md) | How one screen affects another without an event bus. |
 | [Choosing the coroutine scope](docs/choosing-the-coroutine-scope.md) | Which scope the router runs in, who cancels it, and threads. |
-| [Logging events](docs/logging-events.md) | Having the router report what it does with each event: ignored, replaced, waiting, started and how it ended. One line gives a log, and a test can check the reports. |
+| [Logging events](docs/logging-events.md) | Having the router report what it does with each event: ignored, replaced, waiting, started, the effects it emitted and how it ended. One line gives a log, and a test can check the reports. |
 | [Structuring the events of a feature](docs/structuring-the-events-of-a-feature.md) | One event type for a feature with several screens, with a sealed type for each screen inside it. |
 | [Where Eventus sits in your app](docs/where-eventus-sits-in-your-app.md) | Which modules of an app depend on Eventus and which never do. |
 | [What Eventus does not do](docs/what-eventus-does-not-do.md) | The limits of the library, stated plainly. |

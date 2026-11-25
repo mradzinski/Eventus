@@ -1,9 +1,11 @@
 package io.github.mradzinski.eventus
 
+import app.cash.turbine.test
 import io.github.mradzinski.eventus.RouterTrace.Cancelled
 import io.github.mradzinski.eventus.RouterTrace.Cancelled.Reason
 import io.github.mradzinski.eventus.RouterTrace.Completed
 import io.github.mradzinski.eventus.RouterTrace.Dispatched
+import io.github.mradzinski.eventus.RouterTrace.EffectEmitted
 import io.github.mradzinski.eventus.RouterTrace.Failed
 import io.github.mradzinski.eventus.RouterTrace.Started
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -17,6 +19,7 @@ import kotlin.test.Test
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -210,6 +213,85 @@ class RouterObserverTest {
         sentences().last() shouldBe "#1 Tick completed"
     }
 
+    @Test
+    fun `an effect is reported when it is emitted with the event it came from`() = runTest {
+        val router = router(ShowHandler())
+
+        send(router, Run("a"), Run("b"))
+
+        reports[2] shouldBe EffectEmitted(Run("a"), number = 1, effect = Shown("a"))
+        sentences() shouldContainExactly listOf(
+            "#1 Run(id=a) runs",
+            "#1 Run(id=a) started",
+            "#1 Run(id=a) emitted Shown(text=a)",
+            "#1 Run(id=a) completed",
+            "#2 Run(id=b) runs",
+            "#2 Run(id=b) started",
+            "#2 Run(id=b) emitted Shown(text=b)",
+            "#2 Run(id=b) completed",
+        )
+    }
+
+    @Test
+    fun `an effect of the error handler is reported with the event that failed and before the failure`() = runTest {
+        val router = router(
+            BoomHandler(),
+            errorHandler = { _, error, store -> store.emit(Failed(error.message)) },
+        )
+
+        send(router, Boom)
+
+        sentences().drop(2).dropLast(1) shouldContainExactly listOf("#1 Boom emitted Failed(message=boom)")
+        reports.last().shouldBeInstanceOf<RouterTrace.Failed<TestEvent>>()
+    }
+
+    @Test
+    fun `an effect emitted as a run is replaced is reported before the end of that run`() = runTest {
+        val router = router(ObserveThenShowHandler())
+
+        send(router, Observe("a"), Observe("b"))
+
+        sentences().drop(2) shouldContainExactly listOf(
+            "#2 Observe(id=b) replaces #1",
+            "#1 Observe(id=a) emitted Shown(text=stopped a)",
+            "#1 Observe(id=a) was replaced by #2",
+            "#2 Observe(id=b) started",
+        )
+    }
+
+    @Test
+    fun `the ui gets every effect that is reported`() = runTest {
+        val router = router(
+            ShowHandler(),
+            BoomHandler(),
+            errorHandler = { _, _, store -> store.emit(Shown("failed")) },
+        )
+
+        send(router, Run("a"), Boom, Run("b"))
+
+        router.effects.test {
+            awaitItem() shouldBe Shown("a")
+            awaitItem() shouldBe Shown("failed")
+            awaitItem() shouldBe Shown("b")
+            expectNoEvents()
+        }
+        reports.filterIsInstance<EffectEmitted<TestEvent>>().map { it.effect } shouldContainExactly listOf(
+            Shown("a"),
+            Shown("failed"),
+            Shown("b"),
+        )
+    }
+
+    @Test
+    fun `handlers of an observed router read and write one state`() = runTest {
+        val router = router(ShowHandler(), StepHandler(Tick::class, DispatchStrategy.Concurrent, gates))
+
+        send(router, Tick, Run("a"))
+        open(Tick)
+
+        router.state.value.log shouldContainExactly listOf("start Tick", "shown a", "end Tick")
+    }
+
     private fun sentences(): List<String> = reports.map { it.toString() }
 
     private fun TestScope.router(
@@ -252,5 +334,31 @@ class RouterObserverTest {
         override val eventType = Tick::class
 
         override suspend fun handle(event: Tick, store: TestStore): Unit = throw CancellationException("gave up")
+    }
+
+    /** Logs and shows the id of its event. */
+    private class ShowHandler : EventHandler<Run, TestState, TestEffect> {
+
+        override val eventType = Run::class
+
+        override suspend fun handle(event: Run, store: TestStore) {
+            store.log("shown ${event.id}")
+            store.emit(Shown(event.id))
+        }
+    }
+
+    /** Runs until it is replaced and emits an effect on its way out. */
+    private class ObserveThenShowHandler : EventHandler<Observe, TestState, TestEffect> {
+
+        override val eventType = Observe::class
+        override val strategy = DispatchStrategy.Latest<Observe>()
+
+        override suspend fun handle(event: Observe, store: TestStore) {
+            try {
+                awaitCancellation()
+            } finally {
+                store.emit(Shown("stopped ${event.id}"))
+            }
+        }
     }
 }

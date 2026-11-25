@@ -82,6 +82,7 @@ package "Public: io.github.mradzinski.eventus" as Public {
         --
         {field} Dispatched(dispatch, replacedOrAwaited)
         Started
+        {field} EffectEmitted(effect)
         Completed
         {field} Failed(error)
         {field} Cancelled(reason)

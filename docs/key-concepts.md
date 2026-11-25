@@ -153,7 +153,7 @@ scope. In a view model, `routerScope()` creates a scope that the view model and 
 | `Dispatch` | The answer of a strategy: run the event, ignore it, replace other events, or wait for them. |
 | `routerScope()` | Creates the coroutine scope a view model and its router share. |
 | `RouterObserver<E>` | Optional. Is told what the router does with each event, in order. See [logging events](logging-events.md). |
-| `RouterTrace<E>` | One report to a `RouterObserver`: the event, its number and what happened to it. |
+| `RouterTrace<E>` | One report to a `RouterObserver`: the event, its number and what happened to it or which effect it emitted. |
 
 If your app already has types called `UiState`, `UiEvent` or `UiEffect`, import these with an alias
 (`import io.github.mradzinski.eventus.UiState as EventusUiState`) or replace yours with them.

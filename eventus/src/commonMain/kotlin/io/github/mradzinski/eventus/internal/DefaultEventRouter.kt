@@ -157,8 +157,14 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
             if (dispatch is Dispatch.Replace) named.forEach { it.replacedBy = it.replacedBy ?: number }
 
             ActiveRun(event, number).also { run ->
-                run.job = newRun(run, handler, after = if (dispatch is Dispatch.WaitFor) named else emptyList())
+                run.job = newRun(
+                    run = run,
+                    handler = handler,
+                    after = if (dispatch is Dispatch.WaitFor) named else emptyList(),
+                )
+
                 active += run
+
                 this.version++
             }
         }
@@ -168,7 +174,9 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         if (run == null) return true
 
         run.job.invokeOnCompletion { cause -> end(run, cause) }
+
         if (dispatch is Dispatch.Replace) named.forEach { it.job.cancel() }
+
         run.job.start()
 
         return true
@@ -202,15 +210,42 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         run: ActiveRun<E>,
         handler: EventHandler<E, S, F>,
         after: List<ActiveRun<E>>,
-    ): Job = scope.launch(context = errorContext(run.event), start = CoroutineStart.LAZY) {
-        after.forEach { it.job.join() }
-        reports?.let { reports ->
-            reports.deliver(synchronized(lock) { reports.queue(RouterTrace.Started(run.event, run.number)) })
+    ): Job {
+        val store = storeOf(run)
+
+        return scope.launch(context = errorContext(run.event, store), start = CoroutineStart.LAZY) {
+            after.forEach { it.job.join() }
+
+            reports?.let { reports ->
+                reports.deliver(
+                    synchronized(lock) {
+                        reports.queue(RouterTrace.Started(run.event, run.number))
+                    },
+                )
+            }
+
+            handler.handle(run.event, store)
         }
-        handler.handle(run.event, store)
     }
 
-    private fun errorContext(event: E): CoroutineContext {
+    /**
+     * The store that the handler of [run] and the error handler receive. Without an observer it is the
+     * store itself. With one it is the same store as that run sees it, so each effect can be reported
+     * with the event it came from.
+     */
+    private fun storeOf(run: ActiveRun<E>): ScreenStore<S, F> {
+        val reports = reports ?: return store
+
+        return store.tellingOfEffects { effect ->
+            val report = RouterTrace.EffectEmitted(run.event, run.number, effect)
+
+            reports.deliver(
+                synchronized(lock) { reports.queue(report) },
+            )
+        }
+    }
+
+    private fun errorContext(event: E, store: ScreenStore<S, F>): CoroutineContext {
         val errorHandler = errorHandler ?: return EmptyCoroutineContext
 
         return CoroutineExceptionHandler { _, error -> errorHandler.handle(event, error, store) }
@@ -221,6 +256,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         val batch = synchronized(lock) {
             active.remove(run)
             version++
+
             reports?.queue(run.ended(cause, scopeIsActive = scope.isActive))
         }
 

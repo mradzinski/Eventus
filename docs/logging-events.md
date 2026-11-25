@@ -1,7 +1,7 @@
 # Logging events
 
 The router can tell you what it does with every event: what the event's strategy answered, when its
-event handler started, and how its run ended.
+event handler started, which effects it emitted, and how its run ended.
 
 ## Contents
 
@@ -74,6 +74,16 @@ a run with its end.
 #2 OnPlusClick completed
 ```
 
+**"The editor closed, and I do not know what closed it."** An effect is reported with the event it
+came from:
+
+```text
+#3 OnSaveClick runs
+#3 OnSaveClick started
+#3 OnSaveClick emitted Close
+#3 OnSaveClick completed
+```
+
 ## The reports
 
 A report is a `RouterTrace`. Every report has the `event` and its `number`.
@@ -82,6 +92,7 @@ A report is a `RouterTrace`. Every report has the `event` and its `number`.
 |---|---|---|
 | `Dispatched` | `runs`, `is ignored`, `replaces #1` or `waits for #1` | The strategy answered. It is the first report of every event, and the only one of an event that is ignored. |
 | `Started` | `started` | The event handler began. An event that waits starts when the events it waits for have ended. |
+| `EffectEmitted` | `emitted ` and the effect | The event handler emitted an effect, or the screen's `ErrorHandler` did while it handled the failure of that event. |
 | `Completed` | `completed` | The event handler returned. |
 | `Failed` | `failed: ` and the error | The event handler threw. The screen's `ErrorHandler` receives the same failure. |
 | `Cancelled` | See the next table | The run was cancelled. It may never have started. |
@@ -112,6 +123,7 @@ observer = { report ->
         is RouterTrace.Failed -> crashReporter.record(report.error, event = report.event)
         is RouterTrace.Dispatched -> if (report.dispatch is Dispatch.Ignore) metrics.count("ignored")
         is RouterTrace.Started -> Unit
+        is RouterTrace.EffectEmitted -> Unit
         is RouterTrace.Completed -> Unit
         is RouterTrace.Cancelled -> Unit
     }
@@ -123,7 +135,11 @@ observer = { report ->
 - **Reports arrive in order, one at a time**, also when events are sent from several threads at
   once. The router never calls your `observer` twice at the same moment.
 - **Decisions arrive in the order the router made them:** `#1`, then `#2`, then `#3`.
-- **The reports of one event arrive in order:** dispatched, then started, then how the run ended.
+- **The reports of one event arrive in order:** dispatched, then started, then its effects as it
+  emits them, then how the run ended.
+- **An effect is reported at the moment it is emitted.** So an effect that the `ErrorHandler` emits
+  is reported before the `Failed` report of the same event.
+- **The UI gets every effect that is reported.** A report takes nothing away from `effects`.
 - **"`#2` replaces `#1`" arrives before "`#1` was replaced by `#2`".**
 - **Your `observer` does not always run on the same thread.** It runs where the reported thing
   happened: on the thread that sent the event, inside a run, or on the thread that ended a run.
@@ -172,8 +188,6 @@ fun `delete is ignored while a save is running`() = runTest {
 ## What the reports do not cover
 
 - **State changes.** Collect the router's `state` to see them.
-- **Effects.** Log an effect where you collect the effects. Do not add a second collector for
-  logging: each effect goes to one collector, so the second one would take effects away from the UI.
 
 ---
 

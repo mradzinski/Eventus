@@ -22,14 +22,27 @@ import kotlinx.coroutines.flow.update
  * ```
  *
  * Every member is safe to call from any thread.
- *
- * @param initialState The state the screen starts with.
  */
-public class ScreenStore<S : UiState, F : UiEffect>(initialState: S) {
+public class ScreenStore<S : UiState, F : UiEffect> private constructor(
+    source: MutableStateFlow<S>,
+    shared: Channel<F>?,
+    private val onEmit: ((F) -> Unit)?,
+) {
+
+    /**
+     * Creates the store of one screen.
+     *
+     * @param initialState The state the screen starts with.
+     */
+    public constructor(initialState: S) : this(
+        source = MutableStateFlow(initialState),
+        shared = null,
+        onEmit = null,
+    )
 
     /** The state of the screen. It always has a value, and a new collector gets the latest one first. */
     public val state: StateFlow<S>
-        field = MutableStateFlow(initialState)
+        field = source
 
     /** The state of the screen right now. */
     public val current: S
@@ -40,9 +53,9 @@ public class ScreenStore<S : UiState, F : UiEffect>(initialState: S) {
      * was cancelled before it could receive it comes back through `onUndeliveredElement` and is put
      * in the channel again, so the next collector gets it.
      */
-    private val effectChannel: Channel<F> = Channel(
+    private val effectChannel: Channel<F> = shared ?: Channel(
         capacity = Channel.UNLIMITED,
-        onUndeliveredElement = { effect -> emit(effect) },
+        onUndeliveredElement = { effect -> putBack(effect) },
     )
 
     /**
@@ -124,6 +137,22 @@ public class ScreenStore<S : UiState, F : UiEffect>(initialState: S) {
 
     /** Sends [effect] to the UI. It never suspends and never fails. */
     public fun emit(effect: F) {
+        onEmit?.invoke(effect)
+        effectChannel.trySend(effect)
+    }
+
+    /**
+     * This store as one run sees it: the same state and the same effects, with [onEmit] told about each
+     * effect that is emitted through the result, before the effect is sent. A router uses it to report
+     * which event an effect came from, which the store by itself cannot know.
+     */
+    internal fun tellingOfEffects(onEmit: (F) -> Unit): ScreenStore<S, F> = ScreenStore(
+        source = state,
+        shared = effectChannel,
+        onEmit = onEmit,
+    )
+
+    private fun putBack(effect: F) {
         effectChannel.trySend(effect)
     }
 }

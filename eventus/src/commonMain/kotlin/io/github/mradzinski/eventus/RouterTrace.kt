@@ -50,6 +50,20 @@ public sealed interface RouterTrace<out E : UiEvent> {
         override fun toString(): String = "${subject()} started"
     }
 
+    /**
+     * The handler of the event emitted [effect], or the screen's [ErrorHandler] did while it handled
+     * the failure of that event. The report comes at the moment of the emission, so an effect of the
+     * error handler is reported before the failure itself.
+     */
+    public data class EffectEmitted<out E : UiEvent>(
+        override val event: E,
+        override val number: Long,
+        val effect: UiEffect,
+    ) : RouterTrace<E> {
+
+        override fun toString(): String = "${subject()} emitted $effect"
+    }
+
     /** The handler of the event returned. */
     public data class Completed<out E : UiEvent>(override val event: E, override val number: Long) : RouterTrace<E> {
 

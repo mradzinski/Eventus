@@ -149,6 +149,25 @@ sealed interface <#A: out io.github.mradzinski.eventus/UiEvent> io.github.mradzi
         final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.Dispatched.toString|toString(){}[0]
     }
 
+    final class <#A1: out io.github.mradzinski.eventus/UiEvent> EffectEmitted : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.EffectEmitted|null[0]
+        constructor <init>(#A1, kotlin/Long, io.github.mradzinski.eventus/UiEffect) // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.<init>|<init>(1:0;kotlin.Long;io.github.mradzinski.eventus.UiEffect){}[0]
+
+        final val effect // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.effect|{}effect[0]
+            final fun <get-effect>(): io.github.mradzinski.eventus/UiEffect // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.effect.<get-effect>|<get-effect>(){}[0]
+        final val event // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.event|{}event[0]
+            final fun <get-event>(): #A1 // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.event.<get-event>|<get-event>(){}[0]
+        final val number // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.number|{}number[0]
+            final fun <get-number>(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.number.<get-number>|<get-number>(){}[0]
+
+        final fun component1(): #A1 // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.component1|component1(){}[0]
+        final fun component2(): kotlin/Long // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.component2|component2(){}[0]
+        final fun component3(): io.github.mradzinski.eventus/UiEffect // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.component3|component3(){}[0]
+        final fun copy(#A1 = ..., kotlin/Long = ..., io.github.mradzinski.eventus/UiEffect = ...): io.github.mradzinski.eventus/RouterTrace.EffectEmitted<#A1> // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.copy|copy(1:0;kotlin.Long;io.github.mradzinski.eventus.UiEffect){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.mradzinski.eventus/RouterTrace.EffectEmitted.toString|toString(){}[0]
+    }
+
     final class <#A1: out io.github.mradzinski.eventus/UiEvent> Failed : io.github.mradzinski.eventus/RouterTrace<#A1> { // io.github.mradzinski.eventus/RouterTrace.Failed|null[0]
         constructor <init>(#A1, kotlin/Long, kotlin/Throwable) // io.github.mradzinski.eventus/RouterTrace.Failed.<init>|<init>(1:0;kotlin.Long;kotlin.Throwable){}[0]
 
