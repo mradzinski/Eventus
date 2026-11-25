@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Eventus">
+  <!-- logo.svg unchanged, with a teal ring that sets it apart from a dark background (banner, dark theme). -->
+  <circle cx="60" cy="60" r="53.5" fill="#0B2A3A" stroke="#5EEAD4" stroke-width="5"/>
+  <g fill="none" stroke-width="6" stroke-linecap="round">
+    <path d="M30 60H88" stroke="#FFFFFF" stroke-opacity="0.35"/>
+    <path d="M30 60C56 60 58 88 88 88" stroke="#FFFFFF" stroke-opacity="0.35"/>
+    <path d="M30 60C56 60 58 32 88 32" stroke="#5EEAD4"/>
+  </g>
+  <circle cx="30" cy="60" r="8" fill="#FFFFFF"/>
+  <circle cx="88" cy="32" r="8" fill="#5EEAD4"/>
+  <circle cx="88" cy="60" r="6" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="88" cy="88" r="6" fill="#FFFFFF" fill-opacity="0.45"/>
+</svg>

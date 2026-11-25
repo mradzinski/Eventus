@@ -1,0 +1,19 @@
+/*
+ * Gives the API reference the colors of the documentation site: teal on navy, from the banner.
+ * Dokka's own variables are set again here; nothing else of its look is changed.
+ */
+:root {
+    --color-key-blue: rgb(15, 118, 110);
+    --color-key-blue-hover: rgb(16, 130, 122);
+    --color-key-blue-50: rgba(15, 118, 110, 0.5);
+    --color-background-nav: rgb(11, 35, 48);
+    --color-background-nav-dt: rgb(11, 35, 48);
+    --color-background-page-dt: rgb(7, 22, 31);
+    --color-background-footer-dt: rgb(11, 35, 48);
+}
+
+.theme-dark {
+    --color-key-blue: rgb(13, 148, 136);
+    --color-key-blue-hover: rgb(20, 184, 166);
+    --color-key-blue-50: rgba(45, 212, 191, 0.5);
+}

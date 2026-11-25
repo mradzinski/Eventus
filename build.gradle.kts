@@ -1,5 +1,7 @@
 import dev.detekt.gradle.Detekt
 import dev.detekt.gradle.extensions.DetektExtension
+import org.jetbrains.dokka.gradle.DokkaExtension
+import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 
 plugins {
@@ -132,4 +134,19 @@ dependencies {
 
 dokka {
     moduleName.set("Eventus")
+}
+
+// The reference takes the site's logo and colors. Dokka builds each module's pages in that module, so the
+// same settings go to every published module and to this one, which gathers them.
+(publishedModules.map { project(it) } + project).forEach { documented ->
+    documented.plugins.withId("org.jetbrains.dokka") {
+        documented.extensions.configure<DokkaExtension> {
+            pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
+                customStyleSheets.from(rootProject.file("config/dokka/eventus.css"))
+                customAssets.from(rootProject.file("config/dokka/logo-icon.svg"))
+                homepageLink.set("https://mradzinski.github.io/Eventus/")
+                footerMessage.set("Eventus is released under the Apache License 2.0.")
+            }
+        }
+    }
 }
