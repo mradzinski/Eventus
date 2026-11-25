@@ -861,6 +861,7 @@ fun `a tap on increment raises the count`() = runTest {
 | `… is never called: … is sealed or abstract` (build) | A handler names a parent type. | Name one concrete event class. |
 | `X routes every E, but it can never handle …` (build) | A class implementing `EventRouter<E, …>` routes a type that includes events other view models handle. | Give that view model's events a sealed type of their own inside `E`, and route that type. |
 | `… implements EventHandler directly` (build) | A Koin module is requested and a handler has no screen interface. | Implement the screen's handler interface. |
+| `… implements EventHandler directly, so it is not in the Metro bindings of …` (build) | A handler written for the state and effects of an annotated handler interface does not implement it. | Implement that screen's handler interface. |
 | `… is private, so the generated Koin module cannot create it` (build) | A handler class is private. | Make it `internal`. |
 | `… is private, so the generated Metro bindings cannot create it` or `cannot name it` (build) | A handler class or an annotated handler interface is private. | Make it `internal`. |
 | `… must be an interface that extends EventHandler` (build) | `@ContributesEventHandlers` is on something else. | Put it on the screen's handler interface. |

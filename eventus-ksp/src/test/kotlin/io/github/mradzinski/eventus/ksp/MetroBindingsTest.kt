@@ -368,6 +368,61 @@ class MetroBindingsTest {
             "The scope that app.ListHandler gives to @ContributesEventHandlers is not a known class."
     }
 
+    @Test
+    fun `a handler of the screen that implements EventHandler directly fails the build`() {
+        val handlers = allListHandlers.replace(
+            "class OnStartHandler : ListHandler<ListEvent.OnStart>",
+            "class OnStartHandler : $EVENT_HANDLER<ListEvent.OnStart, ListState, ListEffect>",
+        )
+
+        val compiled = compile(metroListScreen, handlers)
+
+        compiled.problems.single() shouldBe
+            "app.OnStartHandler implements EventHandler directly, so it is not in the Metro bindings of " +
+            "app.ListHandler, whose state and effects it is written for. Implement ListHandler instead."
+    }
+
+    @Test
+    fun `a handler written for another state that implements EventHandler directly is left alone`() {
+        val other = """
+            package app
+
+            data class OtherState(val count: Int = 0) : io.github.mradzinski.eventus.UiState
+
+            data object OnOther : io.github.mradzinski.eventus.UiEvent
+
+            class OnOtherHandler : $EVENT_HANDLER<OnOther, OtherState, ListEffect> {
+                override val eventType = OnOther::class
+                override suspend fun handle(
+                    event: OnOther,
+                    store: io.github.mradzinski.eventus.ScreenStore<OtherState, ListEffect>,
+                ) = Unit
+            }
+        """.trimIndent()
+
+        val compiled = compile(metroListScreen, allListHandlers, other)
+
+        compiled.problems.shouldBeEmpty()
+        compiled.providers() shouldHaveSize 3
+    }
+
+    @Test
+    fun `two handlers that implement EventHandler directly are reported in name order`() {
+        val handlers = allListHandlers
+            .replace(
+                "class OnStartHandler : ListHandler<ListEvent.OnStart>",
+                "class OnStartHandler : $EVENT_HANDLER<ListEvent.OnStart, ListState, ListEffect>",
+            )
+            .replace(
+                "class RowClickHandler : ListHandler<ListEvent.Row.Click>",
+                "class RowClickHandler : $EVENT_HANDLER<ListEvent.Row.Click, ListState, ListEffect>",
+            )
+
+        val compiled = compile(metroListScreen, handlers)
+
+        compiled.problems.map { it.substringBefore(" ") } shouldBe listOf("app.OnStartHandler", "app.RowClickHandler")
+    }
+
     /** The provider functions of the one generated container, each on one line. */
     private fun Compiled.providers(): List<String> = metroBindings
         .single()

@@ -12,6 +12,10 @@ What changed in each version of Eventus, newest first. Versions follow
   an effect the screen's `ErrorHandler` emits for a failed event. The UI still gets every effect.
   See [logging events](docs/logging-events.md).
 
+- **A build error for an event handler that Metro would leave out.** With
+  `@ContributesEventHandlers`, a handler that implements `EventHandler` directly, and not the
+  annotated interface of its screen, now fails the build. Before, the build passed and the screen
+  threw when that event was sent.
 
 ### Changed
 

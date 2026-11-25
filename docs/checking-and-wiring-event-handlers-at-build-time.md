@@ -232,6 +232,8 @@ The processor reports a build error when one of these rules is broken:
 - **The interface is not `private`**, and neither is any handler that implements it. The generated
   code is in another file. `internal` is fine.
 - **The scope is a class the compiler can find.**
+- **Every event handler of the screen implements the annotated interface.** A handler that implements
+  `EventHandler` directly, for the same state and effects, is in no set that Metro provides.
 
 Three more things to know:
 

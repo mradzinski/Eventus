@@ -58,8 +58,41 @@ private fun KSClassDeclaration.metroProblems(scan: Scan): List<Problem> {
         .filter { Modifier.PRIVATE in it.modifiers }
         .map { it.privateProblem(generated = "the generated Metro bindings") }
 
-    return listOfNotNull(notHandlerInterfaceProblem(), privateScreenProblem(), unknownScopeProblem()) + private
+    return listOfNotNull(notHandlerInterfaceProblem(), privateScreenProblem(), unknownScopeProblem()) +
+        private +
+        leftOutProblems(scan)
 }
+
+/**
+ * The handlers written for the state and effects of this screen that implement `EventHandler` directly.
+ * Such a handler is in no set that Metro provides, so its screen would only find out when the event is
+ * sent. A handler under another interface is left alone: that is another screen's.
+ */
+private fun KSClassDeclaration.leftOutProblems(scan: Scan): List<Problem> {
+    val written = pathTo(EVENT_HANDLER)?.supertype?.arguments ?: return emptyList()
+
+    val own = stateAndEffect(
+        state = written.getOrNull(STATE_ARGUMENT),
+        effect = written.getOrNull(EFFECT_ARGUMENT),
+    )
+
+    return scan.handlers
+        .filter { it.screenInterfaces.isEmpty() }
+        .filter { stateAndEffect(state = it.state, effect = it.effect) == own }
+        .sortedBy { it.declaration.displayName }
+        .map { it.leftOutProblem(screen = this) }
+}
+
+/** The two types as text, to compare what a handler is written for with what a screen is. */
+private fun stateAndEffect(state: KSType?, effect: KSType?): List<String> = listOfNotNull(state, effect)
+    .map { it.toSource() }
+
+private fun Handler.leftOutProblem(screen: KSClassDeclaration): Problem = Problem(
+    message = "${declaration.displayName} implements EventHandler directly, so it is not in the Metro bindings " +
+        "of ${screen.displayName}, whose state and effects it is written for. Implement " +
+        "${screen.simpleName.asString()} instead.",
+    symbol = declaration,
+)
 
 private fun KSClassDeclaration.notHandlerInterfaceProblem(): Problem? {
     if (classKind == ClassKind.INTERFACE && isSubtypeOf(EVENT_HANDLER)) return null

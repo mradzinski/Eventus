@@ -39,8 +39,8 @@ internal class Scan(
 )
 
 // `EventHandler<E, S, F>` and `EventRouter<E, S, F>` take their types in the same order.
-private const val STATE_ARGUMENT = 1
-private const val EFFECT_ARGUMENT = 2
+internal const val STATE_ARGUMENT = 1
+internal const val EFFECT_ARGUMENT = 2
 
 internal fun Resolver.scan(): Scan {
     val classes = getAllFiles()
