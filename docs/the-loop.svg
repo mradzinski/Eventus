@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="t d">
+  <title id="t">The Eventus loop</title>
+  <desc id="d">The UI sends an event to the router with onEvent. The router runs the event handler of that event. The event handler updates the state and emits effects through the store. The state and the effects go back to the UI.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06131F"/><stop offset="0.55" stop-color="#0B3040"/><stop offset="1" stop-color="#0E6E6A"/>
+    </linearGradient>
+    <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#5EEAD4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="tipSoft" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#9FE8DC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="430" rx="28" fill="url(#bg)"/>
+
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2.5" fill="#9FE8DC" text-anchor="middle">
+    <text x="140" y="92">YOUR SCREEN</text>
+    <text x="470" y="92">EVENTUS</text>
+    <text x="760" y="92">YOUR CODE</text>
+    <text x="1050" y="92">EVENTUS</text>
+  </g>
+
+  <g fill="none" stroke="#5EEAD4" stroke-width="3" stroke-linecap="round">
+    <path d="M232 160H408" marker-end="url(#tip)"/>
+    <path d="M532 160H644" marker-end="url(#tip)"/>
+    <path d="M876 160H964" marker-end="url(#tip)"/>
+  </g>
+  <g fill="none" stroke="#9FE8DC" stroke-width="2.5" stroke-linecap="round">
+    <path d="M1020 204C1020 300 180 300 170 210" marker-end="url(#tipSoft)"/>
+    <path d="M1080 204C1080 372 110 372 110 210" marker-end="url(#tipSoft)"/>
+  </g>
+
+  <rect x="48" y="116" width="184" height="88" rx="44" fill="#F6FFFD"/>
+  <text x="140" y="169" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#0B2A3A">UI</text>
+
+  <g transform="translate(410 100)">
+    <circle cx="60" cy="60" r="53.5" fill="#0B2A3A" stroke="#5EEAD4" stroke-width="5"/>
+    <g fill="none" stroke-width="6" stroke-linecap="round">
+      <path d="M30 60H88" stroke="#FFFFFF" stroke-opacity="0.35"/>
+      <path d="M30 60C56 60 58 88 88 88" stroke="#FFFFFF" stroke-opacity="0.35"/>
+      <path d="M30 60C56 60 58 32 88 32" stroke="#5EEAD4"/>
+    </g>
+    <circle cx="30" cy="60" r="8" fill="#FFFFFF"/>
+    <circle cx="88" cy="32" r="8" fill="#5EEAD4"/>
+    <circle cx="88" cy="60" r="6" fill="#FFFFFF" fill-opacity="0.45"/>
+    <circle cx="88" cy="88" r="6" fill="#FFFFFF" fill-opacity="0.45"/>
+  </g>
+  <text x="470" y="244" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Router</text>
+
+  <rect x="646" y="116" width="230" height="88" rx="18" fill="#F6FFFD"/>
+  <text x="761" y="168" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#0B2A3A">Event handler</text>
+
+  <rect x="966" y="116" width="168" height="88" rx="18" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"/>
+  <text x="1050" y="168" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">Store</text>
+
+  <g font-family="Menlo, SF Mono, Consolas, monospace" font-size="17" fill="#E3FBF7" text-anchor="middle">
+    <text x="320" y="146">onEvent(event)</text>
+    <text x="588" y="146">runs</text>
+    <text x="920" y="146">update</text>
+    <text x="920" y="186">emit</text>
+  </g>
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" text-anchor="middle">
+    <rect x="548" y="258" width="104" height="34" rx="17" fill="#0B2A3A" stroke="#9FE8DC" stroke-opacity="0.5" stroke-width="1.5"/>
+    <text x="600" y="281" fill="#E3FBF7">state</text>
+    <rect x="540" y="311" width="120" height="34" rx="17" fill="#0B2A3A" stroke="#9FE8DC" stroke-opacity="0.5" stroke-width="1.5"/>
+    <text x="600" y="334" fill="#E3FBF7">effects</text>
+  </g>
+</svg>

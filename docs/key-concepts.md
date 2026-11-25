@@ -27,14 +27,7 @@ terms.
 
 ## The loop
 
-```mermaid
-flowchart LR
-    UI -- "onEvent(event)" --> Router
-    Router -- "runs" --> EH[Event handler]
-    EH -- "update / emit" --> Store
-    Store -- "state" --> UI
-    Store -- "effects" --> UI
-```
+![The loop: the UI sends an event to the router, the router runs its event handler, the event handler updates the state and emits effects through the store, and both go back to the UI](the-loop.svg)
 
 Take a counter with an Add button:
 
