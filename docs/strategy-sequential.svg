@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="318" viewBox="0 0 1200 318" role="img" aria-labelledby="t d">
+  <title id="t">Sequential: events run in the order they were sent</title>
+  <desc id="d">Three events arrive quickly. The first runs at once. The second waits until the first has ended and then runs, and the third waits until the second has ended. No two runs overlap, and all of them run to the end.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06131F"/><stop offset="0.55" stop-color="#0B3040"/><stop offset="1" stop-color="#0E6E6A"/>
+    </linearGradient>
+    <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#9FE8DC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="318" rx="24" fill="url(#bg)"/>
+  <text x="56" y="101" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">EVENTS</text>
+  <text x="56" y="173" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">RUNS</text>
+  <path d="M180 96H1130" stroke="#9FE8DC" stroke-opacity="0.7" stroke-width="2" fill="none" marker-end="url(#tip)"/>
+  <text x="1130" y="80" text-anchor="end" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">time</text>
+  <text x="56" y="46" font-family="Menlo, SF Mono, Consolas, monospace" font-size="20" font-weight="700" fill="#FFFFFF">Sequential</text>
+  <path d="M280 118V151" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><path d="M380 118V195" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><path d="M480 118V239" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><rect x="280" y="153" width="240" height="30" rx="15" fill="#5EEAD4"/><text x="298" y="174" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">1</text><path d="M380 212H520" stroke="#9FE8DC" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9" fill="none"/><text x="453.0" y="202" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">waits</text><rect x="526" y="197" width="240" height="30" rx="15" fill="#5EEAD4"/><text x="544" y="218" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">2</text><path d="M480 256H766" stroke="#9FE8DC" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9" fill="none"/><text x="626.0" y="246" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">waits</text><rect x="772" y="241" width="240" height="30" rx="15" fill="#5EEAD4"/><text x="790" y="262" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">3</text><circle cx="280" cy="96" r="20" fill="#F6FFFD"/><text x="280" y="102" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">1</text><circle cx="380" cy="96" r="20" fill="#F6FFFD"/><text x="380" y="102" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">2</text><circle cx="480" cy="96" r="20" fill="#F6FFFD"/><text x="480" y="102" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">3</text>
+</svg>

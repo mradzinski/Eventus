@@ -2,6 +2,8 @@
 
 Eventus belongs to the presentation layer and nowhere else.
 
+![Three layers: the presentation layer uses Eventus, where the UI talks to the router and the router runs the event handlers; the handlers depend on repository interfaces or use cases in the domain layer; the data layer implements those interfaces. The domain and data layers do not use Eventus](where-eventus-sits.svg)
+
 - **Screens and their event handlers depend on Eventus.** In a modular app, that is your feature
   modules. A feature module holds one or more screens, and each screen has its own router. See
   [structuring the events of a feature](structuring-the-events-of-a-feature.md).

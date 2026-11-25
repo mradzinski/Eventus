@@ -63,6 +63,8 @@ because it looks at nothing.
 
 ### `Concurrent`: every event runs at once
 
+![Concurrent: three events arrive one after another, each starts its own run at once, the runs overlap and all of them run to the end](strategy-concurrent.svg)
+
 Use `Concurrent` when an event does something quick and two of them cannot get in each other's way.
 Most events are like this, which is why it is the default and you write nothing.
 
@@ -81,6 +83,8 @@ class OnNameChangeHandler : ProfileHandler<OnNameChange> {
 ```
 
 ### `Latest`: the newest event replaces the one before
+
+![Latest: three events arrive one after another, each new event cancels the run of the one before, and only the last run reaches the end](strategy-latest.svg)
 
 Use `Latest` when a new event makes the work of the earlier one pointless.
 
@@ -114,6 +118,8 @@ results for `c` under a box that says `ca`. To also wait until the user stops ty
 
 ### `Sequential`: events run in the order they were sent
 
+![Sequential: three events arrive quickly, the first runs at once, and each of the others waits until the run before it has ended](strategy-sequential.svg)
+
 Use `Sequential` when every event must be applied, and in order.
 
 **A real case:** the plus button of a quantity in a shopping cart. Each tap saves the new quantity,
@@ -143,6 +149,8 @@ Without `Sequential`, the three taps run at once, each reads the same quantity, 
 at 1. A run that fails does not stop the ones that wait behind it.
 
 ### `DropIfAlreadyRunning`: a repeat is ignored
+
+![DropIfAlreadyRunning: the first event starts a run, a second event that arrives during that run is ignored, and a third that arrives after it has ended starts a new run](strategy-drop-if-already-running.svg)
 
 Use `DropIfAlreadyRunning` for an action that must not run twice.
 

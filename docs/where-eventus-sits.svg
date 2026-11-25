@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="t d">
+  <title id="t">Where Eventus sits in your app</title>
+  <desc id="d">Three layers. The presentation layer uses Eventus: the UI sends events to the router and gets the state and the effects back, and the router runs the event handlers. The event handlers depend on repository interfaces, or on optional use cases, in the domain layer. The data layer implements those interfaces and reaches the data sources. The domain and data layers never import Eventus.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06131F"/><stop offset="0.55" stop-color="#0B3040"/><stop offset="1" stop-color="#0E6E6A"/>
+    </linearGradient>
+    <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#5EEAD4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="tipSoft" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#9FE8DC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="650" rx="28" fill="url(#bg)"/>
+
+  <rect x="40" y="40" width="1120" height="262" rx="22" fill="#5EEAD4" fill-opacity="0.08" stroke="#5EEAD4" stroke-opacity="0.7" stroke-width="2"/>
+  <rect x="40" y="328" width="1120" height="146" rx="22" fill="#FFFFFF" fill-opacity="0.04" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2"/>
+  <rect x="40" y="500" width="1120" height="110" rx="22" fill="#FFFFFF" fill-opacity="0.04" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2"/>
+
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">
+    <text x="72" y="82">PRESENTATION</text>
+    <text x="72" y="368">DOMAIN</text>
+    <text x="72" y="540">DATA</text>
+  </g>
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle">
+    <rect x="994" y="60" width="138" height="32" rx="16" fill="#5EEAD4"/>
+    <text x="1063" y="81" fill="#0B2A3A">uses Eventus</text>
+    <rect x="1008" y="346" width="124" height="32" rx="16" fill="none" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="1070" y="367" fill="#E3FBF7">no Eventus</text>
+    <rect x="1008" y="518" width="124" height="32" rx="16" fill="none" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="1070" y="539" fill="#E3FBF7">no Eventus</text>
+  </g>
+
+  <g fill="none" stroke="#5EEAD4" stroke-width="3" stroke-linecap="round">
+    <path d="M262 164H408" marker-end="url(#tip)"/>
+    <path d="M532 180H664" marker-end="url(#tip)"/>
+    <path d="M830 222V386" marker-end="url(#tip)"/>
+  </g>
+  <g fill="none" stroke="#9FE8DC" stroke-width="2.5" stroke-linecap="round">
+    <path d="M410 198H266" marker-end="url(#tipSoft)"/>
+    <path d="M700 222C700 300 380 300 380 386" stroke-dasharray="7 7" marker-end="url(#tipSoft)"/>
+    <path d="M504 420H636" stroke-dasharray="7 7" marker-end="url(#tipSoft)"/>
+    <path d="M790 528V456" stroke-dasharray="7 7" marker-end="url(#tipSoft)"/>
+    <path d="M618 556H504" marker-end="url(#tipSoft)"/>
+  </g>
+
+  <rect x="92" y="140" width="170" height="82" rx="41" fill="#F6FFFD"/>
+  <text x="177" y="190" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#0B2A3A">UI</text>
+
+  <g transform="translate(410 121)">
+    <circle cx="60" cy="60" r="53.5" fill="#0B2A3A" stroke="#5EEAD4" stroke-width="5"/>
+    <g fill="none" stroke-width="6" stroke-linecap="round">
+      <path d="M30 60H88" stroke="#FFFFFF" stroke-opacity="0.35"/>
+      <path d="M30 60C56 60 58 88 88 88" stroke="#FFFFFF" stroke-opacity="0.35"/>
+      <path d="M30 60C56 60 58 32 88 32" stroke="#5EEAD4"/>
+    </g>
+    <circle cx="30" cy="60" r="8" fill="#FFFFFF"/>
+    <circle cx="88" cy="32" r="8" fill="#5EEAD4"/>
+    <circle cx="88" cy="60" r="6" fill="#FFFFFF" fill-opacity="0.45"/>
+    <circle cx="88" cy="88" r="6" fill="#FFFFFF" fill-opacity="0.45"/>
+  </g>
+  <text x="470" y="266" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Router</text>
+
+  <rect x="682" y="124" width="290" height="82" rx="18" fill="#F6FFFD" fill-opacity="0.35"/>
+  <rect x="674" y="132" width="290" height="82" rx="18" fill="#F6FFFD" fill-opacity="0.6"/>
+  <rect x="666" y="140" width="290" height="82" rx="18" fill="#F6FFFD"/>
+  <text x="811" y="189" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#0B2A3A">Event handlers</text>
+
+  <rect x="254" y="388" width="250" height="64" rx="16" fill="none" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2" stroke-dasharray="7 7"/>
+  <text x="379" y="417" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Use cases</text>
+  <text x="379" y="439" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">only when you need them</text>
+
+  <rect x="638" y="388" width="320" height="64" rx="16" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"/>
+  <text x="798" y="428" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">Repository interfaces</text>
+
+  <rect x="254" y="530" width="250" height="56" rx="16" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"/>
+  <text x="379" y="565" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Data sources</text>
+
+  <rect x="620" y="530" width="340" height="56" rx="16" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"/>
+  <text x="790" y="565" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Repository implementations</text>
+
+  <g font-family="Menlo, SF Mono, Consolas, monospace" font-size="16" fill="#E3FBF7" text-anchor="middle">
+    <text x="335" y="150">onEvent</text>
+    <text x="338" y="222">state, effects</text>
+    <text x="598" y="166">runs</text>
+  </g>
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#E3FBF7">
+    <text x="844" y="318">depend on</text>
+    <text x="804" y="496">implement</text>
+  </g>
+</svg>
