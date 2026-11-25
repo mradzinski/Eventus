@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-labelledby="t d">
+  <title id="t">Sequential for each item</title>
+  <desc id="d">Two events for task 7 arrive, then one for task 3. The second event of task 7 waits until the first has ended. The event of task 3 runs at once and does not wait for task 7.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06131F"/><stop offset="0.55" stop-color="#0B3040"/><stop offset="1" stop-color="#0E6E6A"/>
+    </linearGradient>
+    <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#9FE8DC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="330" rx="24" fill="url(#bg)"/>
+  <text x="56" y="46" font-family="Menlo, SF Mono, Consolas, monospace" font-size="20" font-weight="700" fill="#FFFFFF">Sequential&lt;OnTaskDoneChange&gt; { it.taskId }</text>
+  
+  <text x="56" y="109" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">EVENTS</text>
+  <text x="56" y="181" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">TASK 7</text><text x="56" y="229" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC"></text><text x="56" y="277" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">TASK 3</text>
+  <path d="M180 104H1130" stroke="#9FE8DC" stroke-opacity="0.7" stroke-width="2" fill="none" marker-end="url(#tip)"/>
+  <text x="1130" y="88" text-anchor="end" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">time</text>
+  <path d="M280 126V159" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><path d="M380 126V207" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><path d="M460 126V255" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><rect x="280" y="161" width="280" height="30" rx="15" fill="#5EEAD4"/><text x="298" y="182" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">7</text><path d="M380 224H560" stroke="#9FE8DC" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9" fill="none"/><text x="473.0" y="214" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">waits</text><rect x="566" y="209" width="280" height="30" rx="15" fill="#5EEAD4"/><text x="584" y="230" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">7</text><rect x="460" y="257" width="280" height="30" rx="15" fill="#5EEAD4"/><text x="478" y="278" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">3</text><circle cx="280" cy="104" r="20" fill="#F6FFFD"/><text x="280" y="110" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">7</text><circle cx="380" cy="104" r="20" fill="#F6FFFD"/><text x="380" y="110" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">7</text><circle cx="460" cy="104" r="20" fill="#F6FFFD"/><text x="460" y="110" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">3</text>
+</svg>

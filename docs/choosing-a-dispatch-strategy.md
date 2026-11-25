@@ -183,6 +183,8 @@ whichever event it is.
 
 ### The newest of several inputs: `Latest<T>()`
 
+![Latest shared by several events: a change of the query starts a run, and a change of the filter that arrives during it cancels that run and starts its own, although it is a different event](strategy-shared-latest.svg)
+
 **A real case:** a product list that reloads when the user changes the search text, the filter or
 the sort order. Only the newest of the three matters.
 
@@ -233,6 +235,8 @@ screen would show results that ignore the filter.
 
 ### Actions that exclude each other: `DropIfAlreadyRunning<T>()`
 
+![DropIfAlreadyRunning shared by several events: a tap on Save starts a run, a tap on Delete during it is ignored, and a tap on Delete after it has ended starts a run](strategy-shared-drop-if-already-running.svg)
+
 **A real case:** the Save and Delete buttons of an editor. While a save is running, Delete must do
 nothing, and the other way round.
 
@@ -262,6 +266,8 @@ val oneChangeAtATime = DispatchStrategy.DropIfAlreadyRunning<EditorEvent.OnChang
 | Taps Delete after the save has ended. | Starts the delete. |
 
 ### Several events in order: `Sequential<T>()`
+
+![Sequential shared by several events: a tap on plus starts a run, and a tap on minus that arrives during it waits until the plus has ended](strategy-shared-sequential.svg)
 
 **A real case:** the plus and minus buttons of a quantity. A plus followed by a minus must end where
 it started, so the two events share one order.
@@ -299,6 +305,8 @@ with the same key.
 
 ### Each item in order: `Sequential<T> { key }`
 
+![Sequential for each item: the second event of task 7 waits until the first has ended, and the event of task 3 runs at once](strategy-per-item-sequential.svg)
+
 **A real case:** ticking tasks in a to-do list. Two changes to one task must reach the server in
 order, and a task must not wait for another task.
 
@@ -327,6 +335,8 @@ would let the two changes to task 7 run at once, and the server could end with t
 
 ### Each item once: `DropIfAlreadyRunning<T> { key }`
 
+![DropIfAlreadyRunning for each item: a second tap on file A during its download is ignored, and a tap on file B starts its own download at once](strategy-per-item-drop-if-already-running.svg)
+
 **A real case:** a Download button on every file of a list. A second tap on a file that is
 downloading does nothing, and other files still download.
 
@@ -336,6 +346,8 @@ override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnDownloadClick> {
 
 ### The newest for each item: `Latest<T> { key }`
 
+![Latest for each item: the second change of speaker 1 cancels the run of the first, and the change of speaker 2 runs by itself](strategy-per-item-latest.svg)
+
 **A real case:** a volume slider on every speaker of a room. A new position cancels the save of the
 position before it for that speaker, and leaves the other speakers alone.
 
@@ -344,6 +356,8 @@ override val strategy = DispatchStrategy.Latest<OnVolumeChange> { it.speakerId }
 ```
 
 ### Several events for each item
+
+![Sequential for each item, shared by several events: a rename of task 7 waits until the tick of task 7 has ended, and a tick of task 3 runs at once](strategy-per-item-several-events.svg)
 
 The type can be one that several events share, as long as it holds the key. Here a tick and a rename
 of the same task run in order, and other tasks do not wait:

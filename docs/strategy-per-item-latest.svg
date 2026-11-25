@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="282" viewBox="0 0 1200 282" role="img" aria-labelledby="t d">
+  <title id="t">Latest for each item</title>
+  <desc id="d">Two changes for speaker 1 arrive, then one for speaker 2. The second change of speaker 1 cancels the run of the first. The change of speaker 2 runs by itself and cancels nothing.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06131F"/><stop offset="0.55" stop-color="#0B3040"/><stop offset="1" stop-color="#0E6E6A"/>
+    </linearGradient>
+    <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#9FE8DC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="282" rx="24" fill="url(#bg)"/>
+  <text x="56" y="46" font-family="Menlo, SF Mono, Consolas, monospace" font-size="20" font-weight="700" fill="#FFFFFF">Latest&lt;OnVolumeChange&gt; { it.speakerId }</text>
+  
+  <text x="56" y="109" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">EVENTS</text>
+  <text x="56" y="181" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">SPEAKER 1</text><text x="56" y="229" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.5" fill="#9FE8DC">SPEAKER 2</text>
+  <path d="M180 104H1130" stroke="#9FE8DC" stroke-opacity="0.7" stroke-width="2" fill="none" marker-end="url(#tip)"/>
+  <text x="1130" y="88" text-anchor="end" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#A9E9DF">time</text>
+  <path d="M280 126V159" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><path d="M420 126V159" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><path d="M500 126V207" stroke="#9FE8DC" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="4 6" fill="none"/><rect x="280" y="161" width="134" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="2"/><text x="298" y="182" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">1</text><g stroke="#FDA4AF" stroke-width="3" stroke-linecap="round"><path d="M389 169L403 183"/><path d="M403 169L389 183"/></g><text x="347.0" y="210" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#FECDD3">cancelled</text><rect x="426" y="161" width="300" height="30" rx="15" fill="#5EEAD4"/><text x="444" y="182" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">1</text><rect x="500" y="209" width="300" height="30" rx="15" fill="#5EEAD4"/><text x="518" y="230" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0B2A3A">2</text><circle cx="280" cy="104" r="20" fill="#F6FFFD"/><text x="280" y="110" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">1</text><circle cx="420" cy="104" r="20" fill="#F6FFFD"/><text x="420" y="110" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">1</text><circle cx="500" cy="104" r="20" fill="#F6FFFD"/><text x="500" y="110" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0B2A3A">2</text>
+</svg>
