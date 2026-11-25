@@ -7,6 +7,7 @@ knows nothing about a UI; the helpers live on the UI's side.
 
 - [Installing](#installing)
 - [Performing effects](#performing-effects)
+  - [Performing effects without the helper](#performing-effects-without-the-helper)
 - [Notifying the router that the screen is visible](#notifying-the-router-that-the-screen-is-visible)
 
 ## Installing
@@ -60,6 +61,32 @@ is a UI to do it:
 
 Call `collectEffects` once per router. A router gives each effect to one collector, so two
 collectors would each see only some of them.
+
+### Performing effects without the helper
+
+If you do not use `eventus-compose`, collect the effects yourself, inside `repeatOnLifecycle`:
+
+```kotlin
+val lifecycleOwner = LocalLifecycleOwner.current
+
+LaunchedEffect(viewModel, lifecycleOwner) {
+    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is NoteEffect.ShowSaved -> snackbarHostState.showSnackbar("Saved")
+                is NoteEffect.Close -> onClose()
+            }
+        }
+    }
+}
+```
+
+Do not leave `repeatOnLifecycle` out. A `LaunchedEffect` runs for as long as the composable is in the
+composition, which includes the time the app is in the background. Without `repeatOnLifecycle`, an
+effect emitted then is performed with nobody looking.
+
+This block performs the effects one after another, so an effect that suspends, such as showing a
+snackbar, holds up the next one. `collectEffects` runs each effect in a coroutine of its own.
 
 ## Notifying the router that the screen is visible
 

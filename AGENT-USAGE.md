@@ -366,10 +366,21 @@ fun CounterRoute(viewModel: CounterViewModel) {
 }
 ```
 
-Without `eventus-compose`, collect the flow yourself, once:
-`LaunchedEffect(viewModel) { viewModel.effects.collect { effect -> … } }`. That plain block also
-collects while the app is in the background, so an effect can be performed with nobody looking.
-`collectEffects` collects only while the screen is started, and effects wait otherwise.
+Without `eventus-compose`, collect the flow yourself, once, inside `repeatOnLifecycle`:
+
+```kotlin
+val lifecycleOwner = LocalLifecycleOwner.current
+
+LaunchedEffect(viewModel, lifecycleOwner) {
+    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.effects.collect { effect -> /* perform it */ }
+    }
+}
+```
+
+Never write the block without `repeatOnLifecycle`: a `LaunchedEffect` also runs while the app is in
+the background, so an effect would be performed with nobody looking. `collectEffects` does this for
+you, and effects wait while the screen is stopped.
 
 Facts about failures:
 

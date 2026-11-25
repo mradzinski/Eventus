@@ -222,17 +222,23 @@ class CounterViewModel(
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 
 @Composable
 fun CounterRoute(viewModel: CounterViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                is CounterEffect.Saved -> { /* show a confirmation */ }
-                is CounterEffect.ShowFailure -> { /* show why */ }
+    LaunchedEffect(viewModel, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.effects.collect { effect ->
+                when (effect) {
+                    is CounterEffect.Saved -> { /* show a confirmation */ }
+                    is CounterEffect.ShowFailure -> { /* show why */ }
+                }
             }
         }
     }
@@ -244,8 +250,11 @@ fun CounterRoute(viewModel: CounterViewModel) {
 }
 ```
 
-With [`eventus-compose`](#optional-adding-the-compose-helpers), the block that collects the effects becomes one
-call, which also waits for the screen to be started before performing an effect:
+`repeatOnLifecycle` performs an effect only while the screen is started. An effect emitted while the
+app is in the background waits and is performed when the screen comes back. Do not leave it out.
+
+With [`eventus-compose`](#optional-adding-the-compose-helpers), the block that collects the effects
+becomes one call:
 
 ```kotlin
 import io.github.mradzinski.eventus.compose.collectEffects
