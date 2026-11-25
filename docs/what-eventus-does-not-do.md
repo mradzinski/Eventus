@@ -17,8 +17,9 @@
 - **The library alone has nothing for a UI toolkit.** It depends on neither Compose nor the
   lifecycle library. The optional [Compose helpers](using-the-compose-helpers.md) are a separate
   artifact.
-- **It is not an event bus.** A router belongs to one screen. Events do not travel between screens;
-  see [reaching another screen](reaching-another-screen.md) for what to do instead.
+- **It is not an event bus, by design.** A router belongs to one screen, and events do not travel
+  between screens. See [why there is no bus](reaching-another-screen.md#why-there-is-no-bus) for the
+  reasons, and [reaching another screen](reaching-another-screen.md) for what to do instead.
 
 ---
 

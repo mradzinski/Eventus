@@ -2,8 +2,14 @@
 
 Sooner or later something outside a screen has to make that screen do something: a settings screen
 whose change the home screen must show, or a button in a shared app bar that acts on the list below
-it. A router belongs to one screen, and Eventus has no channel that carries an event from one screen
-to another. There are two ways to do it, and both leave each screen's router private.
+it.
+
+A router belongs to one screen, and Eventus has no channel that carries an event from one screen to
+another. That is a design choice, not a missing feature: a screen's state stays explained by its own
+events and by the data it observes, and an event that nobody handles is an error and never a silent
+loss. [Why there is no bus](#why-there-is-no-bus) gives the reasons.
+
+There are two ways to reach another screen, and both leave each screen's router private.
 
 **Go down by default.** Going down is the way that keeps working as an app grows. Go up only for a
 control that belongs to one screen and is merely drawn somewhere shared.
@@ -13,6 +19,7 @@ control that belongs to one screen and is merely drawn somewhere shared.
 - [Going down, through what the screens share (the default)](#going-down-through-what-the-screens-share-the-default)
 - [Going up, through the UI (the exception)](#going-up-through-the-ui-the-exception)
 - [Why there is no bus](#why-there-is-no-bus)
+  - [What a bus does to state](#what-a-bus-does-to-state)
 
 ## Going down, through what the screens share (the default)
 
@@ -86,8 +93,8 @@ the same control is being passed down through layer after layer. Move the action
 
 ## Why there is no bus
 
-A channel where any code posts an event and the right router picks it up would be easy to add, and
-it would cost what the rest of the design protects:
+Eventus leaves a bus out on purpose. A channel where any code posts an event and the right router
+picks it up would be easy to add, and it would cost what the rest of the design protects:
 
 - **The sender would not know who receives the event, or whether anyone does.** With `onEvent`, an
   event nobody handles is an error at once.
@@ -95,6 +102,26 @@ it would cost what the rest of the design protects:
   would be lost, or kept and replayed later at a moment nobody chose.
 - **Any screen could drive any other.** The state of a screen would no longer be explained by its
   own events and what it observes.
+
+### What a bus does to state
+
+A bus is a poor way to keep state, whatever library provides it:
+
+- **An event happens once, and state has to be right all the time.** A screen that opens after the
+  event was posted never hears it and shows an old value, with nothing to tell it so. A screen that
+  observes a value gets the current one whenever it starts.
+- **Every receiver keeps its own copy.** Each screen updates its copy from the events it happened to
+  receive, so two screens can show different values for the same thing. With one owner below the
+  screens, there is one value and every screen shows it.
+- **The result depends on timing.** Events from different senders arrive in no agreed order, so the
+  same actions can leave a screen in different states from one run to the next.
+- **A change is hard to trace.** To learn why a screen changed, you search the whole app for code
+  that posts the event. Without a bus, you read the screen's own event type and the data it observes.
+- **A test needs more than the screen.** It has to set up the bus and post what another screen would
+  post, in the right order. Without a bus, a test gives the screen a fake of the data it observes.
+
+Without a bus, each screen can be read, tested and changed by itself: everything that can change
+its state is in its own event type and in the data it observes.
 
 If neither route fits, the cause is usually that something is owned by a screen and should be owned
 by the layer below it.
