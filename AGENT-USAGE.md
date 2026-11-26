@@ -23,7 +23,7 @@ class.
 ## Which artifact do I need?
 
 All artifacts have the group `io.github.mradzinski` and share one version. This file was written
-for `1.0.0-rc02`. Before you add a dependency, check Maven Central for the newest version and that
+for `1.0.0-rc03`. Before you add a dependency, check Maven Central for the newest version and that
 it is published. If it is not there, or you cannot check, tell the user and do not invent a version.
 
 | You want to… | Artifact | Where it goes |
@@ -33,6 +33,7 @@ it is published. If it is not there, or you cannot check, tell the user and do n
 | Have the Koin module of your handlers generated | `eventus-koin` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
 | Have the Metro bindings of your handlers generated | `eventus-metro` and `eventus-ksp` | `commonMain` `implementation`, plus the KSP lines |
 | Collect effects in a Compose UI with one call | `eventus-compose` | `commonMain` `implementation` |
+| Test event handlers (always, with the library) | `eventus-test`, from `1.0.0-rc03` | `commonTest` `implementation` |
 
 Requirements: Kotlin 2.4.21 or newer. Targets: `android` (minSdk 24), `jvm`, `iosArm64`,
 `iosSimulatorArm64`, `iosX64`, `js`, `wasmJs`. `eventus-compose` has no `iosX64`.
@@ -46,10 +47,13 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.mradzinski:eventus:1.0.0-rc02")
-            implementation("io.github.mradzinski:eventus-compose:1.0.0-rc02")   // optional
-            implementation("io.github.mradzinski:eventus-koin:1.0.0-rc02")      // optional
-            implementation("io.github.mradzinski:eventus-metro:1.0.0-rc02")     // optional
+            implementation("io.github.mradzinski:eventus:1.0.0-rc03")
+            implementation("io.github.mradzinski:eventus-compose:1.0.0-rc03")   // optional
+            implementation("io.github.mradzinski:eventus-koin:1.0.0-rc03")      // optional
+            implementation("io.github.mradzinski:eventus-metro:1.0.0-rc03")     // optional
+        }
+        commonTest.dependencies {
+            implementation("io.github.mradzinski:eventus-test:1.0.0-rc03")      // always; from 1.0.0-rc03
         }
     }
 }
@@ -57,10 +61,10 @@ kotlin {
 dependencies {
     // One line for each target the module declares: "ksp" + the target's name, capitalized.
     // The other targets are "kspIosX64", "kspJs" and "kspWasmJs".
-    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
-    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
-    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
-    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
+    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
+    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
+    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
 }
 ```
 
@@ -119,11 +123,12 @@ class ScreenStore<S : UiState, F : UiEffect>(initialState: S) {
     val effects: Flow<F>
     fun update(transform: (S) -> S)
     fun emit(effect: F)
+    fun dispatch(event: UiEvent): Job
     suspend fun <T> updateOptimistically(stateUpdate: (S) -> S, stateIfFailed: (S) -> S, work: suspend () -> T): T
 }
 
 fun interface ErrorHandler<E : UiEvent, S : UiState, F : UiEffect> {
-    fun handle(event: E, error: Throwable, store: ScreenStore<S, F>)
+    suspend fun handle(event: E, error: Throwable, store: ScreenStore<S, F>)
 }
 
 interface EventRouter<E : UiEvent, S : UiState, F : UiEffect> {
@@ -247,6 +252,42 @@ exist. The shorter snippets elsewhere are fragments: they leave out imports and 
 clause it can. Anywhere else, write the type arguments:
 `EventRouter<CounterEvent, CounterUiState, CounterEffect>(...)`.
 
+Package `io.github.mradzinski.eventus.test` (artifact `eventus-test`, from `1.0.0-rc03`):
+
+```kotlin
+// Runs event handlers through a real router inside runTest. Return its result from the test function.
+fun <E : UiEvent, S : UiState, F : UiEffect> runEventHandlerTest(
+    handler: EventHandler<E, S, F>,
+    initialState: S,
+    errorHandler: ErrorHandler<in E, S, F>? = null,
+    timeout: Duration = 10.seconds,            // real time, not the test's clock
+    test: suspend EventHandlerTest<E, S, F>.() -> Unit,
+): TestResult
+
+// The same for several handlers; `dispatch` then accepts the events of all of them.
+fun <E : UiEvent, S : UiState, F : UiEffect> runEventHandlerTest(
+    handlers: Collection<EventHandler<out E, S, F>>,
+    initialState: S,
+    errorHandler: ErrorHandler<in E, S, F>? = null,
+    timeout: Duration = 10.seconds,
+    test: suspend EventHandlerTest<E, S, F>.() -> Unit,
+): TestResult
+
+// The receiver of the block. It has no public constructor.
+class EventHandlerTest<E : UiEvent, S : UiState, F : UiEffect> {
+    val router: EventRouter<E, S, F>     // for other tools: router.state, router.effects
+    val testScope: TestScope             // for other tools: its clock and backgroundScope
+    val state: S                         // the state now
+    val states: List<S>                  // every state so far, the initial one first
+    val effects: List<F>                 // every effect so far; reading takes nothing from the router
+    val reports: List<RouterTrace<E>>    // what the router did; each prints as a sentence
+    val failures: List<Throwable>        // what the handlers threw
+    fun dispatch(vararg events: E)       // one after the other, as the UI would
+    fun advanceBy(duration: Duration)    // moves the test's clock
+    suspend fun awaitIdle()              // waits until every dispatched event has been handled to its end
+}
+```
+
 ## Adding a screen
 
 Write these pieces, in this order. `CounterRepository` and `OfflineException` are the app's own,
@@ -322,7 +363,7 @@ class OnSaveClickHandler(private val counters: CounterRepository) : CounterHandl
 //    one place that turns an exception into something the UI can show.
 class CounterErrorHandler : ErrorHandler<CounterEvent, CounterUiState, CounterEffect> {
 
-    override fun handle(event: CounterEvent, error: Throwable, store: CounterStore) {
+    override suspend fun handle(event: CounterEvent, error: Throwable, store: CounterStore) {
         val reason = if (error is OfflineException) FailureReason.Offline else FailureReason.Unknown
 
         store.emit(CounterEffect.ShowFailure(reason))
@@ -601,6 +642,37 @@ To stop costly work while the UI is hidden, define an event of your own that car
 handle it with `Latest`, and return at once when it says hidden. With `eventus-compose`,
 `viewModel.notifyVisibility { visible -> OnVisibilityChange(visible) }` sends it.
 
+## Dispatching an event from a handler
+
+`store.dispatch(event)` hands another event of the same screen to the router. Call it from an event
+handler or from the screen's `ErrorHandler`.
+
+```kotlin
+override suspend fun handle(event: OnAddToCart, store: CartStore) {
+    cart.add(event.item)
+
+    store.emit(CartEffect.OpenCart)
+    store.dispatch(OnCartRefresh)
+}
+```
+
+- The dispatched event is handled like one from `onEvent`: its own event handler, its own dispatch
+  strategy, its own numbered reports.
+- `dispatch` does not wait. It returns the `Job` that handles the event.
+  `store.dispatch(event).join()` waits until the event has been handled, has failed or was
+  cancelled. For an event its strategy ignored, the job has already ended.
+- `ErrorHandler.handle` is a suspending function too, so an error handler can `join`. It runs in the
+  coroutine of the failed event: that event stays active until `handle` returns, and `handle` is
+  cancelled when the event is replaced or the scope ends.
+- Do not `join` an event whose strategy makes it wait for the event that dispatched it (two events
+  sharing `Sequential`): neither ends.
+- An event with no event handler, or of another screen, throws `IllegalStateException("No handler
+  registered for …")` from `dispatch`, which fails the event that dispatched it.
+- A dispatched event keeps running when the event that dispatched it ends, fails or is replaced.
+- A `ScreenStore` created with its constructor belongs to no router, and `dispatch` throws on it.
+- Never hold another event handler and call its `handle`. Dispatch its event.
+- To test, pass both event handlers to `runEventHandlerTest(handlers = listOf(…))`.
+
 ## Changing data that the screen observes
 
 When the state shows data that a handler observes from a repository, a handler that changes that
@@ -803,65 +875,103 @@ The observer is a `RouterObserver<E>`, a function interface with one function,
 
 ## Testing
 
-A handler test needs no router and no view model:
+Test event handlers with `runEventHandlerTest` from `eventus-test`. It creates the router, the store
+and the scope, and stops everything when the block ends.
 
 ```kotlin
 @Test
-fun `it saves the count and says so`() = runTest {
-    val counters = FakeCounterRepository()
-    val store = CounterStore(CounterUiState(count = 3))
+fun `a refresh shows and hides the spinner`() = runEventHandlerTest(
+    handler = OnRefreshHandler(tasks),
+    initialState = TaskListUiState(),
+) {
+    dispatch(TaskListEvent.OnRefresh)
 
-    OnSaveClickHandler(counters).handle(CounterEvent.OnSaveClick, store)
-
-    assertEquals(3, counters.saved)
-    assertEquals(CounterEffect.Saved, store.effects.first())
+    assertEquals(listOf(false, true, false), states.map { it.refreshing })
+    assertEquals(emptyList(), effects)
 }
 ```
 
-A view model or router test:
+Several event handlers, such as two that share a strategy:
 
 ```kotlin
 @Test
-fun `a tap on increment raises the count`() = runTest {
-    val viewModel = CounterViewModel(
-        handlers = listOf(OnIncrementClickHandler()),
-        errorHandler = CounterErrorHandler(),
-        scope = backgroundScope,
-    )
+fun `delete is ignored while a save runs`() = runEventHandlerTest(
+    handlers = listOf(OnSaveClickHandler(tasks), OnDeleteClickHandler(tasks)),
+    initialState = EditorUiState(),
+) {
+    dispatch(EditorEvent.OnSaveClick, EditorEvent.OnDeleteClick)
 
-    viewModel.onEvent(CounterEvent.OnIncrementClick)
-    testScheduler.runCurrent()
-
-    assertEquals(1, viewModel.state.value.count)
+    assertEquals("#2 OnDeleteClick is ignored", reports.last().toString())
 }
 ```
 
-- **Pass `backgroundScope`, never the test's own scope.** The router keeps a job in its scope until
-  the scope is cancelled, so the test's own scope fails with `UncompletedCoroutinesError`.
-- **Use `testScheduler.runCurrent()`.** It needs no opt-in. `advanceUntilIdle()` does not run work
-  in `backgroundScope`.
-- **A handler that uses `delay`:** move the clock with
-  `testScheduler.advanceTimeBy(300.milliseconds)`, then call `testScheduler.runCurrent()`. That
-  needs no opt-in either. In a test that calls `handle` directly, `runTest` skips the delay, so
-  that kind of test cannot check the timing; test timing through a router.
-- **Where tests go:** in the test source set, such as `commonTest`. The build-time check does not
-  look at test sources.
-- **Test names:** a sentence in backticks compiles on every target if it uses only letters, digits,
-  spaces, apostrophes and hyphens.
-- **A handler that must throw:** `assertFailsWith<OfflineException> { handler.handle(event, store) }`
-  works inside `runTest`.
-- **Collecting reports in a test:** create the router with `observer = { reports += it }`, or give
-  the view model an optional `observer` parameter that it passes on.
-- **A view model that sends an event from `init`:** call `testScheduler.runCurrent()` once after
-  creating it, before sending anything else.
-- **A strategy can be tested by itself.** Call its `decide` function:
+- **Return the result from the test function**, as with `runTest`: write `= runEventHandlerTest(…) { … }`.
+- **Never call `testScheduler.runCurrent()` yourself.** Every read (`state`, `states`, `effects`,
+  `reports`, `failures`) first runs what can run without moving the clock, and so does `dispatch`.
+- **A handler that throws:** `dispatch` does not throw. Read `failures`:
+  `assertIs<OfflineException>(failures.single())`. A failure the test never reads fails the test.
+- **What the user sees after a failure:** pass `errorHandler = TaskListErrorHandler()` and assert on
+  `state` and `effects`. With an error handler, an unread failure no longer fails the test.
+- **A handler that uses `delay`:** `advanceBy(300.milliseconds)`, then read.
+- **A handler that never returns:** dispatch its event, change what it follows, read `state`. It is
+  cancelled when the block ends. Do not call `awaitIdle()` for it: it has no end, and the test fails
+  at its time limit with "Still being handled: #1 …".
+- **Work on another thread** (a repository that calls `withContext(Dispatchers.IO)` itself): call
+  `awaitIdle()` after `dispatch`, then read. For a handler that never returns and gets data from another
+  thread, wait with `router.state.first { … }`.
+- **The time limit** is 10 seconds of real time; change it with `timeout = 30.seconds`.
+- **Other tools work inside the block.** Turbine: `router.effects.test { dispatch(event); awaitItem() }`.
+  Reading `effects` takes nothing from the router.
+- **An event whose handler is not in the list** does not compile in `dispatch`.
+- **A strategy can also be tested by itself.** Call its `decide` function:
   `handler.strategy.decide(newEvent, listOf(activeEvent))` returns the `Dispatch`, and every
   `Dispatch` can be compared with `assertEquals`: for example
   `assertEquals(Dispatch.WaitFor(listOf(activeEvent)), dispatch)`.
 - **`ScreenStore` works by itself in a test**, including `updateOptimistically`.
+- **Where tests go:** in the test source set, such as `commonTest`. The build-time check does not
+  look at test sources.
+- **Test names:** a sentence in backticks compiles on every target if it uses only letters, digits,
+  spaces, apostrophes and hyphens.
 - **Imports for tests:** `kotlin.test.Test`, `kotlin.test.assertEquals`,
-  `kotlinx.coroutines.test.runTest`, `kotlinx.coroutines.flow.first`.
-- **A handler that never returns:** launch it in `backgroundScope`.
+  `io.github.mradzinski.eventus.test.runEventHandlerTest`, `kotlin.time.Duration.Companion.milliseconds`.
+
+A view model is tested the standard way, as any view model: replace the main dispatcher, create it,
+call it, check its state. Use this for the view model's own logic, and `runEventHandlerTest` for
+what the event handlers do.
+
+```kotlin
+class CounterViewModelTest {
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @BeforeTest
+    fun setMainDispatcher() = Dispatchers.setMain(UnconfinedTestDispatcher())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @AfterTest
+    fun resetMainDispatcher() = Dispatchers.resetMain()
+
+    @Test
+    fun `a tap on increment raises the count`() = runTest {
+        val viewModel = CounterViewModel(
+            handlers = listOf(OnIncrementClickHandler()),
+            errorHandler = CounterErrorHandler(),
+        )
+
+        viewModel.onEvent(CounterEvent.OnIncrementClick)
+
+        assertEquals(1, viewModel.state.value.count)
+    }
+}
+```
+
+A view model that takes its scope as a parameter can be given `scope = backgroundScope` instead, with
+no change to the main dispatcher. Then call `testScheduler.runCurrent()` after each `onEvent`, and
+never pass the test's own scope: the router keeps a job in its scope until the scope is cancelled, so
+the test would fail with `UncompletedCoroutinesError`.
+
+Without `eventus-test` (a version before `1.0.0-rc03`), test a handler by calling it:
+`handler.handle(event, store)` inside `runTest`, with `val store = ScreenStore<S, F>(initialState)`,
+then assert on `store.current` and `store.effects.first()`.
 
 ## Error messages and what to do
 
@@ -1031,14 +1141,15 @@ description: "Write or fix tests for code that uses the Eventus library, such as
 
 Read the section "Testing" of the Eventus agent guide (your saved copy, or https://raw.githubusercontent.com/mradzinski/Eventus/main/AGENT-USAGE.md) if you have not in this session.
 
-- A handler: create a ScreenStore with a starting state, call handle(event, store) inside runTest, then assert on store.current and on store.effects. No router and no view model.
-- A handler that never returns: launch it in backgroundScope.
-- A strategy: call handler.strategy.decide(newEvent, listOf(activeEvents)) and compare the answer with assertEquals. No coroutines needed.
-- An error handler: call handle(event, exception, store) and assert on the store.
-- A view model or a router: pass backgroundScope as its scope, never the test's own scope. Send events with onEvent and call testScheduler.runCurrent() after each. Do not use advanceUntilIdle().
-- A view model that sends an event from init: call testScheduler.runCurrent() once after creating it.
-- A handler with a delay, tested through a router: call testScheduler.advanceTimeBy(duration), then testScheduler.runCurrent().
-- To check what the router did, pass an observer that adds each report to a list and compare the list.
+- An event handler: use runEventHandlerTest(handler = …, initialState = …) { … } from eventus-test and return its result from the test function. In the block call dispatch(event), then assert on state, states, effects, reports and failures. Never create a ScreenStore or a router for this, and never call testScheduler.runCurrent().
+- Several event handlers, such as two that share a strategy: pass handlers = listOf(…).
+- A failure: dispatch does not throw. Assert on failures. To test what the user sees, pass errorHandler = … and assert on state and effects.
+- A handler with a delay: advanceBy(duration), then assert.
+- A handler that never returns: dispatch its event, change what it follows, assert on state. Do not call awaitIdle() for it.
+- Work on another thread: call awaitIdle() after dispatch. For a handler that never returns, wait with router.state.first { … }.
+- A strategy by itself: call handler.strategy.decide(newEvent, listOf(activeEvents)) and compare the answer with assertEquals. No coroutines needed.
+- A view model: test it the standard way. Set the main dispatcher to UnconfinedTestDispatcher() before each test and reset it after, create the view model, call onEvent, assert on state.value.
+- If eventus-test is not a dependency and you may not add it: create a ScreenStore, call handler.handle(event, store) inside runTest, and assert on store.current and store.effects.
 - Use fakes for repositories, not mocks. Put tests in the test source set.
 ```
 

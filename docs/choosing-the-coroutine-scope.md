@@ -131,20 +131,30 @@ class DiskNoteRepository(
 }
 ```
 
-Event handlers then stay simple, and never name a dispatcher:
+Event handlers then stay simple:
 
-```kotlin
-class OnNoteOpenedHandler(private val notes: NoteRepository) : NoteHandler<OnNoteOpened> {
+> [!TIP]
+> **Do:** call the repository and let it choose where its work runs.
+>
+> ```kotlin
+> override suspend fun handle(event: OnNoteOpened, store: NoteStore) {
+>     val note = notes.load(event.id)
+>
+>     store.update { it.copy(note = note) }
+> }
+> ```
 
-    override val eventType = OnNoteOpened::class
-
-    override suspend fun handle(event: OnNoteOpened, store: NoteStore) {
-        val note = notes.load(event.id)
-
-        store.update { it.copy(note = note) }
-    }
-}
-```
+> [!CAUTION]
+> **Don't:** name a dispatcher in an event handler. Every event handler that loads a note would have
+> to remember it, and a test could not replace it.
+>
+> ```kotlin
+> override suspend fun handle(event: OnNoteOpened, store: NoteStore) {
+>     val note = withContext(Dispatchers.IO) { notes.load(event.id) }
+>
+>     store.update { it.copy(note = note) }
+> }
+> ```
 
 ### An event can be sent from any thread
 

@@ -48,11 +48,39 @@ val taskListModule = module {
 }
 ```
 
-Do not ask Koin for `getAll<EventHandler<*, TaskListUiState, TaskListEffect>>()`. Koin looks
-definitions up by class and ignores type arguments, so that call returns the handlers of every screen
-in the app. The per-screen interface is what keeps them apart. Register the view model with
-`viewModel { }`, never `single { }`: a singleton view model is never cleared, and its router would
-never stop.
+Koin looks definitions up by class and ignores type arguments. The per-screen interface is what
+keeps the event handlers of one screen apart from those of another:
+
+> [!TIP]
+> **Do:** ask Koin for the handler interface of the screen.
+>
+> ```kotlin
+> getAll<TaskListHandler<*>>()
+> ```
+
+> [!CAUTION]
+> **Don't:** ask Koin for `EventHandler` with the screen's types. That call returns the event
+> handlers of every screen in the app.
+>
+> ```kotlin
+> getAll<EventHandler<*, TaskListUiState, TaskListEffect>>()
+> ```
+
+A view model must be cleared when its screen is gone, or its router never stops:
+
+> [!TIP]
+> **Do:** register the view model with `viewModel { }`.
+>
+> ```kotlin
+> viewModel { TaskListViewModel(handlers = getAll<TaskListHandler<*>>()) }
+> ```
+
+> [!CAUTION]
+> **Don't:** register it with `single { }`. A singleton view model is never cleared.
+>
+> ```kotlin
+> single { TaskListViewModel(handlers = getAll<TaskListHandler<*>>()) }
+> ```
 
 You do not have to write the handler lines by hand: `eventus-ksp` generates them. See [checking and
 wiring event handlers at build time](checking-and-wiring-event-handlers-at-build-time.md).

@@ -22,6 +22,13 @@ terms.
 - [Several view models in one feature](#several-view-models-in-one-feature)
 - [Lifecycle](#lifecycle)
 - [The rules](#the-rules)
+  - [Every event has exactly one event handler](#every-event-has-exactly-one-event-handler)
+  - [Declare a screen's events as one sealed type](#declare-a-screens-events-as-one-sealed-type)
+  - [A view model routes a sealed type that holds exactly the events it handles](#a-view-model-routes-a-sealed-type-that-holds-exactly-the-events-it-handles)
+  - [Keep the state immutable](#keep-the-state-immutable)
+  - [An event handler holds no state of the screen](#an-event-handler-holds-no-state-of-the-screen)
+  - [The UI never gets the store](#the-ui-never-gets-the-store)
+  - [Eventus knows nothing about a UI](#eventus-knows-nothing-about-a-ui)
 - [The words these docs use](#the-words-these-docs-use)
 - [Where to go next](#where-to-go-next)
 
@@ -79,10 +86,18 @@ class OnSaveClickHandler(
 
 ### Store
 
-The state and the effects of one screen, in one object: a `ScreenStore`. The router creates the store
-and hands it to every event handler. An event handler reads the state with `current`, changes it with
-`update` or `updateOptimistically`, and sends an effect with `emit`. The event handler receives the
-store and does not hold it, so an event handler keeps nothing between two events.
+Everything an event handler may do to its screen, in one object: a `ScreenStore`. The router creates
+the store and hands it to every event handler. Through the store, an event handler does three things:
+
+- **Changes the state.** It reads the state with `current` and changes it with `update` or
+  [`updateOptimistically`](updating-the-state-optimistically.md).
+- **Emits an effect**, with [`emit`](emitting-an-effect.md).
+- **Dispatches another event** of the same screen, with
+  [`dispatch`](dispatching-an-event-from-a-handler.md).
+
+The store holds the state and the effects. A dispatched event goes to the router that handed out the
+store. The event handler receives the store and does not hold it, so an event handler keeps nothing
+between two events.
 
 ### State
 
@@ -97,7 +112,7 @@ data class CounterUiState(val count: Int = 0) : UiState
 
 Something only the UI can do, once: show a message, navigate, vibrate. An effect implements
 `UiEffect`. The store delivers each effect once, to one collector, and keeps an effect until something
-collects it.
+collects it. See [emitting an effect](emitting-an-effect.md).
 
 ```kotlin
 sealed interface CounterEffect : UiEffect {
@@ -175,43 +190,54 @@ The rule is the same in every such case:
 
 > **Each view model routes a sealed type that holds exactly the events it handles.**
 
-The feature can still have one event type. Give each view model a sealed type inside it, including
-the view model that sits above the others:
+The feature can still have one event type.
 
-```kotlin
-sealed interface TasksEvent : UiEvent {
+> [!TIP]
+> **Do:** give each view model a sealed type inside the feature's event type, including the view
+> model that sits above the others.
+>
+> ```kotlin
+> sealed interface TasksEvent : UiEvent {
+>
+>     sealed interface List : TasksEvent {
+>
+>         data object OnRefresh : List
+>     }
+>
+>     sealed interface Editor : TasksEvent {
+>
+>         data object OnSaveClick : Editor
+>     }
+>
+>     sealed interface Feature : TasksEvent {
+>
+>         data object OnBackButtonClick : Feature
+>     }
+> }
+>
+> class ListViewModel(/* … */) : EventRouter<TasksEvent.List, ListUiState, ListEffect> by /* … */
+>
+> class EditorViewModel(/* … */) : EventRouter<TasksEvent.Editor, EditorUiState, EditorEffect> by /* … */
+>
+> class FeatureViewModel(/* … */) : EventRouter<TasksEvent.Feature, FeatureUiState, FeatureEffect> by /* … */
+> ```
 
-    sealed interface List : TasksEvent {
-        data object OnRefresh : List
-    }
-
-    sealed interface Editor : TasksEvent {
-        data object OnSaveClick : Editor
-    }
-
-    sealed interface Feature : TasksEvent {
-        data object OnBackButtonClick : Feature
-    }
-}
-
-class ListViewModel(/* … */) : EventRouter<TasksEvent.List, ListUiState, ListEffect> by /* … */
-class EditorViewModel(/* … */) : EventRouter<TasksEvent.Editor, EditorUiState, EditorEffect> by /* … */
-class FeatureViewModel(/* … */) : EventRouter<TasksEvent.Feature, FeatureUiState, FeatureEffect> by /* … */
-```
-
-Do not put an event directly under `TasksEvent` and have `FeatureViewModel` route `TasksEvent`:
-
-```kotlin
-sealed interface TasksEvent : UiEvent {
-    sealed interface List : TasksEvent { /* … */ }
-    sealed interface Editor : TasksEvent { /* … */ }
-
-    data object OnBackButtonClick : TasksEvent   // Wrong: it has no type of its own.
-}
-
-// Wrong: this view model accepts the events of the list and of the editor too.
-class FeatureViewModel(/* … */) : EventRouter<TasksEvent, FeatureUiState, FeatureEffect> by /* … */
-```
+> [!CAUTION]
+> **Don't:** put an event directly under `TasksEvent` and have `FeatureViewModel` route
+> `TasksEvent`. That view model accepts the events of the list and of the editor too.
+>
+> ```kotlin
+> sealed interface TasksEvent : UiEvent {
+>
+>     sealed interface List : TasksEvent { /* … */ }
+>
+>     sealed interface Editor : TasksEvent { /* … */ }
+>
+>     data object OnBackButtonClick : TasksEvent
+> }
+>
+> class FeatureViewModel(/* … */) : EventRouter<TasksEvent, FeatureUiState, FeatureEffect> by /* … */
+> ```
 
 A router accepts every event of its type. `TasksEvent.Editor.OnSaveClick` is a `TasksEvent`, so that
 `FeatureViewModel` would accept it, find no event handler for it, and throw.
@@ -260,21 +286,196 @@ feature](structuring-the-events-of-a-feature.md) for the event handlers and thei
 
 ## The rules
 
-- **Every event has exactly one event handler.** An event with none throws at runtime if sent, and
-  two event handlers for one event stop the router from being created. The optional
-  [build-time check](checking-and-wiring-event-handlers-at-build-time.md) finds both when you build.
-- **Declare a screen's events as one sealed type.** The router matches each event by its exact class,
-  so an event handler registered for a parent type does not receive the events of its subtypes.
-- **A view model routes a sealed type that holds exactly the events it handles.** See [several view
-  models in one feature](#several-view-models-in-one-feature).
-- **Keep the state immutable.** `store.update { it.copy(...) }` builds a new value. A value that was
-  changed in place (an item added to a list the state already holds) is equal to the old one, so the
-  store never emits it and the UI never sees the change.
-- **An event handler holds no state of the screen.** What must outlast one event goes in the store.
-- **The UI never gets the store.** The UI reads `state` and `effects` and calls `onEvent`. Only event
-  handlers, and the error handler, write to the store.
-- **Eventus knows nothing about a UI.** Nothing in the router starts or stops because a screen is
-  visible or hidden.
+### Every event has exactly one event handler
+
+An event with no event handler throws when it is sent, and two event handlers for one event stop the
+router from being created. The optional
+[build-time check](checking-and-wiring-event-handlers-at-build-time.md) finds both when you build.
+
+```kotlin
+sealed interface CounterEvent : UiEvent {
+
+    data object OnIncrementClick : CounterEvent
+
+    data object OnSaveClick : CounterEvent
+}
+
+// Two events, so two event handlers, and the router gets both.
+val handlers = listOf(OnIncrementClickHandler(), OnSaveClickHandler(counters))
+```
+
+Leave `OnSaveClickHandler` out of that list, and the first tap on Save throws:
+
+```text
+No handler registered for OnSaveClick
+```
+
+Put `OnIncrementClickHandler` in the list twice, and creating the router throws:
+
+```text
+Multiple handlers registered for OnIncrementClick: [OnIncrementClickHandler, OnIncrementClickHandler]
+```
+
+### Declare a screen's events as one sealed type
+
+The router matches each event by its exact class, so an event handler registered for a parent type
+does not receive the events of its subtypes.
+
+> [!TIP]
+> **Do:** write one event handler for each event of the sealed type.
+>
+> ```kotlin
+> class OnIncrementClickHandler : CounterHandler<OnIncrementClick> {
+>
+>     override val eventType = OnIncrementClick::class
+>
+>     override suspend fun handle(event: OnIncrementClick, store: CounterStore) { /* … */ }
+> }
+> ```
+
+> [!CAUTION]
+> **Don't:** register an event handler for the parent type. No event has the class `CounterEvent`
+> itself, so the router never calls it.
+>
+> ```kotlin
+> class AnyCounterEventHandler : CounterHandler<CounterEvent> {
+>
+>     override val eventType = CounterEvent::class
+>
+>     override suspend fun handle(event: CounterEvent, store: CounterStore) { /* … */ }
+> }
+> ```
+
+### A view model routes a sealed type that holds exactly the events it handles
+
+A router accepts every event of its type, so that type must not be wider than what the view model
+can handle.
+
+```kotlin
+sealed interface TasksEvent : UiEvent {
+
+    sealed interface List : TasksEvent { /* … */ }
+
+    sealed interface Editor : TasksEvent { /* … */ }
+}
+```
+
+> [!TIP]
+> **Do:** route the list's events and nothing else.
+>
+> ```kotlin
+> class ListViewModel(/* … */) : EventRouter<TasksEvent.List, ListUiState, ListEffect> by /* … */
+> ```
+
+> [!CAUTION]
+> **Don't:** route the whole feature's type. This view model would also accept the editor's events,
+> which it cannot handle.
+>
+> ```kotlin
+> class ListViewModel(/* … */) : EventRouter<TasksEvent, ListUiState, ListEffect> by /* … */
+> ```
+
+See [several view models in one feature](#several-view-models-in-one-feature).
+
+### Keep the state immutable
+
+`store.update { it.copy(...) }` builds a new value. A value that was changed in place is equal to the
+old one, so the store never emits it and the UI never sees the change.
+
+> [!TIP]
+> **Do:** keep a read-only list, and build a new state with a new list.
+>
+> ```kotlin
+> data class TaskListUiState(val tasks: List<Task> = emptyList()) : UiState
+>
+> store.update { it.copy(tasks = it.tasks + task) }
+> ```
+
+> [!CAUTION]
+> **Don't:** keep a list that can be changed in place. The state after the change is the same object
+> as before, so nothing is emitted.
+>
+> ```kotlin
+> data class TaskListUiState(val tasks: MutableList<Task> = mutableListOf()) : UiState
+>
+> store.update { state ->
+>     state.tasks.add(task)
+>
+>     state
+> }
+> ```
+
+### An event handler holds no state of the screen
+
+What must outlast one event goes in the store. A value kept in an event handler is invisible to the
+UI and to every other event handler.
+
+> [!TIP]
+> **Do:** keep the count in the state.
+>
+> ```kotlin
+> class OnIncrementClickHandler : CounterHandler<OnIncrementClick> {
+>
+>     override val eventType = OnIncrementClick::class
+>
+>     override suspend fun handle(event: OnIncrementClick, store: CounterStore) {
+>         store.update { it.copy(count = it.count + 1) }
+>     }
+> }
+> ```
+
+> [!CAUTION]
+> **Don't:** keep the count in the event handler.
+>
+> ```kotlin
+> class OnIncrementClickHandler : CounterHandler<OnIncrementClick> {
+>
+>     private var count = 0
+>
+>     override val eventType = OnIncrementClick::class
+>
+>     override suspend fun handle(event: OnIncrementClick, store: CounterStore) {
+>         count++
+>     }
+> }
+> ```
+
+An event handler does hold its dependencies, such as a repository. Those are not state of the screen.
+
+### The UI never gets the store
+
+The UI reads `state` and `effects` and calls `onEvent`. Only event handlers, and the error handler,
+write to the store.
+
+```kotlin
+// Everything a screen needs: the state to draw, and a way to send events.
+@Composable
+fun CounterScreen(state: CounterUiState, onEvent: (CounterEvent) -> Unit) {
+    Button(
+        onClick = { onEvent(OnIncrementClick) },
+    ) {
+        Text("Count: ${state.count}")
+    }
+}
+```
+
+### Eventus knows nothing about a UI
+
+Nothing in the router starts or stops because a screen is visible or hidden. Work is tied to the
+router's scope, which for a view model ends when the view model is cleared.
+
+```kotlin
+class ChatViewModel(/* … */) : ViewModel(scope), EventRouter<ChatEvent, ChatUiState, ChatEffect> by /* … */ {
+
+    init {
+        // Runs for as long as the view model lives, whether the screen is visible or not.
+        onEvent(ChatEvent.OnScreenOpened)
+    }
+}
+```
+
+To stop costly work while the screen is hidden, the UI sends an event of your own; see
+[keeping work running](keeping-work-running.md).
 
 ## The words these docs use
 

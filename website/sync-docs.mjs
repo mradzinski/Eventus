@@ -32,10 +32,56 @@ function withSiteLinks(text) {
     .replace(/\]\(([^)/]+\.puml)\)/g, (_, file) => `](${repository}docs/${file})`)
 }
 
+/** What a GitHub alert becomes on the site: the kind of box, and its title when the text names none. */
+const boxes = {
+  NOTE: ['note', 'Note'],
+  TIP: ['tip', 'Tip'],
+  IMPORTANT: ['info', 'Important'],
+  WARNING: ['warning', 'Warning'],
+  CAUTION: ['danger', 'Caution'],
+}
+
+/**
+ * Turns GitHub's alerts ("> [!TIP]" and the quoted lines after it) into the site's own boxes. An alert
+ * that opens with "**Do:**" or "**Don't:**" becomes a box with that title, green or red.
+ */
+function withBoxes(text) {
+  const lines = text.split('\n')
+  const out = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const start = lines[i].match(/^> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$/)
+
+    if (!start) {
+      out.push(lines[i])
+      continue
+    }
+
+    const body = []
+
+    while (i + 1 < lines.length && lines[i + 1].startsWith('>')) {
+      i++
+      body.push(lines[i].replace(/^> ?/, ''))
+    }
+
+    let [kind, title] = boxes[start[1]]
+    const named = body[0]?.match(/^\*\*(Do|Don't):\*\* (.*)$/)
+
+    if (named) {
+      title = named[1]
+      body[0] = named[2].charAt(0).toUpperCase() + named[2].slice(1)
+    }
+
+    out.push(`:::${kind}[${title}]`, '', ...body, '', ':::')
+  }
+
+  return out.join('\n')
+}
+
 function page(text) {
   const withoutBackLink = text.replace(/\n---\n\n\[Back to the README\]\([^)]*\)\s*$/, '\n')
 
-  return withSiteLinks(withoutSection(withoutBackLink, 'Contents'))
+  return withBoxes(withSiteLinks(withoutSection(withoutBackLink, 'Contents')))
 }
 
 function firstPage(text) {

@@ -7,10 +7,24 @@ What changed in each version of Eventus, newest first. Versions follow
 
 ### Added
 
+- **An event handler can dispatch another event.** `store.dispatch(OnCartRefresh)` hands an event of
+  the same screen to the router, from an event handler or from the screen's `ErrorHandler`. The event is
+  handled like any other: by its own event handler, under its own dispatch strategy, with its own
+  reports. `dispatch` returns the `Job` that handles the event, so `store.dispatch(…).join()` waits
+  for it. See [dispatching an event from a handler](docs/dispatching-an-event-from-a-handler.md).
+
 - **Effects in the router's reports.** A router with an `observer` now reports each effect at the
   moment it is emitted, with the event it came from: `#3 OnSaveClick emitted Close`. That includes
   an effect the screen's `ErrorHandler` emits for a failed event. The UI still gets every effect.
   See [logging events](docs/logging-events.md).
+
+- **`eventus-test`, a new artifact for testing event handlers.** One function,
+  `runEventHandlerTest`, runs one event handler or several through a router inside a coroutine test.
+  In its block a test dispatches events with `dispatch`, moves the clock with `advanceBy`, waits for
+  work on another thread with `awaitIdle`, and reads `state`, `states`, `effects`, `reports` and `failures`.
+  A failure the test never reads fails the test, and a test that runs out of time names the events
+  still being handled. It depends on `kotlinx-coroutines-test` only and works beside any other
+  testing tool. See [testing](docs/testing.md).
 
 - **A build error for an event handler that Metro would leave out.** With
   `@ContributesEventHandlers`, a handler that implements `EventHandler` directly, and not the
@@ -18,6 +32,12 @@ What changed in each version of Eventus, newest first. Versions follow
   threw when that event was sent.
 
 ### Changed
+
+- **`ErrorHandler.handle` is a suspending function.** An error handler can now wait, for example for
+  an event it dispatched: `store.dispatch(OnSignOut).join()`. A class that implements `ErrorHandler` must add
+  `suspend` to its `handle`; an error handler written as a lambda needs no change. The error handler
+  runs in the coroutine of the event that failed, so that event stays active until it returns. An
+  error handler that throws fails in the router's scope as an uncaught error.
 
 - `RouterTrace` has a new report, `EffectEmitted`. A `when` that lists every report and has no
   `else` no longer compiles until it lists the new one. A one-line observer, such as

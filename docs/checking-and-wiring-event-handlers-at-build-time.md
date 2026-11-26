@@ -62,7 +62,7 @@ Add the annotation to the Gradle module's common dependencies:
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc02")
+    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc03")
 }
 ```
 
@@ -132,7 +132,7 @@ Add the annotation to the dependencies of the Gradle module, next to Metro's own
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-metro:1.0.0-rc02")
+    implementation("io.github.mradzinski:eventus-metro:1.0.0-rc03")
 }
 ```
 

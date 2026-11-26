@@ -73,8 +73,31 @@ override suspend fun handle(event: OnTaskDoneChange, store: TaskListStore) {
 }
 ```
 
-Do not use `updateOptimistically` here. The observing handler replaces that part of the state every
-time the repository emits, so it would overwrite the optimistic value in the middle of the save.
+> [!TIP]
+> **Do:** let the repository show the change, and have the event handler only ask for it.
+>
+> ```kotlin
+> override suspend fun handle(event: OnTaskDoneChange, store: TaskListStore) {
+>     tasks.setDone(id = event.taskId, done = event.done)
+> }
+> ```
+
+> [!CAUTION]
+> **Don't:** use `updateOptimistically` for data the screen observes. The observing event handler
+> replaces that part of the state every time the repository emits, so it overwrites the optimistic
+> value in the middle of the save.
+>
+> ```kotlin
+> override suspend fun handle(event: OnTaskDoneChange, store: TaskListStore) {
+>     store.updateOptimistically(
+>         stateUpdate = { it.withDone(event.taskId, event.done) },
+>         stateIfFailed = { it.withDone(event.taskId, !event.done) },
+>     ) {
+>         tasks.setDone(id = event.taskId, done = event.done)
+>     }
+> }
+> ```
+
 Keeping one owner also gives one place to order, or merge, several writes to the same item.
 
 The sample does both: the list's checkboxes go through the repository, and the editor's "Done" box,

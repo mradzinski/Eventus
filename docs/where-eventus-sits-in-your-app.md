@@ -12,6 +12,30 @@ Eventus belongs to the presentation layer and nowhere else.
   that presentation logic has leaked downward.
 - **The UI depends on the router interface only**: `state`, `effects`, `onEvent`.
 
+A repository says what it does and knows nothing about a screen:
+
+> [!TIP]
+> **Do:** keep Eventus out of the repository. The event handler calls it and writes the result to
+> the store.
+>
+> ```kotlin
+> interface TaskRepository {
+>
+>     suspend fun setDone(id: Long, done: Boolean)
+> }
+> ```
+
+> [!CAUTION]
+> **Don't:** hand the store to a repository. The repository would then decide what a screen shows,
+> and the domain layer would depend on Eventus.
+>
+> ```kotlin
+> interface TaskRepository {
+>
+>     suspend fun setDone(id: Long, done: Boolean, store: ScreenStore<TaskListUiState, TaskListEffect>)
+> }
+> ```
+
 You do not need a use-case layer to use Eventus: a handler already gives an operation a name, a file
 and a test. Add a use case when the same orchestration appears in a third handler, or when something
 that is not a screen (a widget, a background job) needs it too.

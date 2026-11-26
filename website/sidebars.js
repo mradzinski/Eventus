@@ -22,8 +22,10 @@ const sidebars = {
       items: [
         'choosing-a-dispatch-strategy',
         'handling-failures',
+        'emitting-an-effect',
         'choosing-between-an-effect-and-state',
         'updating-the-state-optimistically',
+        'dispatching-an-event-from-a-handler',
         'debouncing',
         'keeping-work-running',
         'navigating',

@@ -45,3 +45,52 @@ html[data-theme='dark'] {
 .navbar__logo {
   height: 1.9rem;
 }
+
+/*
+ * "Do" and "Don't" boxes: the green and the red box, with a check and a cross in place of the theme's
+ * light bulb and flame.
+ */
+.theme-admonition-tip [class*='admonitionIcon'] svg,
+.theme-admonition-danger [class*='admonitionIcon'] svg {
+  display: none;
+}
+
+.theme-admonition-tip [class*='admonitionIcon']::before {
+  content: '✓';
+  font-weight: 700;
+}
+
+.theme-admonition-danger [class*='admonitionIcon']::before {
+  content: '✕';
+  font-weight: 700;
+}
+
+.theme-admonition [class*='admonitionHeading'] {
+  text-transform: none;
+}
+
+
+/* The two boxes in soft colors: a light tint behind the text, and the strong color only on the edge. */
+.theme-admonition-tip {
+  --ifm-alert-background-color: #ecfdf5;
+  --ifm-alert-background-color-highlight: rgba(52, 211, 153, 0.18);
+  --ifm-alert-border-color: #34d399;
+  --ifm-alert-foreground-color: #064e3b;
+}
+
+.theme-admonition-danger {
+  --ifm-alert-background-color: #fef2f2;
+  --ifm-alert-background-color-highlight: rgba(248, 113, 113, 0.18);
+  --ifm-alert-border-color: #f87171;
+  --ifm-alert-foreground-color: #7f1d1d;
+}
+
+html[data-theme='dark'] .theme-admonition-tip {
+  --ifm-alert-background-color: rgba(52, 211, 153, 0.1);
+  --ifm-alert-foreground-color: #d1fae5;
+}
+
+html[data-theme='dark'] .theme-admonition-danger {
+  --ifm-alert-background-color: rgba(248, 113, 113, 0.1);
+  --ifm-alert-foreground-color: #fee2e2;
+}

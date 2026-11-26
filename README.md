@@ -26,6 +26,7 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 | 🔄 | **Survives a rotation** | Lives as long as your view model. Effects wait for the screen. |
 | 📦 | **Two small dependencies** | `kotlinx.coroutines` and `atomicfu`. No Compose, no lifecycle. |
 | 🧵 | **Thread-safe** | Send events from any thread. |
+| 🧪 | **Tests in one call** | Send events, then read the states, effects and failures. |
 | 🧰 | **Optional extras** | A build-time check, generated Koin or Metro wiring, Compose helpers. |
 
 ## Contents
@@ -60,13 +61,21 @@ one-time effects come back as flows. It runs on **Android, iOS, Desktop and Web*
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.mradzinski:eventus:1.0.0-rc02")
+            // Eventus Core dependency
+            implementation("io.github.mradzinski:eventus:1.0.0-rc03")
+        }
+        commonTest.dependencies {
+            // Eventus Test dependency
+            implementation("io.github.mradzinski:eventus-test:1.0.0-rc03")
         }
     }
 }
 ```
 
-The library needs nothing else. The steps below are optional, and the first one is recommended.
+`eventus` is the library. `eventus-test` tests your event handlers in one call. See
+[Testing](docs/testing.md).
+
+The steps below are optional, and the first one is recommended.
 
 ### Recommended: adding the build-time check
 
@@ -83,15 +92,15 @@ plugins {
 }
 
 dependencies {
-    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
-    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
-    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
-    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc02")
+    add("kspAndroid", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
+    add("kspJvm", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
+    add("kspIosArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
+    add("kspIosSimulatorArm64", "io.github.mradzinski:eventus-ksp:1.0.0-rc03")
 }
 ```
 
 A configuration is named after its target: `ksp` and the target's name with a capital first letter. In
-a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc02")`.
+a module with a single platform, the one line is `ksp("io.github.mradzinski:eventus-ksp:1.0.0-rc03")`.
 
 ### Optional: integration with Koin
 
@@ -101,7 +110,7 @@ module](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc02")
+    implementation("io.github.mradzinski:eventus-koin:1.0.0-rc03")
 }
 ```
 
@@ -113,7 +122,7 @@ bindings](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-th
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-metro:1.0.0-rc02")
+    implementation("io.github.mradzinski:eventus-metro:1.0.0-rc03")
 }
 ```
 
@@ -124,7 +133,7 @@ tells the router when the screen is visible. See [Using the Compose helpers](doc
 
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc02")
+    implementation("io.github.mradzinski:eventus-compose:1.0.0-rc03")
 }
 ```
 
@@ -288,11 +297,13 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | [Using the Compose helpers](docs/using-the-compose-helpers.md) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |
 | [Handling failures](docs/handling-failures.md) | Where an event handler's exception goes, and how to turn it into something the UI can show. |
 | [Keeping work running](docs/keeping-work-running.md) | Event handlers that never return, such as one that collects a flow, and how long they last. |
-| [Testing](docs/testing.md) | Testing an event handler, a view model, and that every event has a handler. |
+| [Testing](docs/testing.md) | The `eventus-test` artifact: testing event handlers in one call, failures, waits, work on another thread, and a view model. |
+| [Emitting an effect](docs/emitting-an-effect.md) | Asking the UI to do something once, from an event handler or an error handler, and what the store guarantees. |
 | [Choosing between an effect and state](docs/choosing-between-an-effect-and-state.md) | How to decide whether something is an effect or part of the state. |
 | [Navigating](docs/navigating.md) | Navigating as an effect that carries only an id. |
 | [Debouncing](docs/debouncing.md) | Waiting until the user has stopped typing before doing the expensive part. |
 | [Updating the state optimistically](docs/updating-the-state-optimistically.md) | Showing a result at once and putting it back if the work fails. |
+| [Dispatching an event from a handler](docs/dispatching-an-event-from-a-handler.md) | Starting a second event from an event handler or an error handler, and waiting for it. |
 | [Reaching another screen](docs/reaching-another-screen.md) | How one screen affects another without an event bus. |
 | [Choosing the coroutine scope](docs/choosing-the-coroutine-scope.md) | Which scope the router runs in, who cancels it, and threads. |
 | [Logging events](docs/logging-events.md) | Having the router report what it does with each event: ignored, replaced, waiting, started, the effects it emitted and how it ended. One line gives a log, and a test can check the reports. |

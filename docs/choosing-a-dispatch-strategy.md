@@ -430,6 +430,35 @@ override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnFeedLoad>()
   does not run, and the exception is not passed to the screen's `ErrorHandler`. It reaches the
   `CoroutineExceptionHandler` of the router's scope or, without one, the platform's handler for
   uncaught exceptions, which on Android stops the app.
+
+The second rule, for a refresh that must not run twice:
+
+> [!TIP]
+> **Do:** look for the event you mean.
+>
+> ```kotlin
+> override val strategy = DispatchStrategy<OnRefresh> { _, active ->
+>     if (active.any { it is OnRefresh }) {
+>         Dispatch.Ignore
+>     } else {
+>         Dispatch.Run
+>     }
+> }
+> ```
+
+> [!CAUTION]
+> **Don't:** test whether anything is active. The event handler that observes the feed is always in
+> the list, so this refresh would never run.
+>
+> ```kotlin
+> override val strategy = DispatchStrategy<OnRefresh> { _, active ->
+>     if (active.isNotEmpty()) {
+>         Dispatch.Ignore
+>     } else {
+>         Dispatch.Run
+>     }
+> }
+> ```
 - **The router finds events by equality.** Naming an event in `Replace` or `WaitFor` names every
   active event that is equal to it.
 
