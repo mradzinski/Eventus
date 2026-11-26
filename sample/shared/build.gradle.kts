@@ -60,6 +60,8 @@ kotlin {
         }
 
         commonTest.dependencies {
+            // The event handler tests: `runEventHandlerTest`.
+            implementation(projects.eventusTest)
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.kotest.assertions.core)

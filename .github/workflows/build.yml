@@ -89,12 +89,17 @@ jobs:
       - name: Test the Compose helpers
         run: ./gradlew :eventus-compose:koverVerify :eventus-compose:koverXmlReport
 
-      # All three reports, so the coverage Codecov shows is that of the library, the processor and the
-      # Compose helpers together. eventus-koin and eventus-metro hold one annotation each and no code to cover.
+      # The test helper's own tests on desktop and on Android, and its coverage limit.
+      - name: Test the test helper
+        run: ./gradlew :eventus-test:koverVerify :eventus-test:koverXmlReport
+
+      # All four reports, so the coverage Codecov shows is that of the library, the processor, the Compose
+      # helpers and the test helper together. eventus-koin and eventus-metro hold one annotation each and no
+      # code to cover.
       - name: Send the coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
-          files: eventus/build/reports/kover/report.xml,eventus-ksp/build/reports/kover/report.xml,eventus-compose/build/reports/kover/report.xml
+          files: eventus/build/reports/kover/report.xml,eventus-ksp/build/reports/kover/report.xml,eventus-compose/build/reports/kover/report.xml,eventus-test/build/reports/kover/report.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
 
@@ -142,6 +147,10 @@ jobs:
       # drawing engine Compose needs is not loaded in that target's test page.
       - name: Test the Compose helpers in the browser
         run: ./gradlew :eventus-compose:wasmJsBrowserTest :eventus-compose:compileKotlinJs
+
+      # The test helper's own tests in headless Chrome, on Wasm and on JavaScript.
+      - name: Test the test helper in the browser
+        run: ./gradlew :eventus-test:wasmJsBrowserTest :eventus-test:jsBrowserTest
 
       - name: Keep the test reports of a failed run
         if: failure()
@@ -211,6 +220,10 @@ jobs:
       # The Compose helpers' tests on the iOS simulator, and their public API against the record.
       - name: Test the Compose helpers on the iOS simulator and check their public API
         run: ./gradlew :eventus-compose:iosSimulatorArm64Test :eventus-compose:checkKotlinAbi
+
+      # The test helper's own tests on the iOS simulator, and its public API against the record.
+      - name: Test the test helper on the iOS simulator and check its public API
+        run: ./gradlew :eventus-test:iosSimulatorArm64Test :eventus-test:checkKotlinAbi
 
       - name: Keep the test reports of a failed run
         if: failure()

@@ -1,86 +1,81 @@
 package io.github.mradzinski.eventus.sample.presentation.taskeditor.handlers
 
-import app.cash.turbine.test
 import io.github.mradzinski.eventus.sample.data.OfflineException
 import io.github.mradzinski.eventus.sample.fake.FakeTaskRepository
 import io.github.mradzinski.eventus.sample.fake.task
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorEffect
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorEvent.OnSaveClick
-import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorStore
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorUiState
-import io.kotest.assertions.throwables.shouldThrow
+import io.github.mradzinski.eventus.test.runEventHandlerTest
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.test.Test
-import kotlinx.coroutines.test.runTest
 
 class OnSaveClickHandlerTest {
 
     private val tasks = FakeTaskRepository()
-    private val handler = OnSaveClickHandler(tasks)
 
     @Test
-    fun `it saves the trimmed form and asks to close the editor`() = runTest {
-        val store = TaskEditorStore(TaskEditorUiState.Editing(taskId = 7L, title = " Dentist ", notes = " Morning "))
-
-        handler.handle(OnSaveClick, store)
+    fun `it saves the trimmed form and asks to close the editor`() = runEventHandlerTest(
+        handler = OnSaveClickHandler(tasks),
+        initialState = TaskEditorUiState.Editing(taskId = 7L, title = " Dentist ", notes = " Morning "),
+    ) {
+        dispatch(OnSaveClick)
 
         tasks.tasks.value shouldContainExactly listOf(task(id = 7L, title = "Dentist", notes = "Morning"))
-        store.effects.test {
-            awaitItem() shouldBe TaskEditorEffect.Close
-        }
+        effects shouldContainExactly listOf(TaskEditorEffect.Close)
     }
 
     @Test
-    fun `it shows progress only while it saves`() = runTest {
-        val store = TaskEditorStore(TaskEditorUiState.Editing(taskId = null, title = "Dentist"))
+    fun `it shows progress only while it saves`() = runEventHandlerTest(
+        handler = OnSaveClickHandler(tasks),
+        initialState = TaskEditorUiState.Editing(taskId = null, title = "Dentist"),
+    ) {
+        dispatch(OnSaveClick)
 
-        store.state.test {
-            awaitItem() shouldBe TaskEditorUiState.Editing(taskId = null, title = "Dentist", saving = false)
-
-            handler.handle(OnSaveClick, store)
-
-            awaitItem() shouldBe TaskEditorUiState.Editing(taskId = null, title = "Dentist", saving = true)
-            awaitItem() shouldBe TaskEditorUiState.Editing(taskId = null, title = "Dentist", saving = false)
-        }
+        states shouldContainExactly listOf(
+            TaskEditorUiState.Editing(taskId = null, title = "Dentist", saving = false),
+            TaskEditorUiState.Editing(taskId = null, title = "Dentist", saving = true),
+            TaskEditorUiState.Editing(taskId = null, title = "Dentist", saving = false),
+        )
     }
 
     @Test
-    fun `without a title it warns and saves nothing`() = runTest {
-        val store = TaskEditorStore(TaskEditorUiState.Editing(taskId = null, title = "  "))
+    fun `without a title it warns and saves nothing`() = runEventHandlerTest(
+        handler = OnSaveClickHandler(tasks),
+        initialState = TaskEditorUiState.Editing(taskId = null, title = "  "),
+    ) {
+        dispatch(OnSaveClick)
 
-        handler.handle(OnSaveClick, store)
-
-        store.current shouldBe TaskEditorUiState.Editing(taskId = null, title = "  ", titleMissing = true)
+        state shouldBe TaskEditorUiState.Editing(taskId = null, title = "  ", titleMissing = true)
         tasks.tasks.value.shouldBeEmpty()
-        store.effects.test {
-            expectNoEvents()
-        }
+        effects.shouldBeEmpty()
     }
 
     @Test
-    fun `a save that fails throws and leaves the form open as it was`() = runTest {
-        val form = TaskEditorUiState.Editing(taskId = null, title = "Dentist")
-        val store = TaskEditorStore(form)
-
+    fun `a save that fails leaves the form open as it was`() = runEventHandlerTest(
+        handler = OnSaveClickHandler(tasks),
+        initialState = TaskEditorUiState.Editing(taskId = null, title = "Dentist"),
+    ) {
         tasks.failure = OfflineException()
 
-        shouldThrow<OfflineException> { handler.handle(OnSaveClick, store) }
+        dispatch(OnSaveClick)
 
-        store.current shouldBe form
-        store.effects.test {
-            expectNoEvents()
-        }
+        failures.single().shouldBeInstanceOf<OfflineException>()
+        state shouldBe TaskEditorUiState.Editing(taskId = null, title = "Dentist")
+        effects.shouldBeEmpty()
     }
 
     @Test
-    fun `it does nothing while the form is not shown`() = runTest {
-        val store = TaskEditorStore(TaskEditorUiState.Loading)
+    fun `it does nothing while the form is not shown`() = runEventHandlerTest(
+        handler = OnSaveClickHandler(tasks),
+        initialState = TaskEditorUiState.Loading,
+    ) {
+        dispatch(OnSaveClick)
 
-        handler.handle(OnSaveClick, store)
-
-        store.current shouldBe TaskEditorUiState.Loading
+        state shouldBe TaskEditorUiState.Loading
         tasks.tasks.value.shouldBeEmpty()
     }
 }

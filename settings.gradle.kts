@@ -32,6 +32,8 @@ include(":eventus-metro")
 include(":eventus-ksp")
 // Optional helpers for a Compose UI: collecting effects, and telling the router the screen is visible.
 include(":eventus-compose")
+// Optional helper for an app's tests: runs event handlers through a router inside a coroutine test.
+include(":eventus-test")
 
 // Sample apps: one shared module with the two demo screens, and one entry-point module per platform.
 // The iOS entry point is the Xcode project in sample/iosApp, which is not a Gradle module.

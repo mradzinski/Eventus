@@ -5,45 +5,54 @@ import io.github.mradzinski.eventus.sample.fake.FakeTaskRepository
 import io.github.mradzinski.eventus.sample.fake.task
 import io.github.mradzinski.eventus.sample.presentation.common.FailureReason
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorEvent.OnScreenOpened
-import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorStore
 import io.github.mradzinski.eventus.sample.presentation.taskeditor.TaskEditorUiState
+import io.github.mradzinski.eventus.test.runEventHandlerTest
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlinx.coroutines.test.runTest
 
 class OnScreenOpenedHandlerTest {
 
     private val tasks = FakeTaskRepository(initial = listOf(task(id = 1L, title = "Dentist", notes = "Morning")))
-    private val store = TaskEditorStore(TaskEditorUiState.Loading)
-    private val handler = OnScreenOpenedHandler(tasks)
 
     @Test
-    fun `without an id it shows an empty form for a new task`() = runTest {
-        handler.handle(OnScreenOpened(taskId = null), store)
+    fun `without an id it shows an empty form for a new task`() = runEventHandlerTest(
+        handler = OnScreenOpenedHandler(tasks),
+        initialState = TaskEditorUiState.Loading,
+    ) {
+        dispatch(OnScreenOpened(taskId = null))
 
-        store.current shouldBe TaskEditorUiState.Editing(taskId = null)
+        state shouldBe TaskEditorUiState.Editing(taskId = null)
     }
 
     @Test
-    fun `with an id it shows that task in the form`() = runTest {
-        handler.handle(OnScreenOpened(taskId = 1L), store)
+    fun `with an id it shows that task in the form`() = runEventHandlerTest(
+        handler = OnScreenOpenedHandler(tasks),
+        initialState = TaskEditorUiState.Loading,
+    ) {
+        dispatch(OnScreenOpened(taskId = 1L))
 
-        store.current shouldBe TaskEditorUiState.Editing(taskId = 1L, title = "Dentist", notes = "Morning")
+        state shouldBe TaskEditorUiState.Editing(taskId = 1L, title = "Dentist", notes = "Morning")
     }
 
     @Test
-    fun `a task that does not exist becomes a failed load`() = runTest {
-        handler.handle(OnScreenOpened(taskId = 9L), store)
+    fun `a task that does not exist becomes a failed load`() = runEventHandlerTest(
+        handler = OnScreenOpenedHandler(tasks),
+        initialState = TaskEditorUiState.Loading,
+    ) {
+        dispatch(OnScreenOpened(taskId = 9L))
 
-        store.current shouldBe TaskEditorUiState.LoadFailed(taskId = 9L, reason = FailureReason.NotFound)
+        state shouldBe TaskEditorUiState.LoadFailed(taskId = 9L, reason = FailureReason.NotFound)
     }
 
     @Test
-    fun `a load while offline becomes a failed load`() = runTest {
+    fun `a load while offline becomes a failed load`() = runEventHandlerTest(
+        handler = OnScreenOpenedHandler(tasks),
+        initialState = TaskEditorUiState.Loading,
+    ) {
         tasks.failure = OfflineException()
 
-        handler.handle(OnScreenOpened(taskId = 1L), store)
+        dispatch(OnScreenOpened(taskId = 1L))
 
-        store.current shouldBe TaskEditorUiState.LoadFailed(taskId = 1L, reason = FailureReason.Offline)
+        state shouldBe TaskEditorUiState.LoadFailed(taskId = 1L, reason = FailureReason.Offline)
     }
 }

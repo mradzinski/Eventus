@@ -1,0 +1,20 @@
+public final class io/github/mradzinski/eventus/test/EventHandlerTest {
+	public final fun advanceBy-LRDsOJo (J)V
+	public final fun awaitIdle (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun dispatch ([Lio/github/mradzinski/eventus/UiEvent;)V
+	public final fun getEffects ()Ljava/util/List;
+	public final fun getFailures ()Ljava/util/List;
+	public final fun getReports ()Ljava/util/List;
+	public final fun getRouter ()Lio/github/mradzinski/eventus/EventRouter;
+	public final fun getState ()Lio/github/mradzinski/eventus/UiState;
+	public final fun getStates ()Ljava/util/List;
+	public final fun getTestScope ()Lkotlinx/coroutines/test/TestScope;
+}
+
+public final class io/github/mradzinski/eventus/test/RunEventHandlerTestKt {
+	public static final fun runEventHandlerTest-zkXUZaI (Lio/github/mradzinski/eventus/EventHandler;Lio/github/mradzinski/eventus/UiState;Lio/github/mradzinski/eventus/ErrorHandler;JLkotlin/jvm/functions/Function2;)V
+	public static final fun runEventHandlerTest-zkXUZaI (Ljava/util/Collection;Lio/github/mradzinski/eventus/UiState;Lio/github/mradzinski/eventus/ErrorHandler;JLkotlin/jvm/functions/Function2;)V
+	public static synthetic fun runEventHandlerTest-zkXUZaI$default (Lio/github/mradzinski/eventus/EventHandler;Lio/github/mradzinski/eventus/UiState;Lio/github/mradzinski/eventus/ErrorHandler;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static synthetic fun runEventHandlerTest-zkXUZaI$default (Ljava/util/Collection;Lio/github/mradzinski/eventus/UiState;Lio/github/mradzinski/eventus/ErrorHandler;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+}
+

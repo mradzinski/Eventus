@@ -5,32 +5,38 @@ import io.github.mradzinski.eventus.sample.data.OfflineException
 import io.github.mradzinski.eventus.sample.fake.FakeTaskRepository
 import io.github.mradzinski.eventus.sample.fake.task
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListEvent.OnTaskDoneChange
-import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListStore
 import io.github.mradzinski.eventus.sample.presentation.tasklist.TaskListUiState
-import io.kotest.assertions.throwables.shouldThrow
+import io.github.mradzinski.eventus.test.runEventHandlerTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.test.Test
-import kotlinx.coroutines.test.runTest
 
 class OnTaskDoneChangeHandlerTest {
 
     private val tasks = FakeTaskRepository(initial = listOf(task(id = 1L), task(id = 2L)))
-    private val store = TaskListStore(TaskListUiState())
     private val handler = OnTaskDoneChangeHandler(tasks)
 
     @Test
-    fun `it marks only that task as done`() = runTest {
-        handler.handle(OnTaskDoneChange(taskId = 2L, done = true), store)
+    fun `it marks only that task as done`() = runEventHandlerTest(
+        handler = handler,
+        initialState = TaskListUiState(),
+    ) {
+        dispatch(OnTaskDoneChange(taskId = 2L, done = true))
 
         tasks.tasks.value shouldContainExactly listOf(task(id = 1L), task(id = 2L, done = true))
     }
 
     @Test
-    fun `a change that cannot be saved throws so the view model can say why`() = runTest {
+    fun `a change that cannot be saved fails so the error handler can say why`() = runEventHandlerTest(
+        handler = handler,
+        initialState = TaskListUiState(),
+    ) {
         tasks.failure = OfflineException()
 
-        shouldThrow<OfflineException> { handler.handle(OnTaskDoneChange(taskId = 2L, done = true), store) }
+        dispatch(OnTaskDoneChange(taskId = 2L, done = true))
+
+        failures.single().shouldBeInstanceOf<OfflineException>()
     }
 
     @Test

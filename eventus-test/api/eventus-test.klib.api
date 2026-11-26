@@ -1,0 +1,41 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, wasmJs]
+// Alias: ios => [iosArm64, iosSimulatorArm64, iosX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <eventus-root:eventus-test>
+final class <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus.test/EventHandlerTest { // io.github.mradzinski.eventus.test/EventHandlerTest|null[0]
+    final val effects // io.github.mradzinski.eventus.test/EventHandlerTest.effects|{}effects[0]
+        final fun <get-effects>(): kotlin.collections/List<#C> // io.github.mradzinski.eventus.test/EventHandlerTest.effects.<get-effects>|<get-effects>(){}[0]
+    final val failures // io.github.mradzinski.eventus.test/EventHandlerTest.failures|{}failures[0]
+        final fun <get-failures>(): kotlin.collections/List<kotlin/Throwable> // io.github.mradzinski.eventus.test/EventHandlerTest.failures.<get-failures>|<get-failures>(){}[0]
+    final val reports // io.github.mradzinski.eventus.test/EventHandlerTest.reports|{}reports[0]
+        final fun <get-reports>(): kotlin.collections/List<io.github.mradzinski.eventus/RouterTrace<#A>> // io.github.mradzinski.eventus.test/EventHandlerTest.reports.<get-reports>|<get-reports>(){}[0]
+    final val router // io.github.mradzinski.eventus.test/EventHandlerTest.router|{}router[0]
+        final fun <get-router>(): io.github.mradzinski.eventus/EventRouter<#A, #B, #C> // io.github.mradzinski.eventus.test/EventHandlerTest.router.<get-router>|<get-router>(){}[0]
+    final val state // io.github.mradzinski.eventus.test/EventHandlerTest.state|{}state[0]
+        final fun <get-state>(): #B // io.github.mradzinski.eventus.test/EventHandlerTest.state.<get-state>|<get-state>(){}[0]
+    final val states // io.github.mradzinski.eventus.test/EventHandlerTest.states|{}states[0]
+        final fun <get-states>(): kotlin.collections/List<#B> // io.github.mradzinski.eventus.test/EventHandlerTest.states.<get-states>|<get-states>(){}[0]
+    final val testScope // io.github.mradzinski.eventus.test/EventHandlerTest.testScope|{}testScope[0]
+        final fun <get-testScope>(): kotlinx.coroutines.test/TestScope // io.github.mradzinski.eventus.test/EventHandlerTest.testScope.<get-testScope>|<get-testScope>(){}[0]
+
+    final fun advanceBy(kotlin.time/Duration) // io.github.mradzinski.eventus.test/EventHandlerTest.advanceBy|advanceBy(kotlin.time.Duration){}[0]
+    final fun dispatch(kotlin/Array<out #A>...) // io.github.mradzinski.eventus.test/EventHandlerTest.dispatch|dispatch(kotlin.Array<out|1:0>...){}[0]
+    final suspend fun awaitIdle() // io.github.mradzinski.eventus.test/EventHandlerTest.awaitIdle|awaitIdle(){}[0]
+}
+
+// Targets: [ios]
+final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus.test/runEventHandlerTest(io.github.mradzinski.eventus/EventHandler<#A, #B, #C>, #B, io.github.mradzinski.eventus/ErrorHandler<in #A, #B, #C>? = ..., kotlin.time/Duration = ..., kotlin.coroutines/SuspendFunction1<io.github.mradzinski.eventus.test/EventHandlerTest<#A, #B, #C>, kotlin/Unit>) // io.github.mradzinski.eventus.test/runEventHandlerTest|runEventHandlerTest(io.github.mradzinski.eventus.EventHandler<0:0,0:1,0:2>;0:1;io.github.mradzinski.eventus.ErrorHandler<in|0:0,0:1,0:2>?;kotlin.time.Duration;kotlin.coroutines.SuspendFunction1<io.github.mradzinski.eventus.test.EventHandlerTest<0:0,0:1,0:2>,kotlin.Unit>){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]
+
+// Targets: [ios]
+final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus.test/runEventHandlerTest(kotlin.collections/Collection<io.github.mradzinski.eventus/EventHandler<out #A, #B, #C>>, #B, io.github.mradzinski.eventus/ErrorHandler<in #A, #B, #C>? = ..., kotlin.time/Duration = ..., kotlin.coroutines/SuspendFunction1<io.github.mradzinski.eventus.test/EventHandlerTest<#A, #B, #C>, kotlin/Unit>) // io.github.mradzinski.eventus.test/runEventHandlerTest|runEventHandlerTest(kotlin.collections.Collection<io.github.mradzinski.eventus.EventHandler<out|0:0,0:1,0:2>>;0:1;io.github.mradzinski.eventus.ErrorHandler<in|0:0,0:1,0:2>?;kotlin.time.Duration;kotlin.coroutines.SuspendFunction1<io.github.mradzinski.eventus.test.EventHandlerTest<0:0,0:1,0:2>,kotlin.Unit>){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]
+
+// Targets: [js, wasmJs]
+final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus.test/runEventHandlerTest(io.github.mradzinski.eventus/EventHandler<#A, #B, #C>, #B, io.github.mradzinski.eventus/ErrorHandler<in #A, #B, #C>? = ..., kotlin.time/Duration = ..., kotlin.coroutines/SuspendFunction1<io.github.mradzinski.eventus.test/EventHandlerTest<#A, #B, #C>, kotlin/Unit>): kotlinx.coroutines.test.internal/JsPromiseInterfaceForTesting // io.github.mradzinski.eventus.test/runEventHandlerTest|runEventHandlerTest(io.github.mradzinski.eventus.EventHandler<0:0,0:1,0:2>;0:1;io.github.mradzinski.eventus.ErrorHandler<in|0:0,0:1,0:2>?;kotlin.time.Duration;kotlin.coroutines.SuspendFunction1<io.github.mradzinski.eventus.test.EventHandlerTest<0:0,0:1,0:2>,kotlin.Unit>){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]
+
+// Targets: [js, wasmJs]
+final fun <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus.test/runEventHandlerTest(kotlin.collections/Collection<io.github.mradzinski.eventus/EventHandler<out #A, #B, #C>>, #B, io.github.mradzinski.eventus/ErrorHandler<in #A, #B, #C>? = ..., kotlin.time/Duration = ..., kotlin.coroutines/SuspendFunction1<io.github.mradzinski.eventus.test/EventHandlerTest<#A, #B, #C>, kotlin/Unit>): kotlinx.coroutines.test.internal/JsPromiseInterfaceForTesting // io.github.mradzinski.eventus.test/runEventHandlerTest|runEventHandlerTest(kotlin.collections.Collection<io.github.mradzinski.eventus.EventHandler<out|0:0,0:1,0:2>>;0:1;io.github.mradzinski.eventus.ErrorHandler<in|0:0,0:1,0:2>?;kotlin.time.Duration;kotlin.coroutines.SuspendFunction1<io.github.mradzinski.eventus.test.EventHandlerTest<0:0,0:1,0:2>,kotlin.Unit>){0§<io.github.mradzinski.eventus.UiEvent>;1§<io.github.mradzinski.eventus.UiState>;2§<io.github.mradzinski.eventus.UiEffect>}[0]

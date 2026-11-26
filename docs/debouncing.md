@@ -44,30 +44,52 @@ store.update { it.copy(results = results) }
 Two things to get right:
 
 - **Update what the user sees before the `delay`, not after.** A text field shows the text held in
-  the state. If the handler waits before storing it, the field falls behind the keyboard and drops
-  characters. This is why debouncing is a line inside the handler and not a setting on it: the
+  the state. This is why debouncing is a line inside the handler and not a setting on it: the
   handler decides which part is immediate and which part waits.
 - **Use `Latest`, not the default.** With `Concurrent`, nothing cancels the earlier runs: every
   keystroke searches, just 300 ms late.
 
-In a test the wait costs nothing. `runTest` skips delays, so calling `handle` directly returns at once
-with the final state. To check both steps, collect `store.state` around the call:
+The first of the two, in code:
+
+> [!TIP]
+> **Do:** store the text first, then wait.
+>
+> ```kotlin
+> store.update { it.copy(query = event.query) }
+>
+> delay(300.milliseconds)
+> ```
+
+> [!CAUTION]
+> **Don't:** wait before storing the text. The field falls behind the keyboard and drops characters.
+>
+> ```kotlin
+> delay(300.milliseconds)
+>
+> store.update { it.copy(query = event.query) }
+> ```
+
+In a test the wait costs nothing, because the test moves its own clock. Check the state before the
+pause and after it:
 
 ```kotlin
 @Test
-fun `it shows the text at once and searches after the pause`() = runTest {
-    val store = ScreenStore<TaskListUiState, TaskListEffect>(TaskListUiState())
+fun `it shows the text at once and searches after the pause`() = runEventHandlerTest(
+    handler = OnSearchChangeHandler(tasks),
+    initialState = TaskListUiState(),
+) {
+    dispatch(OnSearchChange("den"))
 
-    store.state.test {   // Turbine
-        awaitItem()
+    state.query shouldBe "den"
+    state.results shouldBe emptyList()
 
-        handler.handle(OnSearchChange("den"), store)
+    advanceBy(300.milliseconds)
 
-        assertEquals("den", awaitItem().query)
-        assertEquals(listOf(dentist), awaitItem().results)
-    }
+    state.results shouldBe listOf(dentist)
 }
 ```
+
+See [testing an event handler that waits](testing.md#testing-an-event-handler-that-waits).
 
 For a button that must not act twice, debouncing is the wrong tool: it would make the first tap wait.
 Use `DropIfAlreadyRunning`, which runs the first tap at once and ignores the rest until it has

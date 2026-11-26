@@ -8,6 +8,7 @@
 | `eventus-metro/` | The `@ContributesEventHandlers` annotation, and nothing else. |
 | `eventus-ksp/` | The symbol processor: the event handler check, the generated Koin module and the generated Metro bindings. JVM only, as a build tool. |
 | `eventus-compose/` | The Compose helpers: `collectEffects` and `notifyVisibility`. |
+| `eventus-test/` | The test helper: `runEventHandlerTest`. |
 | `sample/shared/` | The sample app: a task list and a task editor, with navigation, Koin and tests. One module, layered by package, to keep it short. |
 | `sample/androidApp/`, `sample/desktopApp/` | Launchers. |
 | `integration/metro/` | Tests that run the generated Metro bindings through Metro's compiler plugin. Not published. |
@@ -36,7 +37,7 @@ tests need Chrome, and the iOS tests need a Mac with an iOS simulator:
 Run the checks of the optional artifacts:
 
 ```bash
-./gradlew :eventus-koin:check :eventus-metro:check :eventus-ksp:check :eventus-compose:check :integration:metro:check
+./gradlew :eventus-koin:check :eventus-metro:check :eventus-ksp:check :eventus-compose:check :eventus-test:check :integration:metro:check
 ```
 
 Format your changes before you send them. This applies the project's style, including its own rules
