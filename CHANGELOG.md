@@ -3,7 +3,7 @@
 What changed in each version of Eventus, newest first. Versions follow
 [semantic versioning](https://semver.org).
 
-## 1.0.0-rc03 (not released yet)
+## 1.0.0-rc03 (2026-11-26)
 
 ### Added
 
