@@ -12,7 +12,7 @@ package io.github.mradzinski.eventus
  *     private val logger: Logger,
  * ) : ErrorHandler<TaskListEvent, TaskListUiState, TaskListEffect> {
  *
- *     override fun handle(
+ *     override suspend fun handle(
  *         event: TaskListEvent,
  *         error: Throwable,
  *         store: ScreenStore<TaskListUiState, TaskListEffect>,
@@ -34,11 +34,17 @@ public fun interface ErrorHandler<E : UiEvent, S : UiState, F : UiEffect> {
      * Called when the handler of [event] has thrown [error]. Cancellation is never passed here.
      *
      * Emit an effect to tell the user once, or update the state when the failure must stay on screen.
-     * It runs on the thread the failed handler ran on, and must not throw.
+     * It can also start another event with [ScreenStore.dispatch], and wait for it by joining the job.
+     *
+     * It runs in the coroutine of the event that failed, on the thread its handler ran on. That event
+     * stays active until this function returns, so its dispatch strategy still counts it, and it is
+     * cancelled with that event: when another event replaces it, or when the scope of the router is
+     * cancelled. It must not throw: a failure here is a mistake in the code and fails in the scope of
+     * the router as an uncaught error.
      *
      * @param store The state and effects of the screen the event came from.
      */
-    public fun handle(
+    public suspend fun handle(
         event: E,
         error: Throwable,
         store: ScreenStore<S, F>,

@@ -9,7 +9,7 @@ import io.github.mradzinski.eventus.sample.presentation.common.toFailureReason
  */
 internal class TaskListErrorHandler : ErrorHandler<TaskListEvent, TaskListUiState, TaskListEffect> {
 
-    override fun handle(
+    override suspend fun handle(
         event: TaskListEvent,
         error: Throwable,
         store: TaskListStore,

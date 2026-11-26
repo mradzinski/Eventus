@@ -84,7 +84,25 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     internal val trackedRunCount: Int
         get() = synchronized(lock) { active.size }
 
+    /**
+     * Dispatches an event dispatched with [ScreenStore.dispatch]. The store does not know the screen's event
+     * type, so an event of another screen can arrive here; it has no handler and fails as any such
+     * event does.
+     */
+    @Suppress("UNCHECKED_CAST")
+    private val onDispatch: (UiEvent) -> Job = { event -> dispatch(event as E) }
+
+    /** The store every event handler receives when there is no observer. */
+    private val routed = store.routedBy(onDispatch = onDispatch)
+
+    /** A job that has already ended, returned for an event that was ignored. */
+    private val notRun: Job = Job().also { it.complete() }
+
     override fun onEvent(event: E) {
+        dispatch(event)
+    }
+
+    private fun dispatch(event: E): Job {
         val handler = handlerFor(event)
 
         // A strategy is the app's code, so it is asked outside the lock, and asked again when the
@@ -92,9 +110,9 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         while (true) {
             val seen = synchronized(lock) { Snapshot(events = active.map { it.event }, version = version) }
 
-            val dispatch = decide(event, handler, seen.events) ?: return
+            val dispatch = decide(event, handler, seen.events) ?: return notRun
 
-            if (carryOut(event, handler, dispatch, seen.version)) return
+            carryOut(event, handler, dispatch, seen.version)?.let { return it }
         }
     }
 
@@ -132,24 +150,25 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     /**
      * Does what [dispatch] says, unless the active events changed since the strategy saw them.
      *
-     * @return False when they changed, and the strategy must be asked again.
+     * @return The job of the event, which has already ended for an ignored one. Null when the active
+     * events changed, and the strategy must be asked again.
      */
     private fun carryOut(
         event: E,
         handler: EventHandler<E, S, F>,
         dispatch: Dispatch,
         version: Int,
-    ): Boolean {
+    ): Job? {
         var named = emptyList<ActiveRun<E>>()
         var batch: ArrayList<RouterTrace<E>>? = null
 
         val run = synchronized(lock) {
-            if (this.version != version) return false
+            if (this.version != version) return null
 
             named = runsNamedBy(dispatch)
 
             // Numbered and queued under the lock, so decisions are reported in the order they were made.
-            val number = nextNumber()
+            val number = if (reports == null) 0 else ++lastNumber
 
             batch = reports?.queue(RouterTrace.Dispatched(event, number, dispatch, named.map { it.number }))
 
@@ -171,7 +190,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
 
         reports?.deliver(batch)
 
-        if (run == null) return true
+        if (run == null) return notRun
 
         run.job.invokeOnCompletion { cause -> end(run, cause) }
 
@@ -179,13 +198,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
 
         run.job.start()
 
-        return true
-    }
-
-    private fun nextNumber(): Long {
-        if (reports == null) return 0
-
-        return ++lastNumber
+        return run.job
     }
 
     /** The active runs of the events that [dispatch] names, by equality. Called with the lock held. */
@@ -213,7 +226,7 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
     ): Job {
         val store = storeOf(run)
 
-        return scope.launch(context = errorContext(run.event, store), start = CoroutineStart.LAZY) {
+        return scope.launch(context = errorContext(run), start = CoroutineStart.LAZY) {
             after.forEach { it.job.join() }
 
             reports?.let { reports ->
@@ -224,19 +237,29 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
                 )
             }
 
-            handler.handle(run.event, store)
+            try {
+                handler.handle(run.event, store)
+            } catch (@Suppress("TooGenericExceptionCaught") error: Throwable) {
+                // Every failure of an event handler is the error handler's to see, whatever its type.
+                if (error is CancellationException || errorHandler == null) throw error
+
+                errorHandler.handle(run.event, error, store)
+                run.handled = error
+
+                throw error
+            }
         }
     }
 
     /**
-     * The store that the handler of [run] and the error handler receive. Without an observer it is the
-     * store itself. With one it is the same store as that run sees it, so each effect can be reported
-     * with the event it came from.
+     * The store that the handler of [run] and the error handler receive. It dispatches events to this
+     * router. With an observer each run gets its own, so each effect can be reported with the event it
+     * came from.
      */
     private fun storeOf(run: ActiveRun<E>): ScreenStore<S, F> {
-        val reports = reports ?: return store
+        val reports = reports ?: return routed
 
-        return store.tellingOfEffects { effect ->
+        return store.routedBy(onDispatch = onDispatch) { effect ->
             val report = RouterTrace.EffectEmitted(run.event, run.number, effect)
 
             reports.deliver(
@@ -245,10 +268,19 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
         }
     }
 
-    private fun errorContext(event: E, store: ScreenStore<S, F>): CoroutineContext {
-        val errorHandler = errorHandler ?: return EmptyCoroutineContext
+    /**
+     * Without an error handler a failure goes to the exception handler of the scope. With one, the
+     * failure it has handled ends here. Any other failure of [run] came from the error handler itself,
+     * which is a mistake in the code: it fails in the scope as an uncaught error.
+     */
+    private fun errorContext(run: ActiveRun<E>): CoroutineContext {
+        if (errorHandler == null) return EmptyCoroutineContext
 
-        return CoroutineExceptionHandler { _, error -> errorHandler.handle(event, error, store) }
+        return CoroutineExceptionHandler { _, error ->
+            if (error === run.handled) return@CoroutineExceptionHandler
+
+            scope.launch { throw IllegalStateException("The error handler failed for: ${run.event}", error) }
+        }
     }
 
     /** Forgets [run] and reports how it ended, under one lock so that the two cannot be told apart. */
@@ -278,6 +310,9 @@ internal class DefaultEventRouter<E : UiEvent, S : UiState, F : UiEffect>(
 
         /** The number of the first event whose strategy replaced this run, if any. */
         var replacedBy: Long? = null
+
+        /** The failure of this run that the error handler has handled, set before the job ends. */
+        var handled: Throwable? = null
 
         /** The report of how this run ended, from the [cause] its job completed with. */
         fun ended(cause: Throwable?, scopeIsActive: Boolean): RouterTrace<E> = when (cause) {

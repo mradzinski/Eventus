@@ -50,10 +50,11 @@ package "Public: io.github.mradzinski.eventus" as Public {
         update(transform: (S) -> S)
         suspend updateOptimistically(stateUpdate, stateIfFailed, work)
         emit(effect: F)
+        dispatch(event: UiEvent): Job
     }
 
     interface "ErrorHandler<E, S, F>" as ErrorHandler <<fun interface>> {
-        handle(event: E, error: Throwable, store: ScreenStore<S, F>)
+        suspend handle(event: E, error: Throwable, store: ScreenStore<S, F>)
     }
 
     interface "DispatchStrategy<E>" as DispatchStrategy <<fun interface>> {

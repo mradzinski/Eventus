@@ -50,7 +50,7 @@ public final class io/github/mradzinski/eventus/DispatchStrategy$Companion {
 }
 
 public abstract interface class io/github/mradzinski/eventus/ErrorHandler {
-	public abstract fun handle (Lio/github/mradzinski/eventus/UiEvent;Ljava/lang/Throwable;Lio/github/mradzinski/eventus/ScreenStore;)V
+	public abstract fun handle (Lio/github/mradzinski/eventus/UiEvent;Ljava/lang/Throwable;Lio/github/mradzinski/eventus/ScreenStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class io/github/mradzinski/eventus/EventHandler {
@@ -205,6 +205,7 @@ public final class io/github/mradzinski/eventus/RouterTrace$Started : io/github/
 
 public final class io/github/mradzinski/eventus/ScreenStore {
 	public fun <init> (Lio/github/mradzinski/eventus/UiState;)V
+	public final fun dispatch (Lio/github/mradzinski/eventus/UiEvent;)Lkotlinx/coroutines/Job;
 	public final fun emit (Lio/github/mradzinski/eventus/UiEffect;)V
 	public final fun getCurrent ()Lio/github/mradzinski/eventus/UiState;
 	public final fun getEffects ()Lkotlinx/coroutines/flow/Flow;

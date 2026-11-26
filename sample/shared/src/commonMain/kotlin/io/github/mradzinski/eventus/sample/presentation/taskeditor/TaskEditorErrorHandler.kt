@@ -10,7 +10,7 @@ import io.github.mradzinski.eventus.sample.presentation.common.toFailureReason
  */
 internal class TaskEditorErrorHandler : ErrorHandler<TaskEditorEvent, TaskEditorUiState, TaskEditorEffect> {
 
-    override fun handle(
+    override suspend fun handle(
         event: TaskEditorEvent,
         error: Throwable,
         store: TaskEditorStore,

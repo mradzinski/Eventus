@@ -1,5 +1,6 @@
 package io.github.mradzinski.eventus
 
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,8 @@ import kotlinx.coroutines.flow.update
 public class ScreenStore<S : UiState, F : UiEffect> private constructor(
     source: MutableStateFlow<S>,
     shared: Channel<F>?,
-    private val onEmit: ((F) -> Unit)?,
+    private val onEffect: ((F) -> Unit)?,
+    private val onDispatch: ((UiEvent) -> Job)?,
 ) {
 
     /**
@@ -37,7 +39,8 @@ public class ScreenStore<S : UiState, F : UiEffect> private constructor(
     public constructor(initialState: S) : this(
         source = MutableStateFlow(initialState),
         shared = null,
-        onEmit = null,
+        onEffect = null,
+        onDispatch = null,
     )
 
     /** The state of the screen. It always has a value, and a new collector gets the latest one first. */
@@ -135,22 +138,54 @@ public class ScreenStore<S : UiState, F : UiEffect> private constructor(
         }
     }
 
-    /** Sends [effect] to the UI. It never suspends and never fails. */
+    /** Emits [effect] to the UI. It never suspends and never fails. */
     public fun emit(effect: F) {
-        onEmit?.invoke(effect)
+        onEffect?.invoke(effect)
         effectChannel.trySend(effect)
     }
 
     /**
-     * This store as one run sees it: the same state and the same effects, with [onEmit] told about each
-     * effect that is emitted through the result, before the effect is sent. A router uses it to report
-     * which event an effect came from, which the store by itself cannot know.
+     * Dispatches [event] to the router this store belongs to, as the UI does with [EventRouter.onEvent].
+     *
+     * Use it when handling one event has to start another: an event handler that adds an item and then
+     * refreshes the total, or an [ErrorHandler] that signs the user out.
+     * ```
+     * cart.add(event.item)
+     *
+     * store.emit(CartEffect.OpenCart)
+     * store.dispatch(OnCartRefresh)
+     * ```
+     *
+     * The event is handled as any other: by its own event handler, under its own [DispatchStrategy],
+     * and with its own reports. This function does not wait for it. To wait until the event has been
+     * handled to its end, join the job: `store.dispatch(OnCartRefresh).join()`.
+     *
+     * The event must be one of the screen this store belongs to. An event the router has no handler
+     * for throws, here, as it does from [EventRouter.onEvent]. So does a store that was created with
+     * the constructor, which belongs to no router.
+     *
+     * @return The job that handles [event]. It has already completed when the strategy of the event
+     * ignored it. It completes when the event has been handled, has failed or was cancelled.
      */
-    internal fun tellingOfEffects(onEmit: (F) -> Unit): ScreenStore<S, F> = ScreenStore(
-        source = state,
-        shared = effectChannel,
-        onEmit = onEmit,
-    )
+    public fun dispatch(event: UiEvent): Job {
+        val onDispatch = checkNotNull(onDispatch) { "This store belongs to no router, so it cannot dispatch $event." }
+
+        return onDispatch(event)
+    }
+
+    /**
+     * This store as the event handlers of a router see it: the same state and the same effects, with
+     * [onDispatch] behind [dispatch]. When [onEffect] is given it is told about each effect that is
+     * emitted through the result, before the effect is sent. A router uses it to report which event an
+     * effect came from, which the store by itself cannot know.
+     */
+    internal fun routedBy(onDispatch: (UiEvent) -> Job, onEffect: ((F) -> Unit)? = null): ScreenStore<S, F> =
+        ScreenStore(
+            source = state,
+            shared = effectChannel,
+            onEffect = onEffect,
+            onDispatch = onDispatch,
+        )
 
     private fun putBack(effect: F) {
         effectChannel.trySend(effect)

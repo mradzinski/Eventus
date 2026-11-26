@@ -134,7 +134,7 @@ class KoinModuleTest {
             import io.github.mradzinski.eventus.ErrorHandler
 
             class ListErrorHandler(val tag: String) : ErrorHandler<ListEvent, ListState, ListEffect> {
-                override fun handle(event: ListEvent, error: Throwable, store: ListStore) = Unit
+                override suspend fun handle(event: ListEvent, error: Throwable, store: ListStore) = Unit
             }
         """.trimIndent()
 
@@ -160,7 +160,7 @@ class KoinModuleTest {
             object RowClickHandler : ListHandler<ListEvent.Row.Click> ${handlerBody("ListEvent.Row.Click")}
 
             class ListErrorHandler(val tag: String) : ErrorHandler<ListEvent, ListState, ListEffect> {
-                override fun handle(event: ListEvent, error: Throwable, store: ListStore) = Unit
+                override suspend fun handle(event: ListEvent, error: Throwable, store: ListStore) = Unit
             }
         """.trimIndent()
 

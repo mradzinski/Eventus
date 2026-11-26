@@ -69,7 +69,7 @@ internal class OnBreakClickHandler : CounterHandler<CounterEvent.OnBreakClick> {
 @Inject
 internal class CounterErrorHandler : ErrorHandler<CounterEvent, CounterState, CounterEffect> {
 
-    override fun handle(
+    override suspend fun handle(
         event: CounterEvent,
         error: Throwable,
         store: CounterStore,

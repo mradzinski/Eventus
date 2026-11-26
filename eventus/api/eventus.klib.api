@@ -32,7 +32,7 @@ abstract fun interface <#A: in io.github.mradzinski.eventus/UiEvent> io.github.m
 }
 
 abstract fun interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/ErrorHandler { // io.github.mradzinski.eventus/ErrorHandler|null[0]
-    abstract fun handle(#A, kotlin/Throwable, io.github.mradzinski.eventus/ScreenStore<#B, #C>) // io.github.mradzinski.eventus/ErrorHandler.handle|handle(1:0;kotlin.Throwable;io.github.mradzinski.eventus.ScreenStore<1:1,1:2>){}[0]
+    abstract suspend fun handle(#A, kotlin/Throwable, io.github.mradzinski.eventus/ScreenStore<#B, #C>) // io.github.mradzinski.eventus/ErrorHandler.handle|handle(1:0;kotlin.Throwable;io.github.mradzinski.eventus.ScreenStore<1:1,1:2>){}[0]
 }
 
 abstract interface <#A: io.github.mradzinski.eventus/UiEvent, #B: io.github.mradzinski.eventus/UiState, #C: io.github.mradzinski.eventus/UiEffect> io.github.mradzinski.eventus/EventHandler { // io.github.mradzinski.eventus/EventHandler|null[0]
@@ -254,6 +254,7 @@ final class <#A: io.github.mradzinski.eventus/UiState, #B: io.github.mradzinski.
     final val state // io.github.mradzinski.eventus/ScreenStore.state|{}state[0]
         final fun <get-state>(): kotlinx.coroutines.flow/StateFlow<#A> // io.github.mradzinski.eventus/ScreenStore.state.<get-state>|<get-state>(){}[0]
 
+    final fun dispatch(io.github.mradzinski.eventus/UiEvent): kotlinx.coroutines/Job // io.github.mradzinski.eventus/ScreenStore.dispatch|dispatch(io.github.mradzinski.eventus.UiEvent){}[0]
     final fun emit(#B) // io.github.mradzinski.eventus/ScreenStore.emit|emit(1:1){}[0]
     final fun update(kotlin/Function1<#A, #A>) // io.github.mradzinski.eventus/ScreenStore.update|update(kotlin.Function1<1:0,1:0>){}[0]
     final suspend fun <#A1: kotlin/Any?> updateOptimistically(kotlin/Function1<#A, #A>, kotlin/Function1<#A, #A>, kotlin.coroutines/SuspendFunction0<#A1>): #A1 // io.github.mradzinski.eventus/ScreenStore.updateOptimistically|updateOptimistically(kotlin.Function1<1:0,1:0>;kotlin.Function1<1:0,1:0>;kotlin.coroutines.SuspendFunction0<0:0>){0§<kotlin.Any?>}[0]
