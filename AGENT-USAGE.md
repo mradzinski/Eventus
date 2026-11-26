@@ -847,6 +847,28 @@ constructor with its own scope; the error handler takes `@Inject constructor()`.
 module the Hilt module goes in `androidMain`, with `add("kspAndroid", hilt-compiler)` and
 `withJava()` in the `android { }` block.
 
+## SwiftUI
+
+A view model in common code works behind a SwiftUI screen. Nothing of Eventus is added for it, and
+Eventus need not be exported into the iOS framework. Facts, tested with Kotlin 2.4.21:
+
+- `onEvent(event:)` is typed in Swift. A `data object` event is `TaskListEventOnRefresh.shared`; a
+  `data class` event is `TaskListEventOnTaskClick(id: 7)`.
+- `state` and `effects` are untyped in Swift without a bridging library. Use the one the project
+  has: SKIE or KMP-NativeCoroutines. Both work.
+- With SKIE (0.10.16) write nothing in Kotlin: `viewModel.state.value`, `for await s in
+  viewModel.state`, `for await e in viewModel.effects`, and `switch onEnum(of: e)` is exhaustive.
+- With KMP-NativeCoroutines (1.0.7) add two properties per view model in common code, because the
+  view model declares neither flow itself:
+  `@NativeCoroutinesState val TaskListViewModel.uiState: StateFlow<TaskListUiState> get() = state`
+  and `@NativeCoroutines val TaskListViewModel.uiEffects: Flow<TaskListEffect> get() = effects`.
+  Swift then has `uiState`, `uiStateFlow` and `uiEffects`, read with `asyncSequence(for:)`.
+- A default argument does not reach Swift. Give Swift a `viewModelFactory { initializer { … } }` and
+  follow Google's guide "Set up ViewModel for KMP" for the owner that creates and clears the view
+  model.
+- Run both loops in `.task`, one `.task` for effects per screen. An effect emitted while no loop
+  runs waits and reaches the next loop.
+
 ## Logging and debugging
 
 Pass an `observer` to see what the router does with every event. Each report prints as a sentence.

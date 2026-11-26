@@ -295,6 +295,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 | [Dependency injection](docs/dependency-injection.md) | Wiring event handlers with Koin, with Metro, with Hilt, with another compile-time container, or by hand. |
 | [Checking and wiring event handlers at build time](docs/checking-and-wiring-event-handlers-at-build-time.md) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, the generated Metro bindings, and projects with several modules. |
 | [Using the Compose helpers](docs/using-the-compose-helpers.md) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |
+| [Using Eventus from SwiftUI](docs/using-eventus-from-swiftui.md) | A shared view model behind a SwiftUI screen, with SKIE or with KMP-NativeCoroutines. |
 | [Handling failures](docs/handling-failures.md) | Where an event handler's exception goes, and how to turn it into something the UI can show. |
 | [Keeping work running](docs/keeping-work-running.md) | Event handlers that never return, such as one that collects a flow, and how long they last. |
 | [Testing](docs/testing.md) | The `eventus-test` artifact: testing event handlers in one call, failures, waits, work on another thread, and a view model. |

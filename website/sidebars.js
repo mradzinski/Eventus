@@ -43,6 +43,7 @@ const sidebars = {
         'dependency-injection',
         'checking-and-wiring-event-handlers-at-build-time',
         'using-the-compose-helpers',
+        'using-eventus-from-swiftui',
       ],
     },
     {
