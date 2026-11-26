@@ -12,6 +12,10 @@ Eventus needs no dependency-injection library, and works with any. Two facts mak
 - [Giving each screen an event handler interface](#giving-each-screen-an-event-handler-interface)
 - [Using Koin](#using-koin)
 - [Using Metro](#using-metro)
+- [Using Hilt](#using-hilt)
+  - [Providing the event handlers](#providing-the-event-handlers)
+  - [Writing the view model](#writing-the-view-model)
+  - [Using Hilt in a multiplatform module](#using-hilt-in-a-multiplatform-module)
 - [Using another container that resolves at compile time](#using-another-container-that-resolves-at-compile-time)
 - [Wiring by hand](#wiring-by-hand)
 
@@ -110,10 +114,124 @@ You do not have to write the container by hand: `eventus-ksp` generates it from 
 the handler interface. See [checking and wiring event handlers at build
 time](checking-and-wiring-event-handlers-at-build-time.md#generating-the-metro-bindings).
 
+## Using Hilt
+
+Eventus is a Kotlin Multiplatform library, and Hilt runs on Android only. So Eventus supports Hilt
+as far as Hilt goes today: you wire the event handlers yourself, in Android code, and `eventus-ksp`
+generates nothing for Hilt. The processor still checks that every event has an event handler.
+
+What follows was tested with Hilt 2.60.1.
+
+### Providing the event handlers
+
+Write one Hilt module for each screen. It provides each event handler into a set of the screen's
+handler interface:
+
+```kotlin
+@Module
+@InstallIn(ViewModelComponent::class)
+internal object TaskListHandlerBindings {
+
+    @Provides
+    @IntoSet
+    fun onRefreshHandler(tasks: TaskRepository): TaskListHandler<*> = OnRefreshHandler(tasks)
+
+    @Provides
+    @IntoSet
+    fun onTaskClickHandler(): TaskListHandler<*> = OnTaskClickHandler()
+
+    // …one function per event handler
+}
+```
+
+The event handler classes take no Hilt annotation, and both the module and the classes can stay
+`internal`. A screen's error handler takes Hilt's own `@Inject`:
+
+```kotlin
+class TaskListErrorHandler @Inject constructor() :
+    ErrorHandler<TaskListEvent, TaskListUiState, TaskListEffect> { /* … */ }
+```
+
+### Writing the view model
+
+Two things differ from a view model written for Koin or Metro:
+
+```kotlin
+@HiltViewModel
+class TaskListViewModel internal constructor(
+    handlers: Set<TaskListHandler<*>>,
+    errorHandler: TaskListErrorHandler,
+    scope: CoroutineScope,
+) : ViewModel(scope),
+    EventRouter<TaskListEvent, TaskListUiState, TaskListEffect> by EventRouter(
+        scope = scope,
+        initialState = TaskListUiState(),
+        handlers = handlers,
+        errorHandler = errorHandler,
+    ) {
+
+    @Inject
+    constructor(
+        handlers: Set<@JvmSuppressWildcards TaskListHandler<*>>,
+        errorHandler: TaskListErrorHandler,
+    ) : this(handlers, errorHandler, routerScope())
+}
+```
+
+- **Hilt uses the second constructor, which passes `routerScope()`.** Hilt asks its graph for every
+  parameter of the constructor it calls and does not use a default value, so
+  `scope: CoroutineScope = routerScope()` fails the build with a missing binding. A test calls the
+  first constructor and passes its own scope.
+- **The set carries `@JvmSuppressWildcards` where Hilt injects it.** This is Dagger's rule for a set
+  injected into Kotlin code:
+
+> [!TIP]
+> **Do:** annotate the element type of the set.
+>
+> ```kotlin
+> handlers: Set<@JvmSuppressWildcards TaskListHandler<*>>
+> ```
+
+> [!CAUTION]
+> **Don't:** leave the annotation out. The build fails with a missing binding for
+> `Set<? extends TaskListHandler<?>>`.
+>
+> ```kotlin
+> handlers: Set<TaskListHandler<*>>
+> ```
+
+### Using Hilt in a multiplatform module
+
+Event handlers written in common code work with Hilt on Android. Put the Hilt module in
+`androidMain`, and set the module's build script up for Hilt's processor:
+
+```kotlin
+kotlin {
+    android {
+        withJava()   // Hilt generates Java code, which this line compiles
+    }
+
+    sourceSets {
+        androidMain.dependencies {
+            implementation("com.google.dagger:hilt-android:2.60.1")
+        }
+    }
+}
+
+dependencies {
+    add("kspAndroid", "com.google.dagger:hilt-compiler:2.60.1")
+}
+```
+
+Without `withJava()` the app that uses the module fails to build, with a missing binding for the
+set. The other platforms need a container of their own, such as [Koin](#using-koin) or
+[Metro](#using-metro).
+
 ## Using another container that resolves at compile time
 
 Containers such as Dagger keep type arguments, so there you can multibind each handler into
 `Set<EventHandler<*, TaskListUiState, TaskListEffect>>` and inject that set into the view model.
+For Hilt, which is built on Dagger, see [using Hilt](#using-hilt).
 
 ## Wiring by hand
 

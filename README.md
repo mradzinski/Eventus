@@ -292,7 +292,7 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 |---|---|
 | [Key concepts](docs/key-concepts.md) | How an event travels through Eventus, what each piece is, the lifecycle of each, and the rules that follow. Start here. |
 | [Choosing a dispatch strategy](docs/choosing-a-dispatch-strategy.md) | What the router does with an event while other events are active: the four ready-made strategies with a real case each, sharing one between several events, applying one to each item of a list, and writing your own. |
-| [Dependency injection](docs/dependency-injection.md) | Wiring event handlers with Koin, with Metro, with another compile-time container, or by hand. |
+| [Dependency injection](docs/dependency-injection.md) | Wiring event handlers with Koin, with Metro, with Hilt, with another compile-time container, or by hand. |
 | [Checking and wiring event handlers at build time](docs/checking-and-wiring-event-handlers-at-build-time.md) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, the generated Metro bindings, and projects with several modules. |
 | [Using the Compose helpers](docs/using-the-compose-helpers.md) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |
 | [Handling failures](docs/handling-failures.md) | Where an event handler's exception goes, and how to turn it into something the UI can show. |

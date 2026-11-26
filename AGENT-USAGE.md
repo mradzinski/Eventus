@@ -804,6 +804,49 @@ stay `internal`); Metro supplies every constructor parameter of a handler by typ
 qualifiers such as `@Named`, and a handler's default values are not used; error handlers are not generated, so
 give them `@Inject`. Handler classes take no Metro annotation.
 
+With Hilt (Android only; tested with Hilt 2.60.1) nothing is generated and there is no Eventus
+artifact for it. Write the wiring by hand, in Android code:
+
+```kotlin
+@Module
+@InstallIn(ViewModelComponent::class)
+internal object CounterHandlerBindings {
+
+    @Provides
+    @IntoSet
+    fun onSaveClickHandler(counters: CounterRepository): CounterHandler<*> = OnSaveClickHandler(counters)
+
+    // …one function per event handler
+}
+
+@HiltViewModel
+class CounterViewModel internal constructor(
+    handlers: Set<CounterHandler<*>>,
+    errorHandler: CounterErrorHandler,
+    scope: CoroutineScope,
+) : ViewModel(scope),
+    EventRouter<CounterEvent, CounterUiState, CounterEffect> by EventRouter(
+        scope = scope,
+        initialState = CounterUiState(),
+        handlers = handlers,
+        errorHandler = errorHandler,
+    ) {
+
+    @Inject
+    constructor(
+        handlers: Set<@JvmSuppressWildcards CounterHandler<*>>,
+        errorHandler: CounterErrorHandler,
+    ) : this(handlers, errorHandler, routerScope())
+}
+```
+
+Rules for Hilt: the injected set needs `@JvmSuppressWildcards` on its element type; Hilt does not
+use a default value, so `scope: CoroutineScope = routerScope()` on the injected constructor fails
+with a missing binding, and the second constructor passes `routerScope()`; a test calls the first
+constructor with its own scope; the error handler takes `@Inject constructor()`. In a multiplatform
+module the Hilt module goes in `androidMain`, with `add("kspAndroid", hilt-compiler)` and
+`withJava()` in the `android { }` block.
+
 ## Logging and debugging
 
 Pass an `observer` to see what the router does with every event. Each report prints as a sentence.
