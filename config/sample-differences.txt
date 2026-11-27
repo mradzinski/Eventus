@@ -13,6 +13,11 @@ feature/taskeditor/impl/build.gradle.kts
 feature/tasklist/impl/build.gradle.kts
 iosApp/iosApp.xcodeproj/project.pbxproj
 
+# The app's name: "Sample Eventus Koin" and "Sample Eventus Metro".
+androidApp/src/main/res/values/strings.xml
+core/ui/src/commonMain/composeResources/values/strings.xml
+iosApp/Info.plist
+
 # Wiring: how each container is told about a class, and how a screen asks it for its view model.
 app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/App.kt
 app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/app/AppContract.kt

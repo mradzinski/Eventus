@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Eventus Sample</string>
+	<string>Sample Eventus Metro</string>
 	<!-- Required by Compose Multiplatform so animations can run at the display's full refresh rate. -->
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
