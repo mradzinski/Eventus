@@ -17,6 +17,7 @@ and is never part of the app. It does this in the Gradle module you add it to:
 - [Generating the Koin module](#generating-the-koin-module)
 - [Generating the Metro bindings](#generating-the-metro-bindings)
   - [Declaring the graph](#declaring-the-graph)
+  - [Using Metro's view model helper](#using-metros-view-model-helper)
   - [What the processor needs](#what-the-processor-needs)
 - [Working with several modules](#working-with-several-modules)
   - [With Koin](#with-koin)
@@ -223,6 +224,33 @@ interface IosAppGraph : AppGraph
 ```
 
 A module with a single platform has one graph, and the generated bindings work there too.
+
+### Using Metro's view model helper
+
+Metro has its own helper for view models in Compose, `metrox-viewmodel`. With it, a view model is
+contributed to a map that the helper reads. An Eventus view model has two parents, `ViewModel` and
+`EventRouter`, so Metro has to be told which one to register it under:
+
+```kotlin
+@Inject
+@ViewModelKey
+@ContributesIntoMap(AppScope::class, binding<ViewModel>())
+class TaskListViewModel(
+    handlers: Set<TaskListHandler<*>>,
+    errorHandler: TaskListErrorHandler,
+    scope: CoroutineScope = routerScope(),
+) : ViewModel(scope),
+    EventRouter<TaskListEvent, TaskListUiState, TaskListEffect> by EventRouter(
+        scope = scope,
+        initialState = TaskListUiState(),
+        handlers = handlers,
+        errorHandler = errorHandler,
+    )
+```
+
+Without `binding<ViewModel>()` the build fails, and Metro's message asks for it. The rest is Metro's
+own setup, which its documentation describes. The `sample-metro` app in this repository shows all of
+it in a multiplatform app with several modules, including a view model that takes a run-time value.
 
 ### What the processor needs
 

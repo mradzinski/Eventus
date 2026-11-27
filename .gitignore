@@ -6,6 +6,7 @@ local.properties
 *.iml
 .DS_Store
 sample-koin/iosApp/build/
+sample-metro/iosApp/build/
 xcuserdata/
 
 # Claude Code files: local tooling, never committed

@@ -159,30 +159,82 @@ dokka {
     }
 }
 
-// The sample is several Gradle modules, so its tests get one task for all of them:
-// `sampleKoinJvmTest` runs the desktop tests, and `sampleKoinTest` runs them on every platform (desktop, the
-// Android host and the iOS simulator).
-val sampleKoinJvmTest = tasks.register("sampleKoinJvmTest") {
-    group = "verification"
-    description = "Runs the desktop tests of every module of sample-koin."
+// Each sample is several Gradle modules, so its tests get one task for all of them. For sample-koin,
+// `sampleKoinJvmTest` runs the desktop tests and `sampleKoinTest` runs them on every platform (desktop, the
+// Android host and the iOS simulator); sample-metro has `sampleMetroJvmTest` and `sampleMetroTest`.
+listOf("sample-koin" to "sampleKoin", "sample-metro" to "sampleMetro").forEach { (folder, name) ->
+    val jvmTests = tasks.register("${name}JvmTest") {
+        group = "verification"
+        description = "Runs the desktop tests of every module of $folder."
+    }
+
+    val allTests = tasks.register("${name}Test") {
+        group = "verification"
+        description = "Runs the tests of every module of $folder, on every platform."
+    }
+
+    subprojects {
+        if (!path.startsWith(":$folder:")) return@subprojects
+
+        val module = this
+
+        pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+            jvmTests.configure { dependsOn(module.tasks.named("jvmTest")) }
+
+            allTests.configure {
+                dependsOn(module.tasks.named("allTests"))
+                dependsOn(module.tasks.matching { it.name == "testAndroidHostTest" })
+            }
+        }
+    }
 }
 
-val sampleKoinTest = tasks.register("sampleKoinTest") {
+// The two samples are the same app with a different container, so most of their files are the same text.
+// This check keeps it that way: it fails when a file that should be the same in both is not, when a file
+// exists in one sample only, and when a file listed as different has become the same. The list of files that
+// may differ, with the reason for each group, is config/sample-differences.txt.
+tasks.register("checkSamplesMatch") {
     group = "verification"
-    description = "Runs the tests of every module of sample-koin, on every platform."
-}
+    description = "Checks that sample-koin and sample-metro differ only in the files listed as different."
 
-subprojects {
-    if (!path.startsWith(":sample-koin:")) return@subprojects
+    val koin = layout.projectDirectory.dir("sample-koin").asFile
+    val metro = layout.projectDirectory.dir("sample-metro").asFile
+    val list = layout.projectDirectory.file("config/sample-differences.txt").asFile
 
-    val module = this
+    doLast {
+        val skipped = setOf("build", ".gradle", "xcuserdata")
 
-    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
-        sampleKoinJvmTest.configure { dependsOn(module.tasks.named("jvmTest")) }
+        fun filesOf(sample: File): Map<String, File> = sample
+            .walkTopDown()
+            .onEnter { it.name !in skipped }
+            .filter { it.isFile && it.name != ".DS_Store" }
+            .associateBy { it.relativeTo(sample).invariantSeparatorsPath }
 
-        sampleKoinTest.configure {
-            dependsOn(module.tasks.named("allTests"))
-            dependsOn(module.tasks.matching { it.name == "testAndroidHostTest" })
+        val inKoin = filesOf(koin)
+        val inMetro = filesOf(metro)
+
+        val listed = list
+            .readLines()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && !it.startsWith("#") }
+            .toSet()
+
+        val different = (inKoin.keys + inMetro.keys).filter { path ->
+            val first = inKoin[path]
+            val second = inMetro[path]
+
+            first == null || second == null || !first.readBytes().contentEquals(second.readBytes())
+        }.toSet()
+
+        val problems = (different - listed).sorted().map { "$it differs between the samples and is not listed" } +
+            (listed - different).sorted().map { "$it is listed as different, and is the same in both samples" }
+
+        if (problems.isNotEmpty()) {
+            throw GradleException(
+                "The samples no longer match config/sample-differences.txt:\n" + problems.joinToString("\n") {
+                    "  $it"
+                },
+            )
         }
     }
 }

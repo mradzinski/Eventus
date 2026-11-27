@@ -1,0 +1,73 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+// The task editor: its events, state and effects, one event handler class per event, the view model, the
+// screen, and the Metro annotations that hand them to the graph. Only the app depends on this module.
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.metro)
+    alias(libs.plugins.ksp)
+}
+
+kotlin {
+    android {
+        namespace = "io.github.mradzinski.eventus.sample.taskeditor"
+        compileSdk = libs.versions.androidCompileSdk.get().toInt()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
+
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
+        withHostTest {}
+    }
+
+    jvm {
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
+    }
+
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            api(projects.sampleMetro.feature.taskeditor.api)
+            implementation(projects.sampleMetro.core.domain)
+            implementation(projects.sampleMetro.core.ui)
+
+            implementation(projects.eventus)
+            implementation(projects.eventusMetro)
+            implementation(projects.eventusCompose)
+
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.core)
+            implementation(libs.compose.resources)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.lifecycle.runtime.compose)
+            api(libs.metrox.viewmodel.compose)
+        }
+
+        commonTest.dependencies {
+            implementation(projects.eventusTest)
+            implementation(projects.sampleMetro.core.testing)
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotest.assertions.core)
+            implementation(libs.turbine)
+        }
+
+        jvmTest.dependencies {
+            implementation(libs.kotlin.reflect)
+        }
+    }
+}
+
+dependencies {
+    add("kspAndroid", projects.eventusKsp)
+    add("kspJvm", projects.eventusKsp)
+    add("kspIosArm64", projects.eventusKsp)
+    add("kspIosSimulatorArm64", projects.eventusKsp)
+}

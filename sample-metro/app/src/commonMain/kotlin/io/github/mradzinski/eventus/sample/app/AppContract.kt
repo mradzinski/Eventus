@@ -1,0 +1,31 @@
+package io.github.mradzinski.eventus.sample.app
+
+import dev.zacsweers.metro.AppScope
+import io.github.mradzinski.eventus.EventHandler
+import io.github.mradzinski.eventus.ScreenStore
+import io.github.mradzinski.eventus.UiEffect
+import io.github.mradzinski.eventus.UiEvent
+import io.github.mradzinski.eventus.UiState
+import io.github.mradzinski.eventus.metro.ContributesEventHandlers
+
+/**
+ * The part of the app that stays on screen whatever destination is shown: the bar with the "Work
+ * offline" switch. It is a screen like any other as far as Eventus goes, with its own router.
+ */
+internal sealed interface AppEvent : UiEvent {
+
+    /** Sent once, by the view model, when it is created. */
+    data object OnAppStarted : AppEvent
+
+    data class OnOfflineChange(val offline: Boolean) : AppEvent
+}
+
+internal data class AppUiState(val offline: Boolean = false) : UiState
+
+/** The bar has nothing to do once and forget, so it has no effects. A router still needs the type. */
+internal sealed interface AppEffect : UiEffect
+
+@ContributesEventHandlers(AppScope::class)
+internal interface AppHandler<E : AppEvent> : EventHandler<E, AppUiState, AppEffect>
+
+internal typealias AppStore = ScreenStore<AppUiState, AppEffect>

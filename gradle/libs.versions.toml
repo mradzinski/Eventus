@@ -68,6 +68,9 @@ kctfork-ksp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kctfork" }
 ksp-aa-embeddable = { module = "com.google.devtools.ksp:symbol-processing-aa-embeddable", version.ref = "ksp" }
 ksp-common-deps = { module = "com.google.devtools.ksp:symbol-processing-common-deps", version.ref = "ksp" }
 metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
+# sample-metro: Metro's helpers for view models in Compose and for creating an Android activity from the graph.
+metrox-viewmodel-compose = { module = "dev.zacsweers.metro:metrox-viewmodel-compose", version.ref = "metro" }
+metrox-android = { module = "dev.zacsweers.metro:metrox-android", version.ref = "metro" }
 
 # The project's own ktlint rules, built from tooling/ktlint-rules (an included build), not from a repository.
 eventus-ktlint-rules = { group = "io.github.mradzinski.eventus", name = "ktlint-rules" }

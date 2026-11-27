@@ -804,6 +804,11 @@ stay `internal`); Metro supplies every constructor parameter of a handler by typ
 qualifiers such as `@Named`, and a handler's default values are not used; error handlers are not generated, so
 give them `@Inject`. Handler classes take no Metro annotation.
 
+With Metro's view model helper (`metrox-viewmodel`), a view model takes `@Inject @ViewModelKey
+@ContributesIntoMap(AppScope::class, binding<ViewModel>())`. The `binding<ViewModel>()` argument is
+required, because an Eventus view model has two supertypes (`ViewModel` and `EventRouter`). A class
+contributed from another Gradle module must be public.
+
 With Hilt (Android only; tested with Hilt 2.60.1) nothing is generated and there is no Eventus
 artifact for it. Write the wiring by hand, in Android code:
 

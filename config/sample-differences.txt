@@ -1,0 +1,57 @@
+# The files that differ between sample-koin and sample-metro, and the files only one of them has.
+# Every other file must be the same in both: `./gradlew checkSamplesMatch` fails when one is not, and when a
+# file listed here has become the same in both. Paths are relative to a sample's folder.
+
+# Build scripts and the Xcode project: the container's plugin and libraries, and the app's id.
+androidApp/build.gradle.kts
+app/build.gradle.kts
+core/data/build.gradle.kts
+core/testing/build.gradle.kts
+core/ui/build.gradle.kts
+desktopApp/build.gradle.kts
+feature/taskeditor/impl/build.gradle.kts
+feature/tasklist/impl/build.gradle.kts
+iosApp/iosApp.xcodeproj/project.pbxproj
+
+# Wiring: how each container is told about a class, and how a screen asks it for its view model.
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/App.kt
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/app/AppContract.kt
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/app/AppViewModel.kt
+app/src/commonTest/kotlin/io/github/mradzinski/eventus/sample/app/AppViewModelTest.kt
+app/src/iosMain/kotlin/io/github/mradzinski/eventus/sample/MainViewController.kt
+app/src/jvmTest/kotlin/io/github/mradzinski/eventus/sample/di/HandlerCoverageTest.kt
+core/data/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/data/InMemoryConnectivity.kt
+core/data/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/data/InMemoryTaskRepository.kt
+feature/taskeditor/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/taskeditor/TaskEditorErrorHandler.kt
+feature/taskeditor/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/taskeditor/TaskEditorHandler.kt
+feature/taskeditor/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/taskeditor/TaskEditorRoute.kt
+feature/taskeditor/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/taskeditor/TaskEditorViewModel.kt
+feature/taskeditor/impl/src/commonTest/kotlin/io/github/mradzinski/eventus/sample/taskeditor/TaskEditorViewModelTest.kt
+feature/taskeditor/impl/src/jvmTest/kotlin/io/github/mradzinski/eventus/sample/taskeditor/HandlerCoverageTest.kt
+feature/tasklist/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/tasklist/TaskListErrorHandler.kt
+feature/tasklist/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/tasklist/TaskListHandler.kt
+feature/tasklist/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/tasklist/TaskListRoute.kt
+feature/tasklist/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/tasklist/TaskListViewModel.kt
+feature/tasklist/impl/src/commonTest/kotlin/io/github/mradzinski/eventus/sample/tasklist/TaskListViewModelTest.kt
+feature/tasklist/impl/src/jvmTest/kotlin/io/github/mradzinski/eventus/sample/tasklist/HandlerCoverageTest.kt
+iosApp/iosApp/iOSApp.swift
+
+# Only in sample-koin: the Koin modules, the start of Koin, and the entry points in the launcher modules.
+androidApp/src/main/kotlin/io/github/mradzinski/eventus/sample/android/MainActivity.kt
+androidApp/src/main/kotlin/io/github/mradzinski/eventus/sample/android/SampleApplication.kt
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/StartSample.kt
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/di/AppModule.kt
+core/data/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/data/DataModule.kt
+desktopApp/src/main/kotlin/io/github/mradzinski/eventus/sample/desktop/Main.kt
+feature/taskeditor/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/taskeditor/TaskEditorModule.kt
+feature/tasklist/impl/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/tasklist/TaskListModule.kt
+
+# Only in sample-metro: the graph of each platform, what the app gives to it, and the entry points in `app`.
+app/src/androidMain/kotlin/io/github/mradzinski/eventus/sample/android/AppGraph.kt
+app/src/androidMain/kotlin/io/github/mradzinski/eventus/sample/android/MainActivity.kt
+app/src/androidMain/kotlin/io/github/mradzinski/eventus/sample/android/SampleApplication.kt
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/di/AppBindings.kt
+app/src/commonMain/kotlin/io/github/mradzinski/eventus/sample/di/InjectedViewModelFactory.kt
+app/src/iosMain/kotlin/io/github/mradzinski/eventus/sample/AppGraph.kt
+app/src/jvmMain/kotlin/io/github/mradzinski/eventus/sample/AppGraph.kt
+app/src/jvmMain/kotlin/io/github/mradzinski/eventus/sample/Main.kt
