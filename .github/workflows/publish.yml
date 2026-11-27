@@ -9,6 +9,9 @@
 # and press "Publish" on the deployment; "Drop" throws it away. After a successful upload this workflow tags
 # the commit `v<version>`; if the deployment is dropped, delete that tag.
 #
+# When this workflow ends well, the docs workflow starts by itself and publishes the site again, so the API
+# reference there is the one of the released code.
+#
 # Secrets it needs (repository Settings > Secrets and variables > Actions):
 #   MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD  the user token of the Central Portal, not the login
 #   SIGNING_KEY                                     the private key, from `gpg --export-secret-keys --armor <key id>`

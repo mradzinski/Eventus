@@ -10,6 +10,19 @@ name: docs
 on:
   push:
     branches: [main]
+    # Only the documentation and the site. A change to the code starts the build workflow and not this
+    # one, so the API reference under /api is refreshed by a release (see below), by the next change to the
+    # documentation or by a run by hand.
+    paths:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - 'website/**'
+      - '.github/workflows/docs.yml'
+  # After a release: the publish workflow ends, and the site gets the API reference of the released code.
+  workflow_run:
+    workflows: [publish]
+    types: [completed]
   # By hand, from the Actions tab.
   workflow_dispatch:
 
@@ -24,6 +37,8 @@ permissions:
 jobs:
   build:
     name: Build the site
+    # A publish run that failed released nothing, so there is nothing new to show.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

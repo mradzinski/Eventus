@@ -13,10 +13,10 @@ name: build
 on:
   push:
     branches: [main]
-    # A change to the documentation alone cannot break the build.
-    paths-ignore: ['**.md', 'docs/**', 'LICENSE', 'NOTICE']
+    # A change to the documentation or to its site alone cannot break the build.
+    paths-ignore: ['**.md', 'docs/**', 'website/**', '.github/workflows/docs.yml', 'LICENSE', 'NOTICE']
   pull_request:
-    paths-ignore: ['**.md', 'docs/**', 'LICENSE', 'NOTICE']
+    paths-ignore: ['**.md', 'docs/**', 'website/**', '.github/workflows/docs.yml', 'LICENSE', 'NOTICE']
   # By hand, from the Actions tab. The publish workflow only uploads a commit this workflow passed for, and a
   # commit that changed nothing but documentation never started it.
   workflow_dispatch:
