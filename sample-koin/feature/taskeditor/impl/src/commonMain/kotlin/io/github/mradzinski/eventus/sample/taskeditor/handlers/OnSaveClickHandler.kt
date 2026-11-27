@@ -13,7 +13,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.updateEditing
  * Saves the form and leaves the editor. `DropIfAlreadyRunning` ignores a second tap while the save is under way.
  * A save that fails throws: the screen's error handler tells the user, and the form stays as it was.
  */
-internal class OnSaveClickHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnSaveClick> {
+class OnSaveClickHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnSaveClick> {
 
     override val eventType = OnSaveClick::class
     override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnSaveClick>()

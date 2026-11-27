@@ -6,7 +6,7 @@ import io.github.mradzinski.eventus.sample.tasklist.TaskListHandler
 import io.github.mradzinski.eventus.sample.tasklist.TaskListStore
 
 /** Navigation is an effect: the handler says where to go and passes only the task's id. */
-internal class OnTaskClickHandler : TaskListHandler<OnTaskClick> {
+class OnTaskClickHandler : TaskListHandler<OnTaskClick> {
 
     override val eventType = OnTaskClick::class
 

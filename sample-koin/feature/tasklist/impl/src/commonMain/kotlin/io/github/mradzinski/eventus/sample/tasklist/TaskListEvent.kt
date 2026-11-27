@@ -3,7 +3,7 @@ package io.github.mradzinski.eventus.sample.tasklist
 import io.github.mradzinski.eventus.UiEvent
 
 /** Everything the task list can tell its view model. Each event has one handler in `handlers`. */
-internal sealed interface TaskListEvent : UiEvent {
+sealed interface TaskListEvent : UiEvent {
 
     /** Sent once, by the view model, when it is created. */
     data object OnScreenOpened : TaskListEvent

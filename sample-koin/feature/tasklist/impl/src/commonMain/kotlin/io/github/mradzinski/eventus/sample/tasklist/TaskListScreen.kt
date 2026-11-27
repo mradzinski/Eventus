@@ -52,7 +52,7 @@ private val MaxContentWidth = 640.dp
 
 /** The stateless half of the task list: it draws [state] and reports what the user does through [onEvent]. */
 @Composable
-internal fun TaskListScreen(
+fun TaskListScreen(
     state: TaskListUiState,
     onEvent: (TaskListEvent) -> Unit,
     snackbarHostState: SnackbarHostState,

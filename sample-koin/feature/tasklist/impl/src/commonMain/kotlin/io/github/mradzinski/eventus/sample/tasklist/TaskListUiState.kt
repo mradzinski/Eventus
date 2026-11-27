@@ -7,7 +7,7 @@ import io.github.mradzinski.eventus.sample.domain.Task
  * @property query What the search box shows, updated on every keystroke.
  * @property appliedQuery What the list is filtered by: [query] once the user has stopped typing.
  */
-internal data class TaskListUiState(
+data class TaskListUiState(
     val query: String = "",
     val appliedQuery: String = "",
     val refreshing: Boolean = false,
@@ -24,7 +24,7 @@ internal data class TaskListUiState(
 }
 
 /** The tasks to list: the loaded ones whose title contains [TaskListUiState.appliedQuery]. */
-internal fun TaskListUiState.Content.Loaded.matching(query: String): List<Task> {
+fun TaskListUiState.Content.Loaded.matching(query: String): List<Task> {
     if (query.isBlank()) return tasks
 
     return tasks.filter { it.title.contains(query, ignoreCase = true) }

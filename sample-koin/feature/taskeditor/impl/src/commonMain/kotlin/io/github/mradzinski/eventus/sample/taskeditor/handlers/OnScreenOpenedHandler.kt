@@ -7,7 +7,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorStore
 import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorUiState
 
 /** Shows an empty form for a new task, or loads the task to edit. */
-internal class OnScreenOpenedHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnScreenOpened> {
+class OnScreenOpenedHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnScreenOpened> {
 
     override val eventType = OnScreenOpened::class
 

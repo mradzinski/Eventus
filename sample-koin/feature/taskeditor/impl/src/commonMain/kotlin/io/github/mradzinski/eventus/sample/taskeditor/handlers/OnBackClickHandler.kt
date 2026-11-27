@@ -5,7 +5,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorEvent.OnBackClic
 import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorHandler
 import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorStore
 
-internal class OnBackClickHandler : TaskEditorHandler<OnBackClick> {
+class OnBackClickHandler : TaskEditorHandler<OnBackClick> {
 
     override val eventType = OnBackClick::class
 

@@ -5,7 +5,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorHandler
 import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorStore
 import io.github.mradzinski.eventus.sample.taskeditor.updateEditing
 
-internal class OnTitleChangeHandler : TaskEditorHandler<OnTitleChange> {
+class OnTitleChangeHandler : TaskEditorHandler<OnTitleChange> {
 
     override val eventType = OnTitleChange::class
 

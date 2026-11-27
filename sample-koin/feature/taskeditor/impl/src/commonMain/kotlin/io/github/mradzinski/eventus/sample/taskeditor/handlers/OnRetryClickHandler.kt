@@ -8,7 +8,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorStore
 import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorUiState
 
 /** Loads the task again after a failed load. The id comes from the state, not from the event. */
-internal class OnRetryClickHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnRetryClick> {
+class OnRetryClickHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnRetryClick> {
 
     override val eventType = OnRetryClick::class
     override val strategy = DispatchStrategy.DropIfAlreadyRunning<OnRetryClick>()

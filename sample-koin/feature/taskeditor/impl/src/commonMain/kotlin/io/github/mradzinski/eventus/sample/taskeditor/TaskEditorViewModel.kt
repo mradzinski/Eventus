@@ -13,7 +13,7 @@ import kotlinx.coroutines.CoroutineScope
  *
  * @param taskId The task to edit, or null to create one.
  */
-internal class TaskEditorViewModel(
+class TaskEditorViewModel(
     taskId: Long?,
     handlers: Collection<TaskEditorHandler<*>>,
     errorHandler: TaskEditorErrorHandler,

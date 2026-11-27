@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
  *
  * What the router does with each event goes to the app's log, under the tag `TaskList`.
  */
-internal class TaskListViewModel(
+class TaskListViewModel(
     handlers: Collection<TaskListHandler<*>>,
     errorHandler: TaskListErrorHandler,
     logger: Logger,

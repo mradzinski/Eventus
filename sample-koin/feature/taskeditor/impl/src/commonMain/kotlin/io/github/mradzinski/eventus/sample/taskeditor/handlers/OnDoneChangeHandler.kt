@@ -17,7 +17,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorUiState
  * `Sequential`, so that taps made while a save is under way are applied one after the other and each
  * one starts from what the previous one left.
  */
-internal class OnDoneChangeHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnDoneChange> {
+class OnDoneChangeHandler(private val tasks: TaskRepository) : TaskEditorHandler<OnDoneChange> {
 
     override val eventType = OnDoneChange::class
     override val strategy = DispatchStrategy.Sequential<OnDoneChange>()

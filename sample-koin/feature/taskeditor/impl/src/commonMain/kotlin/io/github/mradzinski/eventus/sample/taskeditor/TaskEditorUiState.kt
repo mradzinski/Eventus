@@ -4,7 +4,7 @@ import io.github.mradzinski.eventus.UiState
 import io.github.mradzinski.eventus.sample.ui.FailureReason
 
 /** The editor shows exactly one of these at a time, so it cannot be loading and editing at once. */
-internal sealed interface TaskEditorUiState : UiState {
+sealed interface TaskEditorUiState : UiState {
 
     data object Loading : TaskEditorUiState
 

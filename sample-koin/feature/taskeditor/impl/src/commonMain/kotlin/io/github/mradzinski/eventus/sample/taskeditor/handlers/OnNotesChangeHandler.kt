@@ -5,7 +5,7 @@ import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorHandler
 import io.github.mradzinski.eventus.sample.taskeditor.TaskEditorStore
 import io.github.mradzinski.eventus.sample.taskeditor.updateEditing
 
-internal class OnNotesChangeHandler : TaskEditorHandler<OnNotesChange> {
+class OnNotesChangeHandler : TaskEditorHandler<OnNotesChange> {
 
     override val eventType = OnNotesChange::class
 

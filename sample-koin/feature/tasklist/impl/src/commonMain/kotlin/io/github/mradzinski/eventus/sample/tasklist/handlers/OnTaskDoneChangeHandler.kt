@@ -15,7 +15,7 @@ import io.github.mradzinski.eventus.sample.tasklist.TaskListStore
  * starts right away, so the checkbox follows the finger and only the last choice reaches the server. A
  * tap on another task cancels nothing.
  */
-internal class OnTaskDoneChangeHandler(private val tasks: TaskRepository) : TaskListHandler<OnTaskDoneChange> {
+class OnTaskDoneChangeHandler(private val tasks: TaskRepository) : TaskListHandler<OnTaskDoneChange> {
 
     override val eventType = OnTaskDoneChange::class
     override val strategy = DispatchStrategy.Latest<OnTaskDoneChange> { it.taskId }

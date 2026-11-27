@@ -5,7 +5,7 @@ import io.github.mradzinski.eventus.sample.tasklist.TaskListEvent.OnAddClick
 import io.github.mradzinski.eventus.sample.tasklist.TaskListHandler
 import io.github.mradzinski.eventus.sample.tasklist.TaskListStore
 
-internal class OnAddClickHandler : TaskListHandler<OnAddClick> {
+class OnAddClickHandler : TaskListHandler<OnAddClick> {
 
     override val eventType = OnAddClick::class
 

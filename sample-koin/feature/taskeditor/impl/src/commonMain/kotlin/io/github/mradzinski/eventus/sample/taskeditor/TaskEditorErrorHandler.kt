@@ -8,7 +8,7 @@ import io.github.mradzinski.eventus.sample.ui.toFailureReason
  * as it is. A task that cannot be loaded is not handled here: that has to stay on screen with a retry
  * button, so the handlers that load turn it into state themselves.
  */
-internal class TaskEditorErrorHandler : ErrorHandler<TaskEditorEvent, TaskEditorUiState, TaskEditorEffect> {
+class TaskEditorErrorHandler : ErrorHandler<TaskEditorEvent, TaskEditorUiState, TaskEditorEffect> {
 
     override suspend fun handle(
         event: TaskEditorEvent,

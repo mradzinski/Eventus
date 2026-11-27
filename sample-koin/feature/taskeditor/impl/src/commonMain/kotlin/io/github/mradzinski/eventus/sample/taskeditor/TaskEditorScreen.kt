@@ -44,7 +44,7 @@ private val MaxContentWidth = 640.dp
 
 /** The stateless half of the task editor: it draws [state] and reports what the user does through [onEvent]. */
 @Composable
-internal fun TaskEditorScreen(
+fun TaskEditorScreen(
     state: TaskEditorUiState,
     onEvent: (TaskEditorEvent) -> Unit,
     snackbarHostState: SnackbarHostState,

@@ -11,7 +11,7 @@ import io.github.mradzinski.eventus.sample.ui.toFailureReason
  * and retrying. A failed load becomes state here instead of being thrown, because it has to stay on
  * screen with a retry button.
  */
-internal suspend fun TaskRepository.loadInto(store: TaskEditorStore, taskId: Long) {
+suspend fun TaskRepository.loadInto(store: TaskEditorStore, taskId: Long) {
     store.update { TaskEditorUiState.Loading }
 
     val loaded = try {

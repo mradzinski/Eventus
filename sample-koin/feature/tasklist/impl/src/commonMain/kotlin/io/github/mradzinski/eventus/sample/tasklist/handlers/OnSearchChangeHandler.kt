@@ -11,7 +11,7 @@ import kotlinx.coroutines.delay
  * Shows each keystroke at once and filters the list once the user pauses. `Latest` cancels the wait of
  * the previous keystroke, so only the last one filters.
  */
-internal class OnSearchChangeHandler : TaskListHandler<OnSearchChange> {
+class OnSearchChangeHandler : TaskListHandler<OnSearchChange> {
 
     override val eventType = OnSearchChange::class
     override val strategy = DispatchStrategy.Latest<OnSearchChange>()
