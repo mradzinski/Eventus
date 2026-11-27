@@ -1,0 +1,15 @@
+package io.github.mradzinski.eventus.sample.testing
+
+import io.github.mradzinski.eventus.sample.domain.Connectivity
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
+class FakeConnectivity(online: Boolean = true) : Connectivity {
+
+    override val online: StateFlow<Boolean>
+        field = MutableStateFlow(online)
+
+    override fun setOnline(online: Boolean) {
+        this.online.value = online
+    }
+}

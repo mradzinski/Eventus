@@ -158,3 +158,31 @@ dokka {
         }
     }
 }
+
+// The sample is several Gradle modules, so its tests get one task for all of them:
+// `sampleKoinJvmTest` runs the desktop tests, and `sampleKoinTest` runs them on every platform (desktop, the
+// Android host and the iOS simulator).
+val sampleKoinJvmTest = tasks.register("sampleKoinJvmTest") {
+    group = "verification"
+    description = "Runs the desktop tests of every module of sample-koin."
+}
+
+val sampleKoinTest = tasks.register("sampleKoinTest") {
+    group = "verification"
+    description = "Runs the tests of every module of sample-koin, on every platform."
+}
+
+subprojects {
+    if (!path.startsWith(":sample-koin:")) return@subprojects
+
+    val module = this
+
+    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+        sampleKoinJvmTest.configure { dependsOn(module.tasks.named("jvmTest")) }
+
+        sampleKoinTest.configure {
+            dependsOn(module.tasks.named("allTests"))
+            dependsOn(module.tasks.matching { it.name == "testAndroidHostTest" })
+        }
+    }
+}

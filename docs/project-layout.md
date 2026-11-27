@@ -9,23 +9,44 @@
 | `eventus-ksp/` | The symbol processor: the event handler check, the generated Koin module and the generated Metro bindings. JVM only, as a build tool. |
 | `eventus-compose/` | The Compose helpers: `collectEffects` and `notifyVisibility`. |
 | `eventus-test/` | The test helper: `runEventHandlerTest`. |
-| `sample/shared/` | The sample app: a task list and a task editor, with navigation, Koin and tests. One module, layered by package, to keep it short. |
-| `sample/androidApp/`, `sample/desktopApp/` | Launchers. |
+| `sample-koin/` | The sample app: a task list and a task editor, with navigation, Koin and tests. Its modules are in the table below. |
 | `integration/metro/` | Tests that run the generated Metro bindings through Metro's compiler plugin. Not published. |
-| `sample/iosApp/` | The Xcode project of the iOS launcher. |
 | `tooling/ktlint-rules/` | The project's own formatting rules, applied by ktlint next to its standard ones. |
+
+## The sample app
+
+The sample is split into modules the way a production app is. No module depends on the implementation
+of another: only `app` does, because it puts them together.
+
+| Path | What |
+|---|---|
+| `sample-koin/core/domain/` | The task, and the repository and connectivity interfaces. Plain Kotlin, with no Android, Compose or dependency injection. |
+| `sample-koin/core/data/` | The implementations of the domain's interfaces, and the Koin module that binds them. |
+| `sample-koin/core/ui/` | What the screens share: the top bar, the failure reasons, the router log and the string resources. |
+| `sample-koin/core/testing/` | The fakes that the tests of several modules share. |
+| `sample-koin/feature/tasklist/api/`, `sample-koin/feature/taskeditor/api/` | What other modules may know of a feature: its destination. |
+| `sample-koin/feature/tasklist/impl/`, `sample-koin/feature/taskeditor/impl/` | A feature: its events, state and effects, one event handler class per event, the view model, the screen, its Koin module and its tests. |
+| `sample-koin/app/` | The app's own router, the navigation between the features and the start of Koin. |
+| `sample-koin/androidApp/`, `sample-koin/desktopApp/` | Launchers. |
+| `sample-koin/iosApp/` | The Xcode project of the iOS launcher. |
 
 Run the sample:
 
 ```bash
-./gradlew :sample:desktopApp:run
+./gradlew :sample-koin:desktopApp:run
 ```
 
 ```bash
-./gradlew :sample:androidApp:installDebug
+./gradlew :sample-koin:androidApp:installDebug
 ```
 
-For iOS, open `sample/iosApp/iosApp.xcodeproj` in Xcode and run it.
+For iOS, open `sample-koin/iosApp/iosApp.xcodeproj` in Xcode and run it.
+
+Run the sample's tests on every platform:
+
+```bash
+./gradlew sampleKoinTest
+```
 
 Run the library's checks (tests on every platform, lint, coverage and the public API check). The web
 tests need Chrome, and the iOS tests need a Mac with an iOS simulator:
