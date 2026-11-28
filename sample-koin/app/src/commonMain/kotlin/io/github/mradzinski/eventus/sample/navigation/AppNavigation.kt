@@ -19,12 +19,18 @@ import io.github.mradzinski.eventus.sample.tasklist.api.TaskListKey
  * turns it into one of the callbacks below, and only this function changes where the app is.
  *
  * @param offlineSwitch The app's "Work offline" switch, handed to every screen for its bar.
+ * @param platformEffects What only one platform does with the back stack. The web app ties it to the
+ * browser's Back button there.
  *
  * The back stack is kept in memory, which is enough for a sample. An app would also save it, so that it
  * survives the process being stopped.
  */
 @Composable
-internal fun AppNavigation(offlineSwitch: @Composable () -> Unit, modifier: Modifier = Modifier) {
+internal fun AppNavigation(
+    offlineSwitch: @Composable () -> Unit,
+    platformEffects: @Composable (backStack: List<NavKey>) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val backStack = remember { mutableStateListOf<NavKey>(TaskListKey) }
 
     val goBack = {
@@ -57,4 +63,6 @@ internal fun AppNavigation(offlineSwitch: @Composable () -> Unit, modifier: Modi
         },
         modifier = modifier,
     )
+
+    platformEffects(backStack)
 }

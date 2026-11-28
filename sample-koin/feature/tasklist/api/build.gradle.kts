@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // What other modules may know of the task list: its destination. Another feature that wants to navigate
@@ -22,6 +23,10 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser() }
+    js { browser() }
 
     sourceSets {
         commonMain.dependencies {

@@ -161,7 +161,8 @@ dokka {
 
 // Each sample is several Gradle modules, so its tests get one task for all of them. For sample-koin,
 // `sampleKoinJvmTest` runs the desktop tests and `sampleKoinTest` runs them on every platform (desktop, the
-// Android host and the iOS simulator); sample-metro has `sampleMetroJvmTest` and `sampleMetroTest`.
+// Android host, the iOS simulator, and Wasm and JS in Chrome); sample-metro has `sampleMetroJvmTest` and
+// `sampleMetroTest`.
 listOf("sample-koin" to "sampleKoin", "sample-metro" to "sampleMetro").forEach { (folder, name) ->
     val jvmTests = tasks.register("${name}JvmTest") {
         group = "verification"
@@ -179,7 +180,8 @@ listOf("sample-koin" to "sampleKoin", "sample-metro" to "sampleMetro").forEach {
         val module = this
 
         pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
-            jvmTests.configure { dependsOn(module.tasks.named("jvmTest")) }
+            // By name and not `named`: the web launcher is a multiplatform module with no desktop target.
+            jvmTests.configure { dependsOn(module.tasks.matching { it.name == "jvmTest" }) }
 
             allTests.configure {
                 dependsOn(module.tasks.named("allTests"))

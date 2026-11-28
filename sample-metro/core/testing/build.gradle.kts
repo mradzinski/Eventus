@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // The fakes that the tests of several modules share. It is a dependency of tests only.
@@ -21,6 +22,10 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser() }
+    js { browser() }
 
     sourceSets {
         commonMain.dependencies {

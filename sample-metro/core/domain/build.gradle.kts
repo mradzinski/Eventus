@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // The domain: the task, and the interfaces the rest of the app works against. Plain Kotlin, with no Android,
@@ -22,6 +23,10 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser() }
+    js { browser() }
 
     sourceSets {
         commonMain.dependencies {

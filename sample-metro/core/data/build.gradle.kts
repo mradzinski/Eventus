@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // The data layer: the implementations of the domain's interfaces, each handed to the graph with Metro's
@@ -25,6 +26,10 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser() }
+    js { browser() }
 
     sourceSets {
         commonMain.dependencies {

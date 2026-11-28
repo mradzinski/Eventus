@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // The task editor: its events, state and effects, one event handler class per event, the view model, the
@@ -27,6 +28,19 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    // `binaries.executable()` is for the tests only: the Compose plugin refuses to run the tests of a module
+    // that uses Compose UI in a browser without a bundle, which is what loads Compose's drawing engine.
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
+    js {
+        browser()
+        binaries.executable()
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -70,4 +84,6 @@ dependencies {
     add("kspJvm", projects.eventusKsp)
     add("kspIosArm64", projects.eventusKsp)
     add("kspIosSimulatorArm64", projects.eventusKsp)
+    add("kspWasmJs", projects.eventusKsp)
+    add("kspJs", projects.eventusKsp)
 }

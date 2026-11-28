@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // The data layer: the implementations of the domain's interfaces, and the Koin module that binds them.
@@ -23,6 +24,10 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser() }
+    js { browser() }
 
     sourceSets {
         commonMain.dependencies {

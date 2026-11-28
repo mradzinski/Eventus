@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -22,16 +23,18 @@ import io.github.mradzinski.eventus.sample.navigation.AppNavigation
  * The whole sample app: a task list and a task editor.
  *
  * @param viewModelFactory What creates the view models: the one of the platform's graph.
+ * @param platformEffects What only one platform does with the back stack. The web app ties it to the
+ * browser's Back button there.
  */
 @Composable
-fun App(viewModelFactory: MetroViewModelFactory) {
+fun App(viewModelFactory: MetroViewModelFactory, platformEffects: @Composable (backStack: List<NavKey>) -> Unit = {}) {
     CompositionLocalProvider(LocalMetroViewModelFactory provides viewModelFactory) {
-        AppContent()
+        AppContent(platformEffects)
     }
 }
 
 @Composable
-private fun AppContent() {
+private fun AppContent(platformEffects: @Composable (backStack: List<NavKey>) -> Unit) {
     val viewModel = metroViewModel<AppViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -52,6 +55,7 @@ private fun AppContent() {
                         onEvent = viewModel::onEvent,
                     )
                 },
+                platformEffects = platformEffects,
             )
         }
     }

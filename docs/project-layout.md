@@ -11,7 +11,6 @@
 | `eventus-test/` | The test helper: `runEventHandlerTest`. |
 | `sample-koin/` | The sample app: a task list and a task editor, with navigation, Koin and tests. Its modules are in the table below. |
 | `sample-metro/` | The same app with the same modules, wired with Metro. |
-| `integration/metro/` | Tests that run the generated Metro bindings through Metro's compiler plugin. Not published. |
 | `tooling/ktlint-rules/` | The project's own formatting rules, applied by ktlint next to its standard ones. |
 
 ## The sample apps
@@ -31,7 +30,7 @@ The table shows `sample-koin`; `sample-metro` has the same modules under its own
 | `sample-koin/feature/tasklist/api/`, `sample-koin/feature/taskeditor/api/` | What other modules may know of a feature: its destination. |
 | `sample-koin/feature/tasklist/impl/`, `sample-koin/feature/taskeditor/impl/` | A feature: its events, state and effects, one event handler class per event, the view model, the screen, its wiring and its tests. |
 | `sample-koin/app/` | The app's own router, the navigation between the features and the start of Koin. In `sample-metro`, one Metro graph for each platform. |
-| `sample-koin/androidApp/`, `sample-koin/desktopApp/` | Launchers. |
+| `sample-koin/androidApp/`, `sample-koin/desktopApp/`, `sample-koin/webApp/` | Launchers. The web one builds the app for both Wasm and JavaScript. |
 | `sample-koin/iosApp/` | The Xcode project of the iOS launcher. |
 
 Run the sample:
@@ -45,6 +44,16 @@ Run the sample:
 ```
 
 For iOS, open `sample-koin/iosApp/iosApp.xcodeproj` in Xcode and run it.
+
+In a browser, on Wasm or on JavaScript. Each command serves the app at `http://localhost:8080`:
+
+```bash
+./gradlew :sample-koin:webApp:wasmJsBrowserDevelopmentRun
+```
+
+```bash
+./gradlew :sample-koin:webApp:jsBrowserDevelopmentRun
+```
 
 Run `sample-metro` the same way, with `sample-metro` in place of `sample-koin`. On Android it needs
 Android 9 (API 28) or later, which Metro's Android helper requires.
@@ -77,7 +86,7 @@ tests need Chrome, and the iOS tests need a Mac with an iOS simulator:
 Run the checks of the optional artifacts:
 
 ```bash
-./gradlew :eventus-koin:check :eventus-metro:check :eventus-ksp:check :eventus-compose:check :eventus-test:check :integration:metro:check
+./gradlew :eventus-koin:check :eventus-metro:check :eventus-ksp:check :eventus-compose:check :eventus-test:check
 ```
 
 Format your changes before you send them. This applies the project's style, including its own rules

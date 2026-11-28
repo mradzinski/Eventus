@@ -12,7 +12,7 @@ dokka = "2.3.0"
 ksp = "2.3.14"
 # Compiles small sources with the processor applied, for the tests of eventus-ksp. Test tooling only.
 kctfork = "0.14.0"
-# Metro, a dependency injection compiler plugin. Used only by the tests of eventus-ksp and by integration/metro,
+# Metro, a dependency injection compiler plugin. Used only by the tests of eventus-ksp and by sample-metro,
 # which show the bindings generated for it working. It never reaches a published artifact.
 metro = "1.6.0"
 # Build-time code quality tools: they never reach consumers of the library.
@@ -37,6 +37,8 @@ compose = "1.12.2"
 composeMaterial3 = "1.9.0"
 lifecycle = "2.11.0"
 navigation3 = "1.2.0"
+# Ties the back stack to the browser's Back button, until Navigation 3 does it by itself (CMP-8924).
+navigation3Browser = "1.1.0"
 koin = "4.2.2"
 kermit = "2.2.0"
 kotlinxSerialization = "1.13.0"
@@ -101,6 +103,7 @@ compose-material-icons-core = { module = "org.jetbrains.compose.material:materia
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+navigation3-browser = { module = "com.github.terrakok:navigation3-browser", version.ref = "navigation3Browser" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
 lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
