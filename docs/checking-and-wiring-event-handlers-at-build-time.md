@@ -87,12 +87,23 @@ class that implements `ErrorHandler`:
 ```kotlin
 // generated
 internal actual val handlersModule: Module = module {
-    factory { com.example.tasklist.OnRefreshHandler(get()) } bind com.example.tasklist.TaskListHandler::class
-    factory { com.example.tasklist.OnTaskClickHandler() } bind com.example.tasklist.TaskListHandler::class
+    factory(named("com.example.tasklist.OnRefreshHandler")) {
+        com.example.tasklist.OnRefreshHandler(get())
+    } bind com.example.tasklist.TaskListHandler::class
+
+    factory(named("com.example.tasklist.OnTaskClickHandler")) {
+        com.example.tasklist.OnTaskClickHandler()
+    } bind com.example.tasklist.TaskListHandler::class
+
     // …every handler of every screen in this Gradle module
     factory { com.example.tasklist.TaskListErrorHandler(get()) }
 }
 ```
+
+Each event handler's factory is named after the handler's full name. On JavaScript and Wasm, Koin
+knows a class by its simple name only, so two screens that each have an `OnScreenOpenedHandler` would
+otherwise share one definition, and one screen would lose its handler. The name keeps them apart on
+every platform, and you never use it: the view model asks for the handlers by their interface.
 
 What is left for you is the view model of each screen, and giving `handlersModule` to Koin with your
 other modules:

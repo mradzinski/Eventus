@@ -46,6 +46,7 @@ private fun KSPropertyDeclaration.source(definitions: List<String>): String {
         |package ${packageName.asString()}
         |
         |import org.koin.core.module.Module
+        |import org.koin.core.qualifier.named
         |import org.koin.dsl.bind
         |import org.koin.dsl.module
         |
@@ -57,24 +58,34 @@ private fun KSPropertyDeclaration.source(definitions: List<String>): String {
     """.trimMargin()
 }
 
-/** One line of the module: the handler as a factory, bound to the handler interface of its screen. */
+/**
+ * One line of the module: the handler as a factory, bound to the handler interface of its screen.
+ *
+ * The factory is named after the handler's full name. On JS and Wasm Koin knows a class by its simple name
+ * only, so without a name of its own a handler would silently replace the handler of the same simple name
+ * of another screen, and that screen would be left without it.
+ */
 private fun Handler.definition(): String {
     val bindings = screenInterfaces.joinToString(separator = "") { " bind ${it.displayName}::class" }
 
-    return declaration.creation() + bindings
+    val name = "named(\"${declaration.displayName}\")"
+
+    return declaration.creation(qualifier = name) + bindings
 }
 
 /**
  * Written out in full, not as `factoryOf(::Handler)`: a constructor reference takes a simple name, and two
  * screens often have a handler of the same name.
  */
-private fun KSClassDeclaration.creation(): String {
-    if (classKind == ClassKind.OBJECT) return "factory { $displayName }"
+private fun KSClassDeclaration.creation(qualifier: String? = null): String {
+    val factory = if (qualifier == null) "factory" else "factory($qualifier)"
+
+    if (classKind == ClassKind.OBJECT) return "$factory { $displayName }"
 
     // A class with no primary constructor has at least one written out, or it would have the default one.
     val constructor = primaryConstructor ?: getConstructors().first()
 
     val arguments = List(constructor.parameters.size) { "get()" }.joinToString()
 
-    return "factory { $displayName($arguments) }"
+    return "$factory { $displayName($arguments) }"
 }

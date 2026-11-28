@@ -36,9 +36,9 @@ class KoinModuleTest {
         val compiled = compile(listScreen, allListHandlers, koinModuleRequest)
 
         compiled.definitions() shouldContainExactly listOf(
-            "factory { app.OnSearchHandler(get()) } bind app.ListHandler::class",
-            "factory { app.OnStartHandler() } bind app.ListHandler::class",
-            "factory { app.RowClickHandler() } bind app.ListHandler::class",
+            "factory(named(\"app.OnSearchHandler\")) { app.OnSearchHandler(get()) } bind app.ListHandler::class",
+            "factory(named(\"app.OnStartHandler\")) { app.OnStartHandler() } bind app.ListHandler::class",
+            "factory(named(\"app.RowClickHandler\")) { app.RowClickHandler() } bind app.ListHandler::class",
         )
     }
 
@@ -51,8 +51,8 @@ class KoinModuleTest {
 
         val compiled = compile(listScreen, handlers, koinModuleRequest)
 
-        compiled.definitions() shouldContain
-            "factory { app.OnSearchHandler(get(), get(), get()) } bind app.ListHandler::class"
+        compiled.definitions() shouldContain "factory(named(\"app.OnSearchHandler\")) " +
+            "{ app.OnSearchHandler(get(), get(), get()) } bind app.ListHandler::class"
     }
 
     @Test
@@ -68,11 +68,12 @@ class KoinModuleTest {
         val compiled = compile(listScreen, handlers, koinModuleRequest)
 
         compiled.problems.shouldBeEmpty()
-        compiled.definitions() shouldContain "factory { app.OnSearchHandler(get(), get()) } bind app.ListHandler::class"
+        compiled.definitions() shouldContain "factory(named(\"app.OnSearchHandler\")) " +
+            "{ app.OnSearchHandler(get(), get()) } bind app.ListHandler::class"
     }
 
     @Test
-    fun `handlers of the same name on two screens are both registered`() {
+    fun `handlers of the same name on two screens are both registered each under its full name`() {
         val editorScreen = """
             package app.editor
 
@@ -97,9 +98,11 @@ class KoinModuleTest {
         val compiled = compile(editorScreen, listScreen, allListHandlers, koinModuleRequest)
 
         compiled.problems.shouldBeEmpty()
-        compiled.definitions() shouldContain "factory { app.OnStartHandler() } bind app.ListHandler::class"
         compiled.definitions() shouldContain
-            "factory { app.editor.OnStartHandler() } bind app.editor.EditorHandler::class"
+            "factory(named(\"app.OnStartHandler\")) { app.OnStartHandler() } bind app.ListHandler::class"
+
+        compiled.definitions() shouldContain "factory(named(\"app.editor.OnStartHandler\")) " +
+            "{ app.editor.OnStartHandler() } bind app.editor.EditorHandler::class"
     }
 
     @Test
@@ -107,7 +110,8 @@ class KoinModuleTest {
         val handlers = allListHandlers.replace("class RowClickHandler", "object RowClickHandler")
         val compiled = compile(listScreen, handlers, koinModuleRequest)
 
-        compiled.definitions() shouldContain "factory { app.RowClickHandler } bind app.ListHandler::class"
+        compiled.definitions() shouldContain
+            "factory(named(\"app.RowClickHandler\")) { app.RowClickHandler } bind app.ListHandler::class"
     }
 
     @Test
@@ -124,8 +128,8 @@ class KoinModuleTest {
 
         val compiled = compile(listScreen, handlers, koinModuleRequest)
 
-        compiled.definitions() shouldContain
-            "factory { app.OnStartHandler() } bind app.BaseHandler::class bind app.ListHandler::class"
+        compiled.definitions() shouldContain "factory(named(\"app.OnStartHandler\")) " +
+            "{ app.OnStartHandler() } bind app.BaseHandler::class bind app.ListHandler::class"
     }
 
     @Test
