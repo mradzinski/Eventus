@@ -73,7 +73,7 @@ kotlin {
 ```
 
 `eventus` is the library. `eventus-test` tests your event handlers in one call. See
-[Testing](docs/testing.md).
+[Testing](https://mradzinski.github.io/Eventus/testing/).
 
 The steps below are optional, and the first one is recommended.
 
@@ -106,7 +106,7 @@ a module with a single platform, the one line is `ksp("io.github.mradzinski:even
 
 If you use Koin, `eventus-koin` lets the processor write the Koin module of your event handlers from
 one annotated property. It needs the build-time check above. See [Generating the Koin
-module](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-koin-module).
+module](https://mradzinski.github.io/Eventus/checking-and-wiring-event-handlers-at-build-time/#generating-the-koin-module).
 
 ```kotlin
 commonMain.dependencies {
@@ -118,7 +118,7 @@ commonMain.dependencies {
 
 If you use Metro, `eventus-metro` lets the processor write the Metro bindings of your event handlers
 from one annotation on each screen. It needs the build-time check above. See [Generating the Metro
-bindings](docs/checking-and-wiring-event-handlers-at-build-time.md#generating-the-metro-bindings).
+bindings](https://mradzinski.github.io/Eventus/checking-and-wiring-event-handlers-at-build-time/#generating-the-metro-bindings).
 
 ```kotlin
 commonMain.dependencies {
@@ -129,7 +129,7 @@ commonMain.dependencies {
 ### Optional: adding the Compose helpers
 
 `eventus-compose` adds two helpers for a Compose UI: one that performs a router's effects, and one that
-tells the router when the screen is visible. See [Using the Compose helpers](docs/using-the-compose-helpers.md).
+tells the router when the screen is visible. See [Using the Compose helpers](https://mradzinski.github.io/Eventus/using-the-compose-helpers/).
 
 ```kotlin
 commonMain.dependencies {
@@ -290,29 +290,29 @@ Each topic has a page of its own in [`docs/`](docs). They are listed with what m
 
 | Guide | What it covers |
 |---|---|
-| [Key concepts](docs/key-concepts.md) | How an event travels through Eventus, what each piece is, the lifecycle of each, and the rules that follow. Start here. |
-| [Choosing a dispatch strategy](docs/choosing-a-dispatch-strategy.md) | What the router does with an event while other events are active: the four ready-made strategies with a real case each, sharing one between several events, applying one to each item of a list, and writing your own. |
-| [Dependency injection](docs/dependency-injection.md) | Wiring event handlers with Koin, with Metro, with Hilt, with another compile-time container, or by hand. |
-| [Checking and wiring event handlers at build time](docs/checking-and-wiring-event-handlers-at-build-time.md) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, the generated Metro bindings, and projects with several modules. |
-| [Using the Compose helpers](docs/using-the-compose-helpers.md) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |
-| [Using Eventus from SwiftUI](docs/using-eventus-from-swiftui.md) | A shared view model behind a SwiftUI screen, with SKIE or with KMP-NativeCoroutines. |
-| [Handling failures](docs/handling-failures.md) | Where an event handler's exception goes, and how to turn it into something the UI can show. |
-| [Keeping work running](docs/keeping-work-running.md) | Event handlers that never return, such as one that collects a flow, and how long they last. |
-| [Testing](docs/testing.md) | The `eventus-test` artifact: testing event handlers in one call, failures, waits, work on another thread, and a view model. |
-| [Emitting an effect](docs/emitting-an-effect.md) | Asking the UI to do something once, from an event handler or an error handler, and what the store guarantees. |
-| [Choosing between an effect and state](docs/choosing-between-an-effect-and-state.md) | How to decide whether something is an effect or part of the state. |
-| [Navigating](docs/navigating.md) | Navigating as an effect that carries only an id. |
-| [Debouncing](docs/debouncing.md) | Waiting until the user has stopped typing before doing the expensive part. |
-| [Updating the state optimistically](docs/updating-the-state-optimistically.md) | Showing a result at once and putting it back if the work fails. |
-| [Dispatching an event from a handler](docs/dispatching-an-event-from-a-handler.md) | Starting a second event from an event handler or an error handler, and waiting for it. |
-| [Reaching another screen](docs/reaching-another-screen.md) | How one screen affects another without an event bus. |
-| [Choosing the coroutine scope](docs/choosing-the-coroutine-scope.md) | Which scope the router runs in, who cancels it, and threads. |
-| [Logging events](docs/logging-events.md) | Having the router report what it does with each event: ignored, replaced, waiting, started, the effects it emitted and how it ended. One line gives a log, and a test can check the reports. |
-| [Structuring the events of a feature](docs/structuring-the-events-of-a-feature.md) | One event type for a feature with several screens, with a sealed type for each screen inside it. |
-| [Where Eventus sits in your app](docs/where-eventus-sits-in-your-app.md) | Which modules of an app depend on Eventus and which never do. |
-| [What Eventus does not do](docs/what-eventus-does-not-do.md) | The limits of the library, stated plainly. |
-| [Project layout](docs/project-layout.md) | The modules of this repository, and how to run the sample, the checks and the formatter. |
-| [Class diagram](docs/class-diagram.md) | Every type of the `eventus` module, public and internal, and how the types relate, as a picture. |
+| [Key concepts](https://mradzinski.github.io/Eventus/key-concepts/) | How an event travels through Eventus, what each piece is, the lifecycle of each, and the rules that follow. Start here. |
+| [Choosing a dispatch strategy](https://mradzinski.github.io/Eventus/choosing-a-dispatch-strategy/) | What the router does with an event while other events are active: the four ready-made strategies with a real case each, sharing one between several events, applying one to each item of a list, and writing your own. |
+| [Dependency injection](https://mradzinski.github.io/Eventus/dependency-injection/) | Wiring event handlers with Koin, with Metro, with Hilt, with another compile-time container, or by hand. |
+| [Checking and wiring event handlers at build time](https://mradzinski.github.io/Eventus/checking-and-wiring-event-handlers-at-build-time/) | The `eventus-ksp` processor: the missing-handler check, the generated Koin module, the generated Metro bindings, and projects with several modules. |
+| [Using the Compose helpers](https://mradzinski.github.io/Eventus/using-the-compose-helpers/) | The `eventus-compose` artifact: performing effects with the lifecycle, and notifying the router that the screen is visible. |
+| [Using Eventus from SwiftUI](https://mradzinski.github.io/Eventus/using-eventus-from-swiftui/) | A shared view model behind a SwiftUI screen, with SKIE or with KMP-NativeCoroutines. |
+| [Handling failures](https://mradzinski.github.io/Eventus/handling-failures/) | Where an event handler's exception goes, and how to turn it into something the UI can show. |
+| [Keeping work running](https://mradzinski.github.io/Eventus/keeping-work-running/) | Event handlers that never return, such as one that collects a flow, and how long they last. |
+| [Testing](https://mradzinski.github.io/Eventus/testing/) | The `eventus-test` artifact: testing event handlers in one call, failures, waits, work on another thread, and a view model. |
+| [Emitting an effect](https://mradzinski.github.io/Eventus/emitting-an-effect/) | Asking the UI to do something once, from an event handler or an error handler, and what the store guarantees. |
+| [Choosing between an effect and state](https://mradzinski.github.io/Eventus/choosing-between-an-effect-and-state/) | How to decide whether something is an effect or part of the state. |
+| [Navigating](https://mradzinski.github.io/Eventus/navigating/) | Navigating as an effect that carries only an id. |
+| [Debouncing](https://mradzinski.github.io/Eventus/debouncing/) | Waiting until the user has stopped typing before doing the expensive part. |
+| [Updating the state optimistically](https://mradzinski.github.io/Eventus/updating-the-state-optimistically/) | Showing a result at once and putting it back if the work fails. |
+| [Dispatching an event from a handler](https://mradzinski.github.io/Eventus/dispatching-an-event-from-a-handler/) | Starting a second event from an event handler or an error handler, and waiting for it. |
+| [Reaching another screen](https://mradzinski.github.io/Eventus/reaching-another-screen/) | How one screen affects another without an event bus. |
+| [Choosing the coroutine scope](https://mradzinski.github.io/Eventus/choosing-the-coroutine-scope/) | Which scope the router runs in, who cancels it, and threads. |
+| [Logging events](https://mradzinski.github.io/Eventus/logging-events/) | Having the router report what it does with each event: ignored, replaced, waiting, started, the effects it emitted and how it ended. One line gives a log, and a test can check the reports. |
+| [Structuring the events of a feature](https://mradzinski.github.io/Eventus/structuring-the-events-of-a-feature/) | One event type for a feature with several screens, with a sealed type for each screen inside it. |
+| [Where Eventus sits in your app](https://mradzinski.github.io/Eventus/where-eventus-sits-in-your-app/) | Which modules of an app depend on Eventus and which never do. |
+| [What Eventus does not do](https://mradzinski.github.io/Eventus/what-eventus-does-not-do/) | The limits of the library, stated plainly. |
+| [Project layout](https://mradzinski.github.io/Eventus/project-layout/) | The modules of this repository, and how to run the sample, the checks and the formatter. |
+| [Class diagram](https://mradzinski.github.io/Eventus/class-diagram/) | Every type of the `eventus` module, public and internal, and how the types relate, as a picture. |
 
 ## Changelog
 

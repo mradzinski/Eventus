@@ -11,6 +11,7 @@ const root = join(here, '..')
 const source = join(root, 'docs')
 const target = join(here, 'docs')
 const repository = 'https://github.com/mradzinski/Eventus/blob/main/'
+const siteLink = /\]\(https:\/\/mradzinski\.github\.io\/Eventus\/([a-z0-9-]+)\/(#[^)]*)?\)/g
 
 /** Removes a second-level section, from its heading up to the next heading of the same level. */
 function withoutSection(text, heading) {
@@ -89,6 +90,9 @@ function firstPage(text) {
     // The README's link to this site would only point at the page it is on.
     .replace(/\n\*\*\[Read the documentation at [^\n]*\n/, '')
     .replace(/\]\(docs\/([^)]+)\)/g, '](./$1)')
+    // The README links to this site's pages by their full address. Here they become links between
+    // pages, so the build checks that each page and heading exists.
+    .replace(siteLink, (_, name, anchor) => `](./${name}.md${anchor ?? ''})`)
     .replace(/\]\(CHANGELOG\.md\)/g, '](./changelog.md)')
     .replace(/\]\((AGENT-USAGE\.md|LICENSE|NOTICE)\)/g, `](${repository}$1)`)
 
